@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>アプリアイデアメモ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      color: white;
+      padding: 24px 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    }
+
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      opacity: 0.6;
+      margin-top: 4px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 32px 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+      margin-bottom: 24px;
+    }
+
+    .card h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Tag buttons */
+    .tags {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .tag-btn {
+      padding: 14px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      background: white;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #444;
+    }
+
+    .tag-btn:hover {
+      border-color: #6c63ff;
+      background: #f8f7ff;
+    }
+
+    .tag-btn.selected {
+      border-color: #6c63ff;
+      background: #6c63ff;
+      color: white;
+    }
+
+    .tag-btn .emoji {
+      font-size: 1.2rem;
+    }
+
+    /* Voice input */
+    .voice-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #mic-btn {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #6c63ff, #a855f7);
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(108, 99, 255, 0.4);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #mic-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 24px rgba(108, 99, 255, 0.5);
+    }
+
+    #mic-btn.recording {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+
+    #mic-status {
+      font-size: 0.85rem;
+      color: #888;
+      min-height: 20px;
+    }
+
+    #mic-status.active {
+      color: #ef4444;
+      font-weight: 600;
+    }
+
+    #transcript-box {
+      width: 100%;
+      min-height: 80px;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      resize: vertical;
+      font-family: inherit;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #transcript-box:focus {
+      border-color: #6c63ff;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 10px 22px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: #6c63ff;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5a52d5;
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #555;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #ef4444;
+    }
+
+    .btn-danger:hover {
+      background: #fecaca;
+    }
+
+    /* Idea list */
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .list-header h2 {
+      margin-bottom: 0;
+    }
+
+    .idea-count {
+      font-size: 0.8rem;
+      background: #f0f0f0;
+      color: #666;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    #filter-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .filter-btn {
+      padding: 6px 14px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 999px;
+      background: white;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: #555;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      border-color: #6c63ff;
+      background: #6c63ff;
+      color: white;
+    }
+
+    #idea-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .idea-item {
+      background: #fafafa;
+      border: 1.5px solid #eee;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color 0.15s, opacity 0.3s;
+    }
+
+    .idea-item:hover {
+      border-color: #d0ccff;
+    }
+
+    .idea-item.done {
+      opacity: 0.45;
+      border-color: #e0e0e0;
+      background: #f5f5f5;
+    }
+
+    .idea-item.done .idea-text {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    .idea-item.done .idea-tag {
+      opacity: 0.6;
+    }
+
+    .idea-item.done .idea-date-done {
+      display: inline;
+    }
+
+    /* Checkbox */
+    .idea-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      background: white;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      transition: all 0.2s ease;
+      font-size: 0.75rem;
+    }
+
+    .idea-checkbox:hover {
+      border-color: #6c63ff;
+      background: #f0eeff;
+    }
+
+    .idea-checkbox.checked {
+      background: #6c63ff;
+      border-color: #6c63ff;
+      color: white;
+    }
+
+    .idea-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .idea-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .tag-work    { background: #dbeafe; color: #1d4ed8; }
+    .tag-private { background: #dcfce7; color: #15803d; }
+    .tag-marathon{ background: #fef3c7; color: #b45309; }
+    .tag-other   { background: #f3e8ff; color: #7e22ce; }
+
+    .idea-date {
+      font-size: 0.75rem;
+      color: #aaa;
+    }
+
+    .idea-date-done {
+      display: none;
+      font-size: 0.7rem;
+      color: #bbb;
+      margin-left: 4px;
+    }
+
+    .idea-text {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #333;
+      flex: 1;
+      transition: color 0.3s, text-decoration 0.3s;
+    }
+
+    .idea-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-size: 1rem;
+      line-height: 1;
+      transition: background 0.1s;
+    }
+
+    .icon-btn:hover {
+      background: #f0f0f0;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 0;
+      color: #bbb;
+      font-size: 0.95rem;
+    }
+
+    .empty-state .big-emoji {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1a1a2e;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      transition: transform 0.3s ease;
+      z-index: 999;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Warning banner for no speech API */
+    .warning {
+      background: #fef3c7;
+      border: 1.5px solid #f59e0b;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: #92400e;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>💡 アプリアイデアメモ</h1>
+  <p>次のアプリ開発アイデアを記録する</p>
+</header>
+
+<div class="container">
+
+  <!-- Step 1: Tag -->
+  <div class="card">
+    <h2>① カテゴリを選択</h2>
+    <div class="tags">
+      <button class="tag-btn" data-tag="work"     onclick="selectTag(this)"><span class="emoji">💼</span> 仕事用</button>
+      <button class="tag-btn" data-tag="private"  onclick="selectTag(this)"><span class="emoji">🏠</span> プライベート用</button>
+      <button class="tag-btn" data-tag="marathon" onclick="selectTag(this)"><span class="emoji">🏃</span> マラソン用</button>
+      <button class="tag-btn" data-tag="other"    onclick="selectTag(this)"><span class="emoji">✨</span> その他</button>
+    </div>
+  </div>
+
+  <!-- Step 2: Voice input -->
+  <div class="card">
+    <h2>② アイデアを入力</h2>
+    <div class="warning" id="no-speech-warning">
+      お使いのブラウザは音声入力に対応していません。テキストを直接入力してください。
+    </div>
+    <div class="voice-section">
+      <button id="mic-btn" onclick="toggleRecording()" title="マイクボタンを押して音声入力">🎤</button>
+      <span id="mic-status">ボタンを押して話す</span>
+      <textarea id="transcript-box" placeholder="ここにアイデアを入力（音声入力または手動入力）"></textarea>
+    </div>
+    <div class="btn-row" style="margin-top:16px;">
+      <button class="btn btn-secondary" onclick="clearInput()">クリア</button>
+      <button class="btn btn-primary"   onclick="saveIdea()">💾 保存する</button>
+    </div>
+  </div>
+
+  <!-- Step 3: List & Export -->
+  <div class="card">
+    <div class="list-header">
+      <h2>③ 保存したアイデア</h2>
+      <span class="idea-count" id="idea-count">0 件</span>
+    </div>
+
+    <div id="filter-bar">
+      <button class="filter-btn active" data-filter="all"      onclick="setFilter(this)">すべて</button>
+      <button class="filter-btn"        data-filter="work"     onclick="setFilter(this)">💼 仕事用</button>
+      <button class="filter-btn"        data-filter="private"  onclick="setFilter(this)">🏠 プライベート</button>
+      <button class="filter-btn"        data-filter="marathon" onclick="setFilter(this)">🏃 マラソン</button>
+      <button class="filter-btn"        data-filter="other"    onclick="setFilter(this)">✨ その他</button>
+    </div>
+
+    <div id="idea-list"></div>
+
+    <div style="margin-top:20px; text-align:right;">
+      <button class="btn btn-secondary" onclick="exportCSV()">📥 CSVで出力</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const TAG_LABELS = {
+    work:     { label: '仕事用',       emoji: '💼', cls: 'tag-work'     },
+    private:  { label: 'プライベート', emoji: '🏠', cls: 'tag-private'  },
+    marathon: { label: 'マラソン',     emoji: '🏃', cls: 'tag-marathon' },
+    other:    { label: 'その他',       emoji: '✨', cls: 'tag-other'    },
+  };
+
+  let selectedTag = null;
+  let recognition = null;
+  let isRecording = false;
+  let currentFilter = 'all';
+  let ideas = JSON.parse(localStorage.getItem('app-ideas') || '[]');
+
+  // --- Speech API setup ---
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    document.getElementById('no-speech-warning').style.display = 'block';
+    document.getElementById('mic-btn').disabled = true;
+    document.getElementById('mic-btn').style.opacity = '0.4';
+    document.getElementById('mic-status').textContent = '音声入力非対応';
+  } else {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'ja-JP';
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    let finalTranscript = '';
+
+    recognition.onstart = () => {
+      document.getElementById('mic-status').textContent = '🔴 録音中...';
+      document.getElementById('mic-status').classList.add('active');
+      document.getElementById('mic-btn').classList.add('recording');
+      document.getElementById('mic-btn').textContent = '⏹';
+    };
+
+    recognition.onresult = (e) => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i].transcript;
+        if (e.results[i].isFinal) finalTranscript += t;
+        else interim += t;
+      }
+      document.getElementById('transcript-box').value = finalTranscript + interim;
+    };
+
+    recognition.onend = () => {
+      isRecording = false;
+      document.getElementById('mic-status').textContent = 'ボタンを押して話す';
+      document.getElementById('mic-status').classList.remove('active');
+      document.getElementById('mic-btn').classList.remove('recording');
+      document.getElementById('mic-btn').textContent = '🎤';
+      finalTranscript = document.getElementById('transcript-box').value;
+    };
+
+    recognition.onerror = (e) => {
+      isRecording = false;
+      document.getElementById('mic-status').textContent = 'エラー: ' + e.error;
+      document.getElementById('mic-btn').classList.remove('recording');
+      document.getElementById('mic-btn').textContent = '🎤';
+    };
+  }
+
+  function toggleRecording() {
+    if (!recognition) return;
+    if (isRecording) {
+      recognition.stop();
+      isRecording = false;
+    } else {
+      document.getElementById('transcript-box').value = '';
+      recognition.start();
+      isRecording = true;
+    }
+  }
+
+  // --- Tag selection ---
+  function selectTag(btn) {
+    document.querySelectorAll('.tag-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedTag = btn.dataset.tag;
+  }
+
+  // --- Save idea ---
+  function saveIdea() {
+    if (!selectedTag) { showToast('カテゴリを選択してください'); return; }
+    const text = document.getElementById('transcript-box').value.trim();
+    if (!text) { showToast('アイデアを入力してください'); return; }
+
+    const idea = {
+      id:   Date.now(),
+      tag:  selectedTag,
+      text: text,
+      date: new Date().toLocaleString('ja-JP'),
+    };
+    ideas.unshift(idea);
+    persist();
+    renderList();
+    clearInput();
+    showToast('✅ 保存しました');
+  }
+
+  function clearInput() {
+    if (isRecording) { recognition.stop(); isRecording = false; }
+    document.getElementById('transcript-box').value = '';
+  }
+
+  // --- Render list ---
+  function renderList() {
+    const list = document.getElementById('idea-list');
+    const filtered = currentFilter === 'all' ? ideas : ideas.filter(i => i.tag === currentFilter);
+
+    document.getElementById('idea-count').textContent = `${filtered.length} 件`;
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state"><span class="big-emoji">💭</span>まだアイデアがありません</div>`;
+      return;
+    }
+
+    list.innerHTML = filtered.map(idea => {
+      const t = TAG_LABELS[idea.tag];
+      const done = !!idea.checkedAt;
+      const doneDate = done ? new Date(idea.checkedAt).toLocaleDateString('ja-JP') : '';
+      const deleteDate = done
+        ? new Date(idea.checkedAt + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('ja-JP')
+        : '';
+      return `
+        <div class="idea-item${done ? ' done' : ''}" id="item-${idea.id}">
+          <button class="idea-checkbox${done ? ' checked' : ''}"
+                  onclick="toggleCheck(${idea.id})"
+                  title="${done ? 'チェックを外す' : '完了にする'}">
+            ${done ? '✓' : ''}
+          </button>
+          <div style="flex:1;">
+            <div class="idea-meta">
+              <span class="idea-tag ${t.cls}">${t.emoji} ${t.label}</span>
+              <span class="idea-date">${idea.date}</span>
+              ${done ? `<span class="idea-date-done">✓ ${doneDate}済・${deleteDate}に自動削除</span>` : ''}
+            </div>
+            <div class="idea-text">${escapeHtml(idea.text)}</div>
+          </div>
+          <div class="idea-actions">
+            <button class="icon-btn" onclick="deleteIdea(${idea.id})" title="削除">🗑️</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function toggleCheck(id) {
+    const idea = ideas.find(i => i.id === id);
+    if (!idea) return;
+    if (idea.checkedAt) {
+      idea.checkedAt = null;
+    } else {
+      idea.checkedAt = Date.now();
+    }
+    persist();
+    renderList();
+  }
+
+  function deleteIdea(id) {
+    if (!confirm('このアイデアを削除しますか？')) return;
+    ideas = ideas.filter(i => i.id !== id);
+    persist();
+    renderList();
+    showToast('削除しました');
+  }
+
+  function purgeExpired() {
+    const oneWeek = 7 * 24 * 60 * 60 * 1000;
+    const before = ideas.length;
+    ideas = ideas.filter(i => !i.checkedAt || (Date.now() - i.checkedAt) < oneWeek);
+    if (ideas.length < before) {
+      persist();
+    }
+  }
+
+  // --- Filter ---
+  function setFilter(btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    renderList();
+  }
+
+  // --- CSV export ---
+  function exportCSV() {
+    if (ideas.length === 0) { showToast('エクスポートするデータがありません'); return; }
+
+    const header = ['ID', 'カテゴリ', 'アイデア', '日時'];
+    const rows = ideas.map(i => [
+      i.id,
+      TAG_LABELS[i.tag].label,
+      `"${i.text.replace(/"/g, '""')}"`,
+      i.date,
+    ]);
+    const csv = '﻿' + [header, ...rows].map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `app-ideas-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('📥 CSVを出力しました');
+  }
+
+  // --- Utils ---
+  function persist() {
+    localStorage.setItem('app-ideas', JSON.stringify(ideas));
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // --- Init ---
+  purgeExpired();
+  renderList();
+</script>
+</body>
+</html>
