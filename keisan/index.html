@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>けいさんアプリ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{--bg:#f1f2f6;--card:#fff;--ink:#1d1f2a;--mute:#6b7280;--accent:#4f5dff;--ok:#4f9a64;--ng:#d6455d;--line:#dfe2ea;--key:#f3f4f6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:1040px;margin:0 auto;padding:16px}
+.card{background:var(--card);border-radius:20px;box-shadow:0 1px 3px rgba(20,24,40,.08);padding:20px}
+button{font:inherit;cursor:pointer;color:inherit}
+button:disabled{cursor:default}
+
+/* header */
+.top{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.btn-rec{border:2px solid var(--accent);color:var(--accent);background:#fff;border-radius:10px;padding:12px 16px;font-weight:700;font-size:14px}
+.btn-rec:active{background:#eef0ff}
+.stats{display:flex;gap:18px;flex:1;flex-wrap:wrap;align-items:center}
+.stat small{display:block;font-size:11px;color:var(--mute);margin-bottom:2px}
+.stat b{font-size:20px}
+.sep{width:1px;align-self:stretch;background:var(--line)}
+.rank{text-align:center}
+.rank small{display:block;font-size:11px;color:var(--mute);margin-bottom:2px}
+.rank i{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;background:#c4c8d4;color:#fff;font-style:normal;font-weight:800;font-size:20px}
+.rank i.S{background:#f2a900}.rank i.A{background:var(--accent)}.rank i.B{background:var(--ok)}.rank i.C{background:#e58a2f}.rank i.D{background:#9a8f97}
+.progress{height:6px;border-radius:3px;background:#d9dbe3;margin:14px 0;overflow:hidden}
+.progress div{height:100%;background:var(--accent);width:0;transition:width .3s}
+
+/* question card */
+.qcard{padding:44px 24px 36px;text-align:center}
+.qno{color:var(--mute);font-size:13px;margin-bottom:14px}
+.qtext{font-size:23px;font-weight:700;line-height:1.7;max-width:640px;margin:0 auto 26px}
+.ask{font-size:13px;color:var(--mute);margin-bottom:12px}
+.opgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:380px;margin:0 auto}
+.op{background:var(--key);border:2px solid var(--line);border-radius:14px;padding:16px 8px;font-weight:700;font-size:18px}
+.op:active{transform:scale(.98)}
+.op.ok{border-color:var(--ok);color:var(--ok);background:#eef7f0}
+.op.ng{border-color:var(--ng);color:var(--ng);background:#fdeff2}
+.msg{min-height:26px;margin-top:18px;font-weight:700;font-size:15px}
+.msg.ok{color:var(--ok)}.msg.ng{color:var(--ng)}
+.foot{text-align:center;font-size:12px;color:var(--mute);margin:18px 0 6px}
+.foot a{color:var(--accent);cursor:pointer;margin:0 8px}
+
+/* answer layout */
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.panel-l{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:380px}
+.expr{font-size:44px;font-weight:800;letter-spacing:.02em;margin:10px 0 18px}
+.expr.small{font-size:16px;font-weight:700;line-height:1.7;margin:8px 0 14px}
+.receipt{width:100%;max-width:260px;font-size:14px;text-align:left;margin:6px 0 12px;border-top:1px dashed var(--line)}
+.receipt div{display:flex;justify-content:space-between;padding:5px 2px;border-bottom:1px dashed var(--line)}
+.ansbox{min-width:170px;min-height:52px;border:2px solid var(--line);border-radius:12px;background:var(--key);padding:6px 16px;font-size:28px;font-weight:800;color:#9aa0ae;display:inline-block}
+.ansbox.has{color:var(--accent);background:#fff;border-color:var(--accent)}
+.ansbox.ok{color:var(--ok);border-color:var(--ok);background:#eef7f0}
+.ansbox.ng{color:var(--ng);border-color:var(--ng);background:#fdeff2}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-content:start}
+.pad button{height:62px;border:0;border-radius:12px;background:var(--key);font-size:24px;font-weight:700}
+.pad button:active{background:#e4e6ec}
+.pad .clr{color:var(--ng);font-size:16px}
+.pad .submit{grid-column:1/-1;height:62px;background:var(--accent);color:#fff;font-size:18px}
+.pad .submit:disabled{background:#c4c8d4}
+.calc{background:#23252f;border-radius:16px;padding:14px;color:#fff}
+.calc .cap{font-size:11px;color:#a8adbd}
+.calc .disp{text-align:right;font-size:34px;font-weight:700;min-height:62px;padding:10px 6px 6px;overflow:hidden}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.keys button{height:48px;border:0;border-radius:10px;background:#363946;color:#fff;font-size:19px;font-weight:700}
+.keys button.f{background:#555968}
+.keys button.o{background:#5865f2}
+.keys button.z{grid-column:span 2}
+.keys button:active{filter:brightness(1.25)}
+
+/* menu */
+.hero{text-align:center;padding:30px 10px 10px}
+.hero h1{font-size:28px;margin:0 0 6px}
+.hero p{margin:0;color:var(--mute);font-size:14px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+.mcard{border:2px solid transparent;text-align:center;padding:36px 20px;background:#fff;border-radius:22px;box-shadow:0 1px 3px rgba(20,24,40,.08);transition:.15s}
+.mcard:hover{border-color:var(--accent);transform:translateY(-2px)}
+.mcard .em{font-size:64px;line-height:1.1}
+.mcard h2{font-size:21px;margin:14px 0 8px}
+.mcard p{margin:0;font-size:13px;color:var(--mute);line-height:1.7}
+
+/* theme / shop */
+.seg{display:inline-flex;border:2px solid var(--accent);border-radius:12px;overflow:hidden}
+.seg button{border:0;background:#fff;color:var(--accent);padding:10px 22px;font-weight:700;font-size:16px}
+.seg button.on{background:var(--accent);color:#fff}
+.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.shop{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
+.money{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.money b{font-size:22px}
+.money .left b{color:var(--accent)}
+.bar{height:10px;border-radius:5px;background:#e6e8ef;overflow:hidden;margin-top:10px}
+.bar div{height:100%;background:var(--accent);transition:width .2s}
+.bar div.warn{background:#e58a2f}
+.cat{margin-top:16px}
+.cat h3{font-size:15px;margin:0 0 8px;display:flex;gap:8px;align-items:center}
+.tag{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;background:#ffe9e9;color:var(--ng)}
+.tag.done{background:#e8f5ec;color:var(--ok)}
+.tag.opt{background:#eef0f6;color:var(--mute)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.item{border:2px solid var(--line);border-radius:14px;padding:10px;text-align:center;background:#fff}
+.item.sel{border-color:var(--accent);background:#f3f4ff}
+.item .e{font-size:34px;line-height:1.2}
+.item .n{font-weight:700;font-size:14px}
+.item .p{font-size:13px;color:var(--mute);margin-bottom:6px}
+.qty{display:flex;justify-content:center;align-items:center;gap:10px}
+.qty button{width:34px;height:34px;border-radius:50%;border:0;background:var(--key);font-size:20px;font-weight:700;line-height:1}
+.qty button.plus{background:var(--accent);color:#fff}
+.qty button:disabled{opacity:.35}
+.qty span{min-width:20px;font-weight:800;font-size:17px}
+.basket{position:sticky;top:12px}
+.basket h3{margin:0 0 8px;font-size:15px}
+.bl{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.req{font-size:12px;margin:10px 0;line-height:1.9}
+.req .okc{color:var(--ok)}.req .ngc{color:var(--ng)}
+.go{width:100%;border:0;background:var(--accent);color:#fff;border-radius:12px;padding:14px;font-weight:800;font-size:16px;margin-top:8px}
+.go:disabled{background:#c4c8d4}
+.warnmsg{color:var(--ng);font-size:12px;min-height:18px;margin-top:6px}
+
+/* result */
+.result{text-align:center;padding:26px 20px}
+.result h2{margin:0 0 4px;font-size:22px}
+.illust{max-width:520px;margin:10px auto;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.illust svg{display:block;width:100%;height:auto}
+.score{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin:14px 0}
+.score div{font-size:12px;color:var(--mute)}
+.score b{display:block;font-size:24px;color:var(--ink)}
+.rbtn{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.rbtn button{border:0;border-radius:12px;padding:13px 22px;font-weight:700;font-size:15px;background:var(--accent);color:#fff}
+.rbtn button.sub{background:#fff;color:var(--accent);border:2px solid var(--accent)}
+.rlist{max-width:420px;margin:8px auto;text-align:left;font-size:13px}
+
+/* modal / toast */
+.modal{position:fixed;inset:0;background:rgba(20,24,40,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal .box{background:#fff;border-radius:18px;max-width:760px;width:100%;max-height:86vh;overflow:auto;padding:20px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.gal figure{margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:12px}
+.gal img{width:100%;display:block}
+.gal figcaption{padding:8px}
+.gal button{margin-top:6px;border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:8px;padding:4px 10px;font-weight:700}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#23252f;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;z-index:20}
+
+@media(max-width:860px){
+ .three{grid-template-columns:1fr}
+ .panel-l{min-height:0;padding:12px 0}
+ .shop{grid-template-columns:1fr}
+ .basket{position:static}
+ .themes,.menu{grid-template-columns:1fr}
+ .expr{font-size:36px}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div id="hdr"></div>
+  <div id="main"></div>
+  <div class="foot" id="foot"></div>
+</div>
+<div id="overlay"></div>
+
+<script>
+/* ---------- utils ---------- */
+const $ = s => document.querySelector(s);
+const fmt = n => Number(n).toLocaleString('ja-JP');
+const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const OPS = [['+', '足し算（+）'], ['−', '引き算（−）'], ['×', '掛け算（×）'], ['÷', '割り算（÷）']];
+const SYM = {'+': '+', '−': '-', '×': '×', '÷': '÷'};
+
+/* ---------- global state ---------- */
+let app = null;               // 'calc' | 'pocket' | null
+let stats = freshStats();
+let quiz = null;
+let shop = null;
+let uid = 0;
+function freshStats() { return {asked: 0, correct: 0, fastest: null, opTry: 0, opOk: 0}; }
+
+/* ---------- calculator widget ---------- */
+const calc = {cur: '0', prev: null, op: null, fresh: true};
+function calcReset() { calc.cur = '0'; calc.prev = null; calc.op = null; calc.fresh = true; }
+function calcCompute(a, op, b) {
+  let r = op === '+' ? a + b : op === '−' ? a - b : op === '×' ? a * b : (b === 0 ? NaN : a / b);
+  return Number.isFinite(r) ? String(parseFloat(r.toPrecision(10))) : 'エラー';
+}
+function calcKey(k) {
+  if (calc.cur === 'エラー' && k !== 'C') calcReset();
+  if (/^[0-9]$/.test(k)) {
+    if (calc.fresh) { calc.cur = k; calc.fresh = false; }
+    else if (calc.cur.replace(/[-.]/g, '').length < 12) calc.cur = calc.cur === '0' ? k : calc.cur + k;
+  } else if (k === '.') {
+    if (calc.fresh) { calc.cur = '0.'; calc.fresh = false; }
+    else if (!calc.cur.includes('.')) calc.cur += '.';
+  } else if (k === 'C') calcReset();
+  else if (k === '⌫') {
+    if (!calc.fresh) calc.cur = calc.cur.length > 1 && calc.cur !== '-0' ? calc.cur.slice(0, -1) : '0';
+    if (calc.cur === '-' ) calc.cur = '0';
+  } else if (k === '±') {
+    if (calc.cur !== '0') calc.cur = calc.cur.startsWith('-') ? calc.cur.slice(1) : '-' + calc.cur;
+  } else if (k === '=') {
+    if (calc.op !== null && calc.prev !== null) {
+      calc.cur = calcCompute(calc.prev, calc.op, parseFloat(calc.cur));
+      calc.prev = null; calc.op = null; calc.fresh = true;
+    }
+  } else { // operator
+    if (calc.op !== null && calc.prev !== null && !calc.fresh) {
+      calc.cur = calcCompute(calc.prev, calc.op, parseFloat(calc.cur));
+    }
+    calc.prev = parseFloat(calc.cur); calc.op = k; calc.fresh = true;
+    if (calc.cur === 'エラー') calcReset();
+  }
+  const d = $('#cdisp');
+  if (d) d.textContent = calc.cur.length > 14 ? parseFloat(calc.cur).toExponential(4) : (isNaN(calc.cur) ? calc.cur : calc.cur);
+}
+function calcHTML() {
+  const K = (k, c = '', t = k) => `<button class="${c}" data-a="ckey" data-k="${k}">${t}</button>`;
+  return `<div class="calc"><div class="cap">電卓（けいさん用）</div><div class="disp" id="cdisp">${calc.cur}</div>
+  <div class="keys">${K('C','f')}${K('⌫','f')}${K('±','f')}${K('÷','o')}
+  ${K('7')}${K('8')}${K('9')}${K('×','o')}${K('4')}${K('5')}${K('6')}${K('−','o')}
+  ${K('1')}${K('2')}${K('3')}${K('+','o')}${K('0','z')}${K('.')}${K('=','o')}</div></div>`;
+}
+
+/* ---------- header ---------- */
+function rankOf() {
+  if (!stats.asked) return '—';
+  const r = stats.correct / stats.asked;
+  if (r >= 1 && stats.asked >= 5 && stats.fastest != null && stats.fastest <= 6) return 'S';
+  if (r >= .8) return 'A'; if (r >= .6) return 'B'; if (r >= .4) return 'C'; return 'D';
+}
+function renderHeader(progress = 0) {
+  const h = $('#hdr');
+  if (!app) { h.innerHTML = ''; return; }
+  const s = stats, rk = rankOf();
+  h.innerHTML = `<div class="card top">
+    <button class="btn-rec" data-a="rec">画面を記録する</button>
+    <div class="stats">
+      <div class="stat"><small>出題数</small><b>${s.asked}</b></div>
+      <div class="stat"><small>正解数</small><b>${s.correct}</b></div>
+      <div class="stat"><small>最速正解</small><b>${s.fastest == null ? '—' : s.fastest.toFixed(1) + '秒'}</b></div>
+      <div class="stat"><small>正解率</small><b>${s.asked ? Math.round(s.correct / s.asked * 100) + '%' : '—'}</b></div>
+      <div class="sep"></div>
+      <div class="stat"><small>計算方法 正解数</small><b>${s.opOk}</b></div>
+      <div class="stat"><small>計算方法 正解率</small><b>${s.opTry ? Math.round(s.opOk / s.opTry * 100) + '%' : '—'}</b></div>
+    </div>
+    <div class="rank"><small>ランク</small><i class="${rk}">${rk}</i></div>
+  </div><div class="progress"><div style="width:${Math.round(progress * 100)}%"></div></div>`;
+}
+function setFoot(t) {
+  $('#foot').innerHTML = (t ? t + '<br><br>' : '') +
+    (app ? '<a data-a="home">← はじめの画面へ</a>' : '') + '<a data-a="gallery">きろくを見る</a>';
+}
+
+/* ---------- menu ---------- */
+function showMenu() {
+  app = null; quiz = null; shop = null;
+  renderHeader();
+  $('#main').innerHTML = `<div class="hero"><h1>けいさんアプリ</h1><p>あそびたいアプリをえらんでね</p></div>
+  <div class="menu">
+    <button class="mcard" data-a="start1"><div class="em">🧮</div><h2>計算方法を選ぶアプリを使用する</h2>
+      <p>文章題を読んで、足し算・引き算・掛け算・割り算から<br>正しい計算方法を選び、けいさんして答えます。</p></button>
+    <button class="mcard" data-a="start2"><div class="em">🛍️</div><h2>お小遣いで好きなものを作ろう</h2>
+      <p>お小遣いの中で材料を選んで、カレー・パフェ・<br>プラレールの駅を作ろう。お会計のけいさんもあるよ。</p></button>
+  </div>`;
+  setFoot('');
+}
+
+/* =========================================================
+   Quiz engine (shared by both apps)
+   question: {text, op, ans, disp(html), unit}
+   ========================================================= */
+function startQuiz(questions, opts) {
+  quiz = {qs: questions, i: 0, phase: 'op', t0: performance.now(), input: '', locked: false, wrong: new Set(),
+          opts: opts || {}, fb: null};
+  renderQuiz();
+}
+function renderQuiz() {
+  const q = quiz.qs[quiz.i], n = quiz.qs.length;
+  renderHeader((quiz.i + (quiz.phase === 'ans' ? .5 : 0)) / n);
+  if (quiz.phase === 'op') {
+    $('#main').innerHTML = `<div class="card qcard">
+      <div class="qno">${quiz.i + 1}問目 / ${n}問</div>
+      <div class="qtext">${q.text}</div>
+      <div class="ask">どのけいさんを使いますか？</div>
+      <div class="opgrid">${OPS.map(([o, l]) => `<button class="op" data-a="op" data-op="${o}">${l}</button>`).join('')}</div>
+      <div class="msg" id="msg"></div></div>`;
+    setFoot(quiz.opts.foot || '文章題を読んで、使うけいさんの方法（足し算・引き算・掛け算・割り算）を選びましょう。正しく選べたら、実際にけいさんして答えを入力します。');
+  } else {
+    const fb = quiz.fb;
+    const boxCls = 'ansbox' + (fb ? (fb.ok ? ' ok' : ' ng') : (quiz.input ? ' has' : ''));
+    $('#main').innerHTML = `<div class="three">
+      <div class="card panel-l">
+        <div class="qno">${quiz.i + 1}問目 / ${n}問</div>
+        ${q.disp}
+        <div class="${boxCls}" id="ansbox">${quiz.input ? fmt(quiz.input) + (q.unit || '') : 'こたえ'}</div>
+        <div class="msg ${fb ? (fb.ok ? 'ok' : 'ng') : ''}" id="msg">${fb ? fb.text : ''}</div>
+      </div>
+      <div class="card"><div class="pad">
+        ${[7,8,9,4,5,6,1,2,3].map(d => `<button data-a="num" data-d="${d}">${d}</button>`).join('')}
+        <button class="clr" data-a="clr">クリア</button><button data-a="num" data-d="0">0</button><button data-a="bs">⌫</button>
+        <button class="submit" id="submit" data-a="submit" ${quiz.input && !fb ? '' : 'disabled'}>こたえる</button>
+      </div></div>
+      ${calcHTML()}
+    </div>`;
+    setFoot(quiz.opts.foot2 || '文章題を読んで、使うけいさんの方法を選びましょう。正しく選べたら、実際にけいさんして答えを入力します。');
+  }
+}
+function quizOp(op) {
+  if (quiz.phase !== 'op' || quiz.locked) return;
+  const q = quiz.qs[quiz.i];
+  const btn = document.querySelector(`.op[data-op="${op}"]`);
+  stats.opTry++;
+  if (op === q.op) {
+    stats.opOk++; quiz.locked = true;
+    btn.classList.add('ok');
+    $('#msg').className = 'msg ok'; $('#msg').textContent = 'せいかい！では、けいさんしてみよう。';
+    renderHeader(quiz.i / quiz.qs.length);
+    setTimeout(() => { quiz.phase = 'ans'; quiz.locked = false; calcReset(); renderQuiz(); window.scrollTo({top: 0}); }, 850);
+  } else {
+    btn.classList.add('ng'); btn.disabled = true;
+    $('#msg').className = 'msg ng'; $('#msg').textContent = 'ちがうよ。もういちど考えてみよう。';
+    renderHeader(quiz.i / quiz.qs.length);
+  }
+}
+function quizInput(fn) {
+  if (!quiz || quiz.phase !== 'ans' || quiz.fb) return;
+  fn();
+  const q = quiz.qs[quiz.i];
+  const b = $('#ansbox'); b.textContent = quiz.input ? fmt(quiz.input) + (q.unit || '') : 'こたえ';
+  b.className = 'ansbox' + (quiz.input ? ' has' : '');
+  $('#submit').disabled = !quiz.input;
+}
+function quizSubmit() {
+  if (!quiz || quiz.phase !== 'ans' || quiz.fb || !quiz.input) return;
+  const q = quiz.qs[quiz.i];
+  const secs = (performance.now() - quiz.t0) / 1000;
+  const ok = Number(quiz.input) === q.ans;
+  stats.asked++;
+  if (ok) { stats.correct++; stats.fastest = stats.fastest == null ? secs : Math.min(stats.fastest, secs); }
+  quiz.results = quiz.results || [];
+  quiz.results.push({ok, secs});
+  quiz.fb = {ok, text: ok ? 'せいかい！' : `ざんねん… こたえは ${fmt(q.ans)}${q.unit || ''}`};
+  renderQuiz();
+  setTimeout(() => {
+    if (!quiz) return;
+    quiz.i++;
+    if (quiz.i >= quiz.qs.length) { renderHeader(1); quiz.opts.onDone(quiz.results); }
+    else { quiz.phase = 'op'; quiz.fb = null; quiz.input = ''; quiz.t0 = performance.now(); renderQuiz(); }
+  }, 1500);
+}
+
+/* =========================================================
+   App 1 : 計算方法を選ぶ
+   ========================================================= */
+const TEMPLATES = {
+  '+': [
+    (a, b) => `公園に${a}人の子どもがいました。あとから${b}人来ました。ぜんぶで何人ですか。`,
+    (a, b) => `かごにりんごが${a}こ、みかんが${b}こ入っています。くだものはぜんぶで何こですか。`,
+    (a, b) => `${a}円のノートと${b}円のえんぴつを買いました。合計はいくらですか。`,
+    (a, b) => `きのうは${a}ページ、今日は${b}ページ本を読みました。あわせて何ページですか。`
+  ],
+  '−': [
+    (a, b) => `広場に${a}人いました。${b}人帰りました。残っているのは何人ですか。`,
+    (a, b) => `${a}ページの本があります。今日までに${b}ページ読みました。残りは何ページですか。`,
+    (a, b) => `${a}円持っていました。${b}円のおかしを買いました。のこりは何円ですか。`,
+    (a, b) => `赤いシールが${a}まい、青いシールが${b}まいあります。赤いシールは青いシールより何まい多いですか。`
+  ],
+  '×': [
+    (a, b) => `1つ${a}円のあめを${b}こ買います。代金はいくらですか。`,
+    (a, b) => `1箱に${a}こ入ったクッキーが${b}箱あります。クッキーはぜんぶで何こですか。`,
+    (a, b) => `1人に${a}まいずつ、${b}人にシールを配ります。シールは何まいいりますか。`,
+    (a, b) => `1日に${a}ページずつ、${b}日間本を読みます。ぜんぶで何ページ読みますか。`
+  ],
+  '÷': [
+    (a, b) => `${a}このあめを${b}人で同じ数ずつ分けます。1人分は何こですか。`,
+    (a, b) => `${a}cmのリボンを${b}cmずつ切ります。何本できますか。`,
+    (a, b) => `${a}人を${b}人ずつのグループに分けます。何グループできますか。`,
+    (a, b) => `${a}円を${b}人で同じ金額ずつ出し合います。1人いくらですか。`
+  ]
+};
+function makeCalcQuestions(n) {
+  const ops = [];
+  while (ops.length < n) ops.push(...['+', '−', '×', '÷'].sort(() => Math.random() - .5));
+  ops.length = n;
+  ops.sort(() => Math.random() - .5);
+  const lastT = {};
+  return ops.map(op => {
+    let a, b, ans;
+    if (op === '+') { a = rnd(120, 899); b = rnd(100, 899); ans = a + b; }
+    else if (op === '−') { a = rnd(300, 999); b = rnd(100, a - 50); ans = a - b; }
+    else if (op === '×') { a = rnd(3, 30); b = rnd(2, 9); ans = a * b; }
+    else { b = rnd(2, 9); ans = rnd(3, 25); a = b * ans; }
+    let ti; do { ti = rnd(0, 3); } while (ti === lastT[op]);
+    lastT[op] = ti;
+    return {op, ans, text: TEMPLATES[op][ti](a, b), disp: `<div class="expr">${a} ${SYM[op]} ${b}</div>`};
+  });
+}
+function startApp1() {
+  app = 'calc'; stats = freshStats();
+  startQuiz(makeCalcQuestions(10), {onDone: finishApp1});
+}
+function finishApp1(results) {
+  const ok = results.filter(r => r.ok).length;
+  const rk = rankOf();
+  $('#main').innerHTML = `<div class="card result">
+    <h2>10問おわり！</h2>
+    <div class="score"><div>せいかい<b>${ok} / ${results.length}</b></div><div>最速正解<b>${stats.fastest == null ? '—' : stats.fastest.toFixed(1) + '秒'}</b></div>
+    <div>計算方法 正解率<b>${stats.opTry ? Math.round(stats.opOk / stats.opTry * 100) : 0}%</b></div><div>ランク<b>${rk}</b></div></div>
+    <p style="color:var(--mute);font-size:14px">「画面を記録する」でこの結果を保存できます。</p>
+    <div class="rbtn"><button data-a="start1">もういちど</button><button class="sub" data-a="home">はじめの画面へ</button></div></div>`;
+  setFoot('');
+}
+
+/* =========================================================
+   App 2 : お小遣いで好きなものを作ろう
+   ========================================================= */
+const THEMES = {
+  curry: {
+    name: 'カレー', title: 'カレーを作ろう', emoji: '🍛', desc: 'お肉・野菜・ルウ・ごはんをそろえよう',
+    cats: [
+      {id: 'meat', name: 'おにく', min: 1, hint: '1こ以上', items: [
+        {id: 'chicken', name: 'とりにく', price: 250, e: '🍗'}, {id: 'beef', name: 'ぎゅうにく', price: 400, e: '🥩'}, {id: 'pork', name: 'ぶたにく', price: 300, e: '🥓'}]},
+      {id: 'veg', name: 'やさい', min: 2, hint: 'あわせて2こ以上', items: [
+        {id: 'carrot', name: 'にんじん', price: 80, e: '🥕'}, {id: 'potato', name: 'じゃがいも', price: 100, e: '🥔'}, {id: 'onion', name: 'たまねぎ', price: 90, e: '🧅'},
+        {id: 'pepper', name: 'ピーマン', price: 70, e: '🫑'}, {id: 'eggplant', name: 'なす', price: 120, e: '🍆'}, {id: 'pumpkin', name: 'かぼちゃ', price: 150, e: '🎃'}]},
+      {id: 'roux', name: 'ルウ', min: 1, hint: '1こ以上', items: [
+        {id: 'sweet', name: 'あまくちルウ', price: 200, e: '🍲'}, {id: 'hot', name: 'からくちルウ', price: 220, e: '🌶️'}]},
+      {id: 'rice', name: 'ごはん', min: 1, hint: '1こ以上', items: [
+        {id: 'rice', name: 'ごはん', price: 150, e: '🍚'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'egg', name: 'ゆでたまご', price: 60, e: '🥚'}, {id: 'cheese', name: 'チーズ', price: 120, e: '🧀'}, {id: 'fuku', name: 'ふくじんづけ', price: 90, e: '🥬'}]}
+    ]
+  },
+  parfait: {
+    name: 'パフェ', title: 'パフェを作ろう', emoji: '🍨', desc: 'グラスにアイスとフルーツをもりつけよう',
+    cats: [
+      {id: 'glass', name: 'うつわ', min: 1, hint: '1こ', items: [
+        {id: 'glass', name: 'グラス', price: 150, e: '🥃'}, {id: 'jumbo', name: 'ジャンボグラス', price: 250, e: '🏺'}]},
+      {id: 'base', name: 'した（ベース）', min: 1, hint: '1こ以上', items: [
+        {id: 'corn', name: 'コーンフレーク', price: 100, e: '🌽'}, {id: 'granola', name: 'グラノーラ', price: 120, e: '🥣'}, {id: 'pudding', name: 'プリン', price: 150, e: '🍮'}]},
+      {id: 'ice', name: 'アイス', min: 1, hint: '1こ以上', items: [
+        {id: 'vanilla', name: 'バニラ', price: 130, e: '🍦'}, {id: 'choco', name: 'チョコ', price: 130, e: '🍫'}, {id: 'berry', name: 'いちごアイス', price: 140, e: '🍧'}, {id: 'matcha', name: 'まっちゃ', price: 150, e: '🍵'}]},
+      {id: 'fruit', name: 'フルーツ', min: 1, hint: '1こ以上', items: [
+        {id: 'strawberry', name: 'いちご', price: 200, e: '🍓'}, {id: 'banana', name: 'バナナ', price: 100, e: '🍌'}, {id: 'mikan', name: 'みかん', price: 90, e: '🍊'},
+        {id: 'cherry', name: 'さくらんぼ', price: 150, e: '🍒'}, {id: 'kiwi', name: 'キウイ', price: 130, e: '🥝'}]},
+      {id: 'cream', name: 'クリーム', min: 1, hint: '1こ以上', items: [
+        {id: 'whip', name: 'ホイップ', price: 120, e: '☁️'}, {id: 'custard', name: 'カスタード', price: 100, e: '🍯'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'sauce', name: 'チョコソース', price: 60, e: '🟤'}, {id: 'wafer', name: 'ウエハース', price: 80, e: '🧇'}, {id: 'stick', name: 'スティックチョコ', price: 90, e: '🥢'}, {id: 'sprinkle', name: 'スプリンクル', price: 50, e: '✨'}]}
+    ]
+  },
+  plarail: {
+    name: 'プラレールの駅', title: 'プラレールで駅を作ろう', emoji: '🚉', desc: 'レールと駅と電車をそろえてジオラマに',
+    cats: [
+      {id: 'rail', name: 'レール', min: 2, hint: 'あわせて2こ以上', items: [
+        {id: 'straight', name: 'まっすぐレール', price: 80, e: '➖'}, {id: 'curve', name: 'カーブレール', price: 100, e: '⤴️'}]},
+      {id: 'station', name: 'えき', min: 1, hint: '1こ以上', items: [
+        {id: 'building', name: 'えきしゃ', price: 300, e: '🚉'}, {id: 'platform', name: 'ホーム', price: 200, e: '🚏'}]},
+      {id: 'train', name: 'でんしゃ', min: 1, hint: '1こ以上', items: [
+        {id: 'shinkansen', name: 'しんかんせん', price: 400, e: '🚄'}, {id: 'train', name: 'でんしゃ', price: 300, e: '🚃'}, {id: 'sl', name: 'きかんしゃ', price: 350, e: '🚂'}]},
+      {id: 'extra', name: 'そえもの', min: 0, hint: 'おこのみで', items: [
+        {id: 'crossing', name: 'ふみきり', price: 150, e: '🚧'}, {id: 'tunnel', name: 'トンネル', price: 250, e: '⛰️'}, {id: 'tree', name: '木', price: 40, e: '🌳'},
+        {id: 'signal', name: 'しんごう', price: 80, e: '🚦'}, {id: 'bridge', name: 'はし', price: 200, e: '🌉'}]}
+    ]
+  }
+};
+const MAXQ = 4;
+
+function startApp2() {
+  app = 'pocket'; stats = freshStats(); quiz = null;
+  shop = {step: 'theme', budget: 1000, theme: null, qty: {}};
+  renderTheme();
+}
+function renderTheme() {
+  renderHeader();
+  $('#main').innerHTML = `<div class="card" style="text-align:center;padding:30px 20px">
+    <div class="ask">まず、お小遣いの金額をえらぼう</div>
+    <div class="seg">${[1000, 2000].map(b => `<button data-a="budget" data-b="${b}" class="${shop.budget === b ? 'on' : ''}">${fmt(b)}円</button>`).join('')}</div>
+    <div class="ask" style="margin-top:22px">なにを作る？</div>
+    <div class="themes">${Object.entries(THEMES).map(([k, t]) => `<button class="mcard" data-a="theme" data-t="${k}" style="padding:26px 12px">
+      <div class="em" style="font-size:52px">${t.emoji}</div><h2 style="font-size:18px">${t.title}</h2><p>${t.desc}</p></button>`).join('')}</div>
+  </div>`;
+  setFoot('お小遣いの中で材料を選んで、お会計のけいさんをしよう。');
+}
+function shopLines() {
+  const T = THEMES[shop.theme], out = [];
+  T.cats.forEach(c => c.items.forEach(it => { const q = shop.qty[it.id] || 0; if (q > 0) out.push({...it, q, cat: c.id}); }));
+  return out;
+}
+const shopTotal = () => shopLines().reduce((s, l) => s + l.price * l.q, 0);
+function catCount(c) { return c.items.reduce((s, it) => s + (shop.qty[it.id] || 0), 0); }
+function shopReady() { return THEMES[shop.theme].cats.every(c => catCount(c) >= c.min); }
+
+function renderShop(warn) {
+  const y = window.scrollY;
+  const T = THEMES[shop.theme];
+  renderHeader();
+  const catsHTML = T.cats.map(c => {
+    const have = catCount(c);
+    const tag = c.min === 0 ? `<span class="tag opt">${c.hint}</span>` : (have >= c.min ? `<span class="tag done">そろった ✓</span>` : `<span class="tag">${c.hint}</span>`);
+    return `<div class="cat"><h3>${c.name} ${tag}</h3><div class="items">${c.items.map(it => {
+      const q = shop.qty[it.id] || 0;
+      return `<div class="item ${q ? 'sel' : ''}"><div class="e">${it.e}</div><div class="n">${it.name}</div><div class="p">${fmt(it.price)}円</div>
+        <div class="qty"><button data-a="dec" data-id="${it.id}" ${q ? '' : 'disabled'}>−</button><span>${q}</span>
+        <button class="plus" data-a="inc" data-id="${it.id}" ${q >= MAXQ ? 'disabled' : ''}>+</button></div></div>`;
+    }).join('')}</div></div>`;
+  }).join('');
+  const lines = shopLines();
+  const req = T.cats.filter(c => c.min > 0).map(c => {
+    const ok = catCount(c) >= c.min;
+    return `<div class="${ok ? 'okc' : 'ngc'}">${ok ? '✓' : '□'} ${c.name}（${c.hint}）</div>`;
+  }).join('');
+  $('#main').innerHTML = `<div class="shop"><div>
+    <div class="card">
+      <div style="font-weight:800;margin-bottom:10px">${T.emoji} ${T.title}</div>
+      <div class="money"><div>お小遣い<br><b>${fmt(shop.budget)}円</b></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">${catsHTML}</div></div>
+    <div class="basket"><div class="card"><h3>🧺 かご</h3>
+      ${lines.length ? lines.map(l => `<div class="bl"><span>${l.e} ${l.name} ×${l.q}</span><span>${fmt(l.price)}円</span></div>`).join('') : '<div class="bl" style="color:var(--mute)">まだ何も入っていません</div>'}
+      <div class="req">${req}</div>
+      <button class="go" data-a="checkout" ${shopReady() ? '' : 'disabled'}>おかいけいへ</button>
+      <div class="warnmsg" style="font-size:14px;font-weight:700;line-height:1.6">${warn || ''}</div>
+    </div><div style="margin-top:14px">${calcHTML()}</div></div></div>`;
+  setFoot('材料をえらんで、お小遣いをこえないように自分でけいさんしよう。電卓を使ってもOK。');
+  window.scrollTo({top: y});
+}
+function shopChange(id, d) {
+  const T = THEMES[shop.theme];
+  const it = T.cats.flatMap(c => c.items).find(i => i.id === id);
+  const q = shop.qty[id] || 0;
+  if (d > 0) {
+    if (q >= MAXQ) return;
+    shop.qty[id] = q + 1;
+  } else if (q > 0) shop.qty[id] = q - 1;
+  renderShop('');
+}
+function checkout() {
+  if (!shopReady()) return;
+  const lines = shopLines(), total = shopTotal(), budget = shop.budget;
+  if (total > budget) { renderShop('お小遣いをこえているみたい！自分でけいさんして、材料をへらしてみよう。'); toast('お小遣いをこえているみたい！材料をへらしてみよう'); return; }
+  const unitOf = l => 'こ';
+  const multi = lines.filter(l => l.q >= 2).sort((a, b) => b.price * b.q - a.price * a.q)[0];
+  const byPrice = [...lines].sort((a, b) => b.price - a.price);
+  let q1;
+  if (multi) {
+    q1 = {op: '×', ans: multi.price * multi.q,
+      text: `${multi.name}は1${unitOf(multi)}${fmt(multi.price)}円です。${multi.q}${unitOf(multi)}買うと、いくらですか。`,
+      disp: `<div class="expr">${multi.price} × ${multi.q}</div>`, unit: '円'};
+  } else {
+    const a = byPrice[0], b = byPrice[1];
+    q1 = {op: '+', ans: a.price + b.price,
+      text: `${a.name}（${fmt(a.price)}円）と${b.name}（${fmt(b.price)}円）をあわせると、いくらですか。`,
+      disp: `<div class="expr">${a.price} + ${b.price}</div>`, unit: '円'};
+  }
+  const q2 = {op: '+', ans: total, unit: '円', text: 'かごの中のものは、ぜんぶでいくらですか。',
+    disp: `<div class="expr small">かごの中のもの</div><div class="receipt">${lines.map(l => `<div><span>${l.name} ${fmt(l.price)}円</span><span>×${l.q}</span></div>`).join('')}</div>`};
+  const q3 = {op: '−', ans: budget - total, unit: '円',
+    text: `お小遣いは${fmt(budget)}円です。お会計は${fmt(total)}円でした。おつりはいくらですか。`,
+    disp: `<div class="expr">${budget} - ${total}</div>`};
+  shop.step = 'quiz';
+  startQuiz([q1, q2, q3], {onDone: finishApp2, foot: 'お会計の文章を読んで、使うけいさんの方法を選びましょう。', foot2: '電卓を使って、けいさんして答えを入力しよう。'});
+  window.scrollTo({top: 0});
+}
+function finishApp2(results) {
+  const T = THEMES[shop.theme], lines = shopLines(), total = shopTotal(), change = shop.budget - total;
+  const calcPts = results.filter(r => r.ok).length * 20;
+  const matPts = 20;
+  const usePts = change <= shop.budget * .1 ? 20 : change <= shop.budget * .25 ? 10 : 5;
+  const pts = calcPts + matPts + usePts;
+  const rk = pts >= 90 ? 'S' : pts >= 75 ? 'A' : pts >= 60 ? 'B' : 'C';
+  const q = shop.qty, has = id => (q[id] || 0) > 0;
+  const nm = ids => T.cats.flatMap(c => c.items).filter(i => ids.includes(i.id) && has(i.id)).map(i => i.name);
+  let dish = '';
+  if (shop.theme === 'curry') dish = (nm(['chicken', 'beef', 'pork']).map(s => s.replace('にく', '')).join('と') || '') + 'カレー';
+  if (shop.theme === 'parfait') dish = (nm(['vanilla', 'choco', 'berry', 'matcha'])[0] || '') + 'と' + (nm(['strawberry', 'banana', 'mikan', 'cherry', 'kiwi'])[0] || '') + 'のパフェ';
+  if (shop.theme === 'plarail') dish = (nm(['shinkansen', 'train', 'sl'])[0] || 'でんしゃ') + 'がとまる駅';
+  const svg = pencilize({curry: svgCurry, parfait: svgParfait, plarail: svgPlarail}[shop.theme](q));
+  const imgKey = illustKey(shop.theme, q);
+  shop.last = {dish, pts, rk, total, change};
+  setTimeout(() => tryImage(imgKey), 0);
+  $('#main').innerHTML = `<div class="card result">
+    <h2>できあがり！</h2><div style="font-size:18px;font-weight:800;color:var(--accent)">${dish}</div>
+    <div class="illust">${svg}</div>
+    <div class="score"><div>けいさんの点<b>${calcPts}</b></div><div>ざいりょうの点<b>${matPts}</b></div><div>つかいきりの点<b>${usePts}</b></div><div>ごうけい<b>${pts}点</b></div><div>ランク<b>${rk}</b></div></div>
+    <div class="rlist">${lines.map(l => `<div class="bl"><span>${l.e} ${l.name} ×${l.q}</span><span>${fmt(l.price * l.q)}円</span></div>`).join('')}
+      <div class="bl" style="font-weight:800"><span>ごうけい</span><span>${fmt(total)}円</span></div>
+      <div class="bl"><span>おつり</span><span>${fmt(change)}円</span></div></div>
+    <div class="rbtn"><button data-a="rec">画面を記録する</button><button class="sub" data-a="start2">もういちど作る</button><button class="sub" data-a="home">はじめの画面へ</button></div></div>`;
+  setFoot('');
+}
+
+/* =========================================================
+   Illustrations
+   ========================================================= */
+function seeded(seed) { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; }
+
+
+/* images/ に画像があれば、SVGの代わりに表示する（例: images/curry-chicken.png） */
+function showImage(src) {
+  const box = document.querySelector('.illust'); if (!box) return;
+  box.innerHTML = `<img src="${src}" alt="" style="display:block;width:100%;height:auto">`;
+}
+function illustKey(theme, q) {
+  const order = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'], plarail: ['shinkansen', 'train', 'sl']}[theme];
+  const main = order.find(id => (q[id] || 0) > 0) || order[0];
+  return `${theme}-${main}`;
+}
+const EMBEDDED_IMAGES = {/*EMBED*/};
+function tryImage(key) {
+  if (EMBEDDED_IMAGES[key]) { showImage(EMBEDDED_IMAGES[key]); return; }
+  const exts = ['png', 'jpg', 'jpeg', 'webp'];
+  const next = i => {
+    if (i >= exts.length) return;
+    const im = new Image();
+    im.onload = () => showImage(im.src);
+    im.onerror = () => next(i + 1);
+    im.src = `images/${key}.${exts[i]}`;
+  };
+  next(0);
+}
+
+/* 色鉛筆風: 線のゆらぎ + 紙のざらつき */
+function pencilize(svg) {
+  const defs = `<defs><filter id="pencil" x="-3%" y="-3%" width="106%" height="106%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="3" result="d"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="9" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 1  0 0 0 0 .97  0 0 0 0 .9  0 0 0 -6 2.45" result="grain"/>
+    <feComposite in="grain" in2="d" operator="in" result="gr"/>
+    <feMerge><feMergeNode in="d"/><feMergeNode in="gr"/></feMerge></filter></defs>`;
+  return svg.replace(/(<svg[^>]*>)/, `$1${defs}<g filter="url(#pencil)">`).replace('</svg>', '</g></svg>');
+}
+
+function svgCurry(q) {
+  const has = id => (q[id] || 0) > 0;
+  const sauce = has('hot') && !has('sweet') ? '#7a2f10' : has('hot') ? '#9a4616' : '#c98a2c';
+  const chunks = [];
+  ['chicken', 'beef', 'pork', 'carrot', 'potato', 'onion', 'pepper', 'eggplant', 'pumpkin'].forEach(id => {
+    for (let i = 0; i < Math.min(q[id] || 0, 3); i++) chunks.push(id);
+  });
+  const slots = [[255, 170], [290, 190], [228, 205], [315, 165], [268, 215], [215, 172], [305, 210], [245, 150], [335, 190], [220, 222], [285, 158], [200, 198], [322, 222], [258, 188], [345, 168]];
+  const shape = {
+    chicken: (x, y) => `<rect x="${x - 13}" y="${y - 10}" width="26" height="20" rx="9" fill="#f3d9a8" stroke="#c9a36b" stroke-width="2"/>`,
+    beef: (x, y) => `<rect x="${x - 13}" y="${y - 10}" width="26" height="20" rx="7" fill="#7b4a2d" stroke="#53301a" stroke-width="2"/>`,
+    pork: (x, y) => `<rect x="${x - 13}" y="${y - 10}" width="26" height="20" rx="8" fill="#eaaba2" stroke="#c47f76" stroke-width="2"/>`,
+    carrot: (x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="#f28c28" stroke="#d0701a" stroke-width="2"/><circle cx="${x}" cy="${y}" r="4" fill="#f9b36a"/>`,
+    potato: (x, y) => `<rect x="${x - 11}" y="${y - 10}" width="22" height="20" rx="7" fill="#ecd08a" stroke="#c9a74e" stroke-width="2"/>`,
+    onion: (x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="#f7f1e2" stroke="#d9cfb4" stroke-width="2"/><path d="M${x - 6} ${y} Q${x} ${y - 7} ${x + 6} ${y}" stroke="#d9cfb4" fill="none" stroke-width="2"/>`,
+    pepper: (x, y) => `<rect x="${x - 11}" y="${y - 7}" width="22" height="14" rx="6" fill="#4caf50" stroke="#2f8a33" stroke-width="2"/>`,
+    eggplant: (x, y) => `<ellipse cx="${x}" cy="${y}" rx="13" ry="8" fill="#6f4a8e" stroke="#4a2f63" stroke-width="2"/>`,
+    pumpkin: (x, y) => `<rect x="${x - 11}" y="${y - 10}" width="22" height="20" rx="4" fill="#f2a31b" stroke="#c97f0a" stroke-width="2"/>`
+  };
+  const pieces = chunks.map((id, i) => shape[id](...slots[i % slots.length])).join('');
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbe9c8"/><rect y="230" width="400" height="70" fill="#e6c48f"/>
+  <ellipse cx="205" cy="228" rx="180" ry="52" fill="#000" opacity=".12"/>
+  <ellipse cx="200" cy="200" rx="180" ry="72" fill="#fff" stroke="#d8dce6" stroke-width="3"/>
+  <ellipse cx="200" cy="198" rx="140" ry="52" fill="#f1f3f8"/>
+  ${has('rice') ? `<path d="M62 190 Q70 120 140 128 Q205 138 210 190 Q205 236 135 238 Q65 238 62 190Z" fill="#fffdf5" stroke="#e4dfcc" stroke-width="2"/>
+     <g fill="#e9e3cf"><circle cx="100" cy="165" r="3"/><circle cx="130" cy="150" r="3"/><circle cx="160" cy="175" r="3"/><circle cx="115" cy="200" r="3"/><circle cx="150" cy="210" r="3"/><circle cx="90" cy="190" r="3"/></g>` : ''}
+  <path d="M175 160 Q235 128 330 140 Q372 168 352 208 Q322 246 240 244 Q182 238 165 198Z" fill="${sauce}"/>
+  <path d="M190 165 Q240 142 320 152" stroke="#fff" stroke-opacity=".25" stroke-width="4" fill="none" stroke-linecap="round"/>
+  ${pieces}
+  ${has('egg') ? `<ellipse cx="120" cy="140" rx="28" ry="19" fill="#fff" stroke="#e1e1e1" stroke-width="2"/><circle cx="120" cy="140" r="10" fill="#ffc933"/>` : ''}
+  ${has('cheese') ? `<path d="M250 168 L290 160 L282 178 L262 190 Z" fill="#ffd54a" stroke="#e0a800" stroke-width="2"/><circle cx="272" cy="172" r="3" fill="#e0a800"/>` : ''}
+  ${has('fuku') ? `<g fill="#7a2323"><rect x="338" y="236" width="10" height="6" rx="2"/><rect x="352" y="232" width="10" height="6" rx="2"/><rect x="345" y="246" width="10" height="6" rx="2"/></g>` : ''}
+  <g stroke="#fff" stroke-opacity=".8" stroke-width="5" fill="none" stroke-linecap="round"><path d="M250 120 Q238 100 252 82 Q266 64 254 46"/><path d="M290 125 Q278 105 292 88 Q306 70 294 54"/><path d="M130 100 Q120 82 132 66"/></g>
+  </svg>`;
+}
+
+function svgParfait(q) {
+  const has = id => (q[id] || 0) > 0, n = id => q[id] || 0;
+  const id = 'gc' + (++uid);
+  const jumbo = has('jumbo');
+  const rand = seeded(7);
+  // layers
+  let base = '';
+  if (has('pudding')) base += `<rect x="100" y="185" width="200" height="60" fill="#f6d46b"/><path d="M100 185 Q150 200 200 185 T300 185 V198 Q250 212 200 198 T100 198Z" fill="#a8641c"/>`;
+  else if (has('granola')) { base += `<rect x="100" y="190" width="200" height="60" fill="#b9772d"/>`; for (let i = 0; i < 26; i++) base += `<circle cx="${120 + rand() * 160}" cy="${198 + rand() * 40}" r="${3 + rand() * 3}" fill="${rand() > .5 ? '#8a5418' : '#d8a050'}"/>`; }
+  else if (has('corn')) { base += `<rect x="100" y="190" width="200" height="60" fill="#f2c866"/>`; for (let i = 0; i < 24; i++) base += `<rect x="${115 + rand() * 170}" y="${195 + rand() * 40}" width="12" height="7" rx="3" fill="#e0a73a" transform="rotate(${rand() * 90} 200 220)"/>`; }
+  const fcol = {strawberry: '#e83a4f', banana: '#ffe066', mikan: '#ff9f1c', cherry: '#b3142b', kiwi: '#8bc34a'};
+  let fruitBand = '', fk = ['strawberry', 'banana', 'mikan', 'cherry', 'kiwi'].filter(has);
+  if (fk.length) for (let i = 0; i < 14; i++) fruitBand += `<circle cx="${112 + i * 14}" cy="${170 + (i % 2) * 8}" r="9" fill="${fcol[fk[i % fk.length]]}"/>`;
+  const cream = has('custard') && !has('whip') ? '#f8e08a' : '#fffaf0';
+  const creamBand = `<path d="M100 120 H300 V150 Q275 165 250 150 T200 150 T150 150 T100 150Z" fill="${cream}"/>`;
+  // scoops
+  const scol = {vanilla: '#fff1bd', choco: '#7a4a2f', berry: '#ffb3c6', matcha: '#a5d46b'};
+  const sk = ['vanilla', 'choco', 'berry', 'matcha'].filter(has);
+  const scoopsList = []; sk.forEach(k => { for (let i = 0; i < Math.min(n(k), 2); i++) scoopsList.push(scol[k]); });
+  const pos = [[200, 96], [160, 100], [240, 100], [200, 66], [172, 72], [228, 72]];
+  const scoops = scoopsList.slice(0, 6).map((c, i) => `<circle cx="${pos[i][0]}" cy="${pos[i][1]}" r="30" fill="${c}" stroke="#00000018" stroke-width="2"/><ellipse cx="${pos[i][0] - 9}" cy="${pos[i][1] - 10}" rx="9" ry="5" fill="#fff" opacity=".35"/>`).join('');
+  const topY = scoopsList.length > 3 ? 36 : 66;
+  // toppings
+  let tops = '';
+  if (has('wafer')) tops += `<g transform="rotate(25 255 80)"><rect x="248" y="22" width="22" height="82" rx="3" fill="#e8c27a" stroke="#c49a4b" stroke-width="2"/><path d="M248 40h22M248 58h22M248 76h22" stroke="#c49a4b"/></g>`;
+  if (has('stick')) tops += `<g transform="rotate(-22 150 70)"><rect x="140" y="14" width="9" height="90" rx="3" fill="#5a3320"/></g><g transform="rotate(-8 130 70)"><rect x="122" y="22" width="9" height="86" rx="3" fill="#7a4a2f"/></g>`;
+  if (has('sauce')) tops += `<path d="M168 82 Q200 62 232 82 Q236 102 228 112 Q224 94 216 104 Q212 120 204 106 Q198 94 190 108 Q184 116 178 104 Q170 96 168 82Z" fill="#4a2616" opacity=".9"/>`;
+  if (has('sprinkle')) { const cs = ['#ff4d6d', '#3a86ff', '#ffbe0b', '#06d6a0']; for (let i = 0; i < 26; i++) tops += `<rect x="${150 + rand() * 100}" y="${topY + 12 + rand() * 70}" width="7" height="3" rx="1.5" fill="${cs[i % 4]}" transform="rotate(${rand() * 180} 200 90)"/>`; }
+  let topFruit = '';
+  fk.forEach((k, i) => { for (let j = 0; j < Math.min(n(k), 2); j++) {
+    const x = 126 + ((i * 2 + j) * 37) % 150, y = 112 + ((i + j) % 2) * 6;
+    topFruit += k === 'banana' ? `<path d="M${x - 14} ${y} Q${x} ${y - 14} ${x + 14} ${y}" stroke="#e8c200" stroke-width="10" fill="none" stroke-linecap="round"/>`
+      : k === 'cherry' ? `<path d="M${x} ${y - 8} Q${x + 8} ${y - 26} ${x + 18} ${y - 28}" stroke="#4a7a2a" stroke-width="2" fill="none"/><circle cx="${x}" cy="${y}" r="10" fill="${fcol[k]}"/>`
+      : `<circle cx="${x}" cy="${y}" r="${k === 'strawberry' ? 12 : 10}" fill="${fcol[k]}" stroke="#00000020" stroke-width="2"/>`;
+  } });
+  const whipTop = has('whip') ? `<path d="M172 118 Q200 90 228 118 Q216 108 200 108 Q184 108 172 118Z" fill="#fff" stroke="#e8e0cc" stroke-width="2"/>` : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#ffe8ef"/><rect y="252" width="400" height="48" fill="#f7cfdb"/>
+  <g transform="${jumbo ? 'translate(200 160) scale(1.12) translate(-200 -160)' : ''}">
+  <defs><clipPath id="${id}"><path d="M100 118 H300 L275 228 Q200 262 125 228Z"/></clipPath></defs>
+  <path d="M100 118 H300 L275 228 Q200 262 125 228Z" fill="#dff3ff" opacity=".6"/>
+  <g clip-path="url(#${id})">${base}${fruitBand}${creamBand}</g>
+  <path d="M100 118 H300 L275 228 Q200 262 125 228Z" fill="none" stroke="#8fb9d1" stroke-width="4"/>
+  <rect x="190" y="244" width="20" height="26" fill="#cfe6f2" stroke="#8fb9d1" stroke-width="3"/>
+  <ellipse cx="200" cy="274" rx="48" ry="9" fill="#cfe6f2" stroke="#8fb9d1" stroke-width="3"/>
+  <g transform="translate(0 ${topY === 36 ? 0 : 0})">${scoops}${whipTop}${tops}${topFruit}</g>
+  ${has('cherry') ? `<circle cx="200" cy="${topY - 14}" r="11" fill="#c1121f"/><path d="M200 ${topY - 25} Q210 ${topY - 44} 224 ${topY - 46}" stroke="#4a7a2a" stroke-width="3" fill="none"/>` : ''}
+  </g></svg>`;
+}
+
+function svgPlarail(q) {
+  const has = id => (q[id] || 0) > 0, n = id => q[id] || 0;
+  const loop = has('curve');
+  const track = loop
+    ? `<ellipse cx="200" cy="222" rx="160" ry="38" fill="none" stroke="#b08a5a" stroke-width="10" stroke-dasharray="3 7"/>
+       <ellipse cx="200" cy="222" rx="160" ry="38" fill="none" stroke="#6b6f7a" stroke-width="3"/><ellipse cx="200" cy="222" rx="154" ry="33" fill="none" stroke="#6b6f7a" stroke-width="3"/>`
+    : `<line x1="25" y1="226" x2="375" y2="226" stroke="#b08a5a" stroke-width="12" stroke-dasharray="3 7"/>
+       <line x1="25" y1="221" x2="375" y2="221" stroke="#6b6f7a" stroke-width="3"/><line x1="25" y1="231" x2="375" y2="231" stroke="#6b6f7a" stroke-width="3"/>`;
+  const ty = loop ? 252 : 226;
+  let train = '';
+  if (has('shinkansen')) train = `<g><rect x="125" y="${ty - 28}" width="150" height="26" rx="12" fill="#fff" stroke="#9aa3b5" stroke-width="2"/><rect x="125" y="${ty - 14}" width="150" height="6" fill="#1f6fd1"/>
+    <path d="M275 ${ty - 28} Q312 ${ty - 20} 318 ${ty - 4} L275 ${ty - 2}Z" fill="#fff" stroke="#9aa3b5" stroke-width="2"/>
+    <g fill="#5aa8e8"><rect x="140" y="${ty - 24}" width="14" height="7"/><rect x="164" y="${ty - 24}" width="14" height="7"/><rect x="188" y="${ty - 24}" width="14" height="7"/><rect x="212" y="${ty - 24}" width="14" height="7"/><rect x="236" y="${ty - 24}" width="14" height="7"/></g></g>`;
+  else if (has('train')) train = `<g><rect x="130" y="${ty - 30}" width="140" height="28" rx="6" fill="#4caf7a" stroke="#2f7a52" stroke-width="2"/><rect x="130" y="${ty - 12}" width="140" height="5" fill="#f5a623"/>
+    <g fill="#d8f0ff" stroke="#2f7a52"><rect x="140" y="${ty - 25}" width="20" height="11"/><rect x="170" y="${ty - 25}" width="20" height="11"/><rect x="200" y="${ty - 25}" width="20" height="11"/><rect x="230" y="${ty - 25}" width="20" height="11"/></g></g>`;
+  if (has('sl')) {
+    const dx = has('shinkansen') || has('train') ? 0 : 0;
+    train += `<g transform="translate(${dx} 0)"><rect x="${has('shinkansen') || has('train') ? 20 : 140}" y="${ty - 28}" width="${has('shinkansen') || has('train') ? 90 : 120}" height="24" rx="6" fill="#2b2d36"/>
+      <rect x="${has('shinkansen') || has('train') ? 24 : 144}" y="${ty - 44}" width="14" height="16" fill="#2b2d36"/>
+      <circle cx="${has('shinkansen') || has('train') ? 34 : 154}" cy="${ty - 52}" r="8" fill="#c9ccd6" opacity=".8"/><circle cx="${has('shinkansen') || has('train') ? 46 : 166}" cy="${ty - 64}" r="11" fill="#dfe2ea" opacity=".7"/>
+      <rect x="${has('shinkansen') || has('train') ? 60 : 180}" y="${ty - 42}" width="38" height="16" rx="3" fill="#d6455d"/>
+      <g fill="#c9a227" stroke="#2b2d36" stroke-width="2"><circle cx="${has('shinkansen') || has('train') ? 42 : 162}" cy="${ty - 3}" r="7"/><circle cx="${has('shinkansen') || has('train') ? 72 : 192}" cy="${ty - 3}" r="7"/><circle cx="${has('shinkansen') || has('train') ? 100 : 220}" cy="${ty - 3}" r="7"/></g></g>`;
+  }
+  const trees = Array.from({length: Math.min(n('tree'), 6)}, (_, i) => {
+    const p = [[40, 170], [360, 168], [95, 266], [310, 270], [20, 245], [380, 245]][i];
+    return `<g><rect x="${p[0] - 3}" y="${p[1]}" width="6" height="16" fill="#8b5a2b"/><circle cx="${p[0]}" cy="${p[1] - 8}" r="15" fill="#3f9d4a"/><circle cx="${p[0] - 8}" cy="${p[1]}" r="10" fill="#4cb35a"/></g>`;
+  }).join('');
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#d8efff"/><circle cx="340" cy="46" r="24" fill="#ffe27a"/><ellipse cx="90" cy="50" rx="40" ry="14" fill="#fff"/><ellipse cx="120" cy="42" rx="28" ry="12" fill="#fff"/>
+  <rect x="10" y="150" width="380" height="136" rx="16" fill="#8ccf7a" stroke="#5da24d" stroke-width="3"/>
+  ${has('bridge') ? `<rect x="306" y="156" width="40" height="124" fill="#7fc4f2"/><path d="M306 156V280M346 156V280" stroke="#5aa5d6" stroke-width="3"/>` : ''}
+  ${track}
+  ${has('bridge') ? `<rect x="300" y="${loop ? 212 : 216}" width="52" height="${loop ? 20 : 20}" rx="3" fill="#b08a5a" stroke="#7a5a30" stroke-width="2"/><path d="M304 ${loop ? 212 : 216} Q326 ${loop ? 196 : 200} 348 ${loop ? 212 : 216}" fill="none" stroke="#7a5a30" stroke-width="3"/>` : ''}
+  ${has('building') ? `<g><rect x="140" y="104" width="120" height="58" fill="#f7e7c6" stroke="#caa86a" stroke-width="2"/><polygon points="130,104 200,72 270,104" fill="#d6455d" stroke="#a52f44" stroke-width="2"/>
+    <rect x="176" y="112" width="48" height="16" rx="3" fill="#fff" stroke="#caa86a"/><text x="200" y="125" font-size="12" font-weight="700" text-anchor="middle" fill="#333" font-family="sans-serif">えき</text>
+    <rect x="152" y="134" width="22" height="28" fill="#8fd0ff" stroke="#caa86a"/><rect x="226" y="134" width="22" height="28" fill="#8fd0ff" stroke="#caa86a"/><rect x="188" y="136" width="24" height="26" fill="#a0693a"/></g>` : ''}
+  ${has('platform') ? `<rect x="${has('building') ? 110 : 90}" y="${loop ? 178 : 190}" width="${has('building') ? 180 : 220}" height="12" rx="3" fill="#c9ccd6" stroke="#9aa0ae" stroke-width="2"/><rect x="${has('building') ? 110 : 90}" y="${loop ? 190 : 202}" width="${has('building') ? 180 : 220}" height="5" fill="#9aa0ae"/>` : ''}
+  ${has('tunnel') ? `<g><path d="M14 224 V190 Q14 150 56 150 Q98 150 98 190 V224Z" fill="#a17a52" stroke="#7a5a30" stroke-width="3"/><path d="M30 224 V196 Q30 172 56 172 Q82 172 82 196 V224Z" fill="#2b2d36"/></g>` : ''}
+  ${has('crossing') ? `<g><rect x="106" y="190" width="5" height="40" fill="#fff" stroke="#999"/><rect x="104" y="188" width="9" height="10" fill="#d6455d"/><rect x="${has('platform') ? 100 : 100}" y="196" width="64" height="5" fill="#d6455d" transform="rotate(-8 106 196)"/>
+    <rect x="126" y="196" width="10" height="5" fill="#fff" transform="rotate(-8 106 196)"/><rect x="146" y="196" width="10" height="5" fill="#fff" transform="rotate(-8 106 196)"/></g>` : ''}
+  ${has('signal') ? `<g><rect x="278" y="${loop ? 160 : 168}" width="5" height="40" fill="#555"/><rect x="271" y="${loop ? 148 : 156}" width="19" height="20" rx="4" fill="#2b2d36"/><circle cx="280.5" cy="${loop ? 154 : 162}" r="4" fill="#ff4d4d"/><circle cx="280.5" cy="${loop ? 162 : 170}" r="4" fill="#4dff88" opacity=".35"/></g>` : ''}
+  ${trees}
+  ${train}
+  </svg>`;
+}
+
+/* =========================================================
+   Screenshot (画面を記録する) & gallery
+   ========================================================= */
+function toast(t) {
+  const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d);
+  setTimeout(() => d.remove(), 2400);
+}
+function stamp() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  return {file: `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`,
+          label: `${d.getMonth() + 1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`};
+}
+function loadLog() { try { return JSON.parse(localStorage.getItem('keisan-log') || '[]'); } catch (e) { return []; } }
+function saveLog(a) { try { localStorage.setItem('keisan-log', JSON.stringify(a)); return true; } catch (e) { return false; } }
+async function recordScreen() {
+  if (typeof html2canvas === 'undefined') { toast('画面記録ライブラリを読み込めませんでした（ネット接続を確認してください）'); return; }
+  const target = $('#root');
+  let canvas;
+  try { canvas = await html2canvas(target, {backgroundColor: '#f1f2f6', scale: 1.5, useCORS: true}); }
+  catch (e) { toast('記録に失敗しました'); return; }
+  const st = stamp();
+  const full = canvas.toDataURL('image/png');
+  // download
+  const a = document.createElement('a'); a.href = full; a.download = `keisan-${st.file}.png`; document.body.appendChild(a); a.click(); a.remove();
+  // small copy for the in-app log
+  const sm = document.createElement('canvas'); const r = 480 / canvas.width;
+  sm.width = 480; sm.height = Math.round(canvas.height * r);
+  sm.getContext('2d').drawImage(canvas, 0, 0, sm.width, sm.height);
+  const log = loadLog();
+  const title = app === 'pocket' ? (shop && shop.theme ? THEMES[shop.theme].title : 'お小遣いアプリ') : '計算方法を選ぶアプリ';
+  const summary = `出題${stats.asked}・正解${stats.correct}・正解率${stats.asked ? Math.round(stats.correct / stats.asked * 100) : 0}%・ランク${rankOf()}`;
+  log.unshift({t: st.label, title, summary, img: sm.toDataURL('image/jpeg', .6), file: `keisan-${st.file}.png`});
+  while (log.length > 12) log.pop();
+  if (!saveLog(log)) { log.length = Math.min(log.length, 4); saveLog(log); }
+  toast('画面を記録しました（画像も保存されます）');
+}
+function showGallery() {
+  const log = loadLog();
+  $('#overlay').innerHTML = `<div class="modal" data-a="closeModal"><div class="box" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b>きろく（${log.length}）</b><button data-a="closeModal" style="border:0;background:none;font-size:22px">×</button></div>
+    ${log.length ? `<div class="gal">${log.map((l, i) => `<figure><img src="${l.img}" alt=""><figcaption><b>${l.title}</b><br>${l.t}<br>${l.summary}<br><button data-a="dl" data-i="${i}">画像を保存</button></figcaption></figure>`).join('')}</div>` : '<p style="color:var(--mute)">まだ記録がありません。「画面を記録する」を押すと、ここに残ります。</p>'}
+  </div></div>`;
+}
+
+/* ---------- events ---------- */
+const H = {
+  start1: startApp1, start2: startApp2, home: showMenu,
+  rec: recordScreen, gallery: showGallery, closeModal: () => { $('#overlay').innerHTML = ''; },
+  op: d => quizOp(d.op),
+  num: d => quizInput(() => { if (quiz.input.length < 9) quiz.input = (quiz.input === '0' ? '' : quiz.input) + d.d; }),
+  clr: () => quizInput(() => { quiz.input = ''; }),
+  bs: () => quizInput(() => { quiz.input = quiz.input.slice(0, -1); }),
+  submit: quizSubmit,
+  ckey: d => calcKey(d.k),
+  budget: d => { shop.budget = Number(d.b); renderTheme(); },
+  theme: d => { shop.theme = d.t; shop.qty = {}; shop.step = 'shop'; calcReset(); renderShop(''); window.scrollTo({top: 0}); },
+  inc: d => shopChange(d.id, 1), dec: d => shopChange(d.id, -1),
+  checkout,
+  dl: d => { const l = loadLog()[Number(d.i)]; if (!l) return; const a = document.createElement('a'); a.href = l.img; a.download = l.file.replace('.png', '-small.jpg'); a.click(); }
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]');
+  if (!b || !H[b.dataset.a]) return;
+  if (b.dataset.a === 'closeModal' && e.target !== b) return;
+  H[b.dataset.a](b.dataset);
+});
+document.addEventListener('keydown', e => {
+  if (!quiz || quiz.phase !== 'ans') return;
+  if (/^[0-9]$/.test(e.key)) H.num({d: e.key});
+  else if (e.key === 'Backspace') H.bs();
+  else if (e.key === 'Enter') quizSubmit();
+});
+
+showMenu();
+</script>
+</body>
+</html>
