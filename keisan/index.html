@@ -495,6 +495,20 @@ const THEMES = {
       {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
         {id: 'butter', name: 'バター', price: 50, e: '🧈'}, {id: 'whip', name: 'ホイップ', price: 120, e: '☁️'}, {id: 'icecream', name: 'アイス', price: 130, e: '🍦'}, {id: 'sugar', name: 'こなざとう', price: 30, e: '❄️'}]}
     ]
+  },
+  robot: {
+    name: 'ロボット', title: 'ロボットを作ろう', emoji: '🤖', desc: 'ボディ・色・でんげん・パーツで自分だけのロボに',
+    cats: [
+      {id: 'body', name: 'ボディ', min: 1, hint: '1こ', items: [
+        {id: 'biped', name: 'あるくロボ', price: 350, e: '🚶'}, {id: 'wheel', name: 'はしるロボ', price: 250, e: '🛞'}, {id: 'fly', name: 'とぶロボ', price: 400, e: '🚀'}]},
+      {id: 'paint', name: 'いろ（ペンキ）', min: 1, hint: '1こ以上', items: [
+        {id: 'red', name: 'あかいペンキ', price: 50, e: '🟥'}, {id: 'blue', name: 'あおいペンキ', price: 50, e: '🟦'}, {id: 'yellow', name: 'きいろのペンキ', price: 50, e: '🟨'}, {id: 'silver', name: 'ぎんいろのペンキ', price: 70, e: '⬜'}]},
+      {id: 'power', name: 'でんげん', min: 1, hint: '1こ以上', items: [
+        {id: 'battery', name: 'でんち', price: 100, e: '🔋'}, {id: 'solar', name: 'ソーラーパネル', price: 180, e: '☀️'}]},
+      {id: 'parts', name: 'ロボットパーツ', min: 0, hint: 'おこのみで', items: [
+        {id: 'arm', name: 'ロケットパンチ', price: 150, e: '👊'}, {id: 'eye', name: 'ビームアイ', price: 90, e: '👁️'}, {id: 'antenna', name: 'アンテナ', price: 40, e: '📡'},
+        {id: 'jet', name: 'ジェット', price: 130, e: '🔥'}, {id: 'shield', name: 'シールド', price: 120, e: '🛡️'}]}
+    ]
   }
 };
 const MAXQ = 4;
@@ -610,7 +624,8 @@ function finishApp2(results) {
   if (shop.theme === 'plarail') dish = (nm(['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'])[0] || 'でんしゃ') + 'がとまる駅';
   if (shop.theme === 'car') dish = ({red: 'あかい', blue: 'あおい', yellow: 'きいろい', black: 'くろい'}[['red', 'blue', 'yellow', 'black'].find(has)] || '') + 'カスタム' + (nm(['sports', 'kei', 'truck'])[0] || 'くるま');
   if (shop.theme === 'pancake') dish = (nm(['strawberry', 'banana', 'blueberry', 'mikan'])[0] || '') + 'の' + (nm(['plain', 'souffle', 'mini'])[0] || 'パンケーキ').replace('ふつうの', '');
-  const svg = pencilize({curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake}[shop.theme](q));
+  if (shop.theme === 'robot') dish = ({red: 'あかい', blue: 'あおい', yellow: 'きいろい', silver: 'ぎんいろの'}[['red', 'blue', 'yellow', 'silver'].find(has)] || '') + (nm(['biped', 'wheel', 'fly'])[0] || 'ロボ');
+  const svg = pencilize({curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot}[shop.theme](q));
   const imgKey = illustKey(shop.theme, q);
   shop.last = {dish, pts, rk, total, change};
   setTimeout(() => tryImage(imgKey), 0);
@@ -637,7 +652,7 @@ function showImage(src) {
   box.innerHTML = `<img src="${src}" alt="" style="display:block;width:100%;height:auto">`;
 }
 function illustKey(theme, q) {
-  const order = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'], plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'], pancake: ['plain', 'souffle', 'mini']}[theme];
+  const order = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'], plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'], pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly']}[theme];
   const main = order.find(id => (q[id] || 0) > 0) || order[0];
   return `${theme}-${main}`;
 }
@@ -863,6 +878,43 @@ function svgPancake(q) {
   <ellipse cx="200" cy="238" rx="150" ry="30" fill="#fff" stroke="#cfd3dc" stroke-width="3"/><ellipse cx="200" cy="234" rx="112" ry="20" fill="#f4f5f8" stroke="#dfe2ea" stroke-width="2"/>
   ${stack}${sauce}${butter}${whip}${ice}${fruitSvg}${sugar}
   <g><rect x="336" y="150" width="30" height="40" rx="6" fill="#d6455d" stroke="#a52f44" stroke-width="2"/></g>
+  </svg>`;
+}
+
+function svgRobot(q) {
+  const has = id => (q[id] || 0) > 0;
+  const k = ['red', 'blue', 'yellow', 'silver'].find(has);
+  const col = {red: '#d6455d', blue: '#3d7be0', yellow: '#f2c230', silver: '#aeb4c2'}[k] || '#9aa3b5';
+  const dark = {red: '#a52f44', blue: '#2a58a8', yellow: '#c79a14', silver: '#7d8494'}[k] || '#6b7280';
+  const kind = has('fly') ? 'fly' : has('wheel') ? 'wheel' : 'biped';
+  const oy = kind === 'fly' ? -22 : 0;
+  const eyeFill = has('eye') ? '#ff5a5a' : '#fff';
+  const beam = has('eye') ? `<path d="M182 ${96 + oy} L40 ${120 + oy} L40 ${86 + oy} Z M218 ${96 + oy} L360 ${120 + oy} L360 ${86 + oy} Z" fill="#ff5a5a" opacity=".35"/>` : '';
+  let lower = '';
+  if (kind === 'biped') lower = `<g fill="${dark}" stroke="#2b2d36" stroke-width="2"><rect x="160" y="196" width="30" height="46" rx="5"/><rect x="210" y="196" width="30" height="46" rx="5"/><rect x="152" y="236" width="46" height="16" rx="6" fill="#555a68"/><rect x="202" y="236" width="46" height="16" rx="6" fill="#555a68"/></g>`;
+  else if (kind === 'wheel') lower = `<rect x="130" y="196" width="140" height="18" rx="6" fill="${dark}" stroke="#2b2d36" stroke-width="2"/><g fill="#2b2d36"><circle cx="160" cy="232" r="22"/><circle cx="240" cy="232" r="22"/></g><g fill="#c9ccd6" stroke="#555" stroke-width="2"><circle cx="160" cy="232" r="9"/><circle cx="240" cy="232" r="9"/></g>`;
+  else lower = `<g fill="${dark}" stroke="#2b2d36" stroke-width="2"><rect x="166" y="${196 + oy}" width="24" height="18" rx="4"/><rect x="210" y="${196 + oy}" width="24" height="18" rx="4"/></g>
+    <g><path d="M166 ${214 + oy} L178 ${262 + oy} L190 ${214 + oy}Z M210 ${214 + oy} L222 ${262 + oy} L234 ${214 + oy}Z" fill="#ffb02e" stroke="#e0702a" stroke-width="2"/><path d="M172 ${214 + oy} L178 ${244 + oy} L184 ${214 + oy}Z M216 ${214 + oy} L222 ${244 + oy} L228 ${214 + oy}Z" fill="#fff3b0"/></g>
+    <g fill="#e6e8ee" opacity=".85"><circle cx="150" cy="276" r="12"/><circle cx="250" cy="280" r="14"/></g>
+    <path d="M110 ${150 + oy} L140 ${130 + oy} V${176 + oy} Z M290 ${150 + oy} L260 ${130 + oy} V${176 + oy} Z" fill="${dark}" stroke="#2b2d36" stroke-width="2"/>`;
+  const jetpack = has('jet') && kind !== 'fly' ? `<g><rect x="118" y="${138 + oy}" width="20" height="56" rx="8" fill="#c9ccd6" stroke="#555" stroke-width="2"/><rect x="262" y="${138 + oy}" width="20" height="56" rx="8" fill="#c9ccd6" stroke="#555" stroke-width="2"/><path d="M122 ${194 + oy} L128 ${222 + oy} L134 ${194 + oy}Z M266 ${194 + oy} L272 ${222 + oy} L278 ${194 + oy}Z" fill="#ffb02e"/></g>` : '';
+  const armR = has('arm') ? `<g><rect x="286" y="${146 + oy}" width="34" height="14" rx="6" fill="${dark}" stroke="#2b2d36" stroke-width="2"/><rect x="318" y="${136 + oy}" width="32" height="32" rx="12" fill="#e6e8ee" stroke="#2b2d36" stroke-width="2"/><path d="M350 ${152 + oy} h24 M350 ${144 + oy} h16 M350 ${160 + oy} h16" stroke="#ff9f1c" stroke-width="4" stroke-linecap="round"/></g>`
+    : `<rect x="282" y="${146 + oy}" width="44" height="14" rx="6" fill="${dark}" stroke="#2b2d36" stroke-width="2"/><circle cx="330" cy="${153 + oy}" r="9" fill="#c9ccd6" stroke="#2b2d36" stroke-width="2"/>`;
+  const shield = has('shield') ? `<path d="M52 ${132 + oy} H116 V${176 + oy} Q84 ${204 + oy} 52 ${176 + oy}Z" fill="#8fa4d6" stroke="#2b2d36" stroke-width="3"/><path d="M84 ${140 + oy} V${190 + oy} M60 ${156 + oy} H108" stroke="#fff" stroke-width="3" opacity=".8"/>` : '';
+  const antenna = has('antenna') ? `<g><line x1="200" y1="${46 + oy}" x2="200" y2="${24 + oy}" stroke="#555" stroke-width="4"/><circle cx="200" cy="${20 + oy}" r="8" fill="#ff5a5a" stroke="#a52f44" stroke-width="2"/></g>` : `<line x1="200" y1="${46 + oy}" x2="200" y2="${36 + oy}" stroke="#555" stroke-width="4"/><circle cx="200" cy="${34 + oy}" r="4" fill="#c9ccd6"/>`;
+  const power = has('solar') ? `<g transform="translate(268 ${48 + oy}) rotate(-14)"><rect width="52" height="30" fill="#2f4f9e" stroke="#c9ccd6" stroke-width="2"/><path d="M13 0V30M26 0V30M39 0V30M0 10H52M0 20H52" stroke="#8fb3ff" stroke-width="1.5"/></g>` : '';
+  const battery = has('battery') ? `<g><rect x="178" y="${132 + oy}" width="44" height="22" rx="4" fill="#fff" stroke="#2b2d36" stroke-width="2"/><rect x="222" y="${139 + oy}" width="5" height="8" fill="#2b2d36"/><rect x="182" y="${136 + oy}" width="24" height="14" fill="#4f9a64"/></g>` : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="0" y="262" width="400" height="38" fill="#e2c08a"/>
+  <ellipse cx="200" cy="268" rx="120" ry="10" fill="#c9a86a" opacity=".6"/>
+  <rect x="14" y="140" width="70" height="120" fill="#e8d3a8" stroke="#caa86a" stroke-width="2"/><polygon points="8,140 49,108 90,140" fill="#d6455d" stroke="#a52f44" stroke-width="2"/><rect x="34" y="190" width="30" height="70" fill="#a0693a"/>
+  ${beam}${power}${lower}${jetpack}
+  <rect x="140" y="${112 + oy}" width="120" height="88" rx="14" fill="${col}" stroke="${dark}" stroke-width="3"/>${battery}
+  <rect x="120" y="${146 + oy}" width="24" height="14" rx="6" fill="${dark}" stroke="#2b2d36" stroke-width="2"/>${armR}${shield}
+  <rect x="160" y="${46 + oy}" width="80" height="66" rx="18" fill="${col}" stroke="${dark}" stroke-width="3"/>${antenna}
+  <circle cx="182" cy="${80 + oy}" r="11" fill="${eyeFill}" stroke="#2b2d36" stroke-width="2"/><circle cx="218" cy="${80 + oy}" r="11" fill="${eyeFill}" stroke="#2b2d36" stroke-width="2"/><circle cx="182" cy="${80 + oy}" r="4" fill="#2b2d36"/><circle cx="218" cy="${80 + oy}" r="4" fill="#2b2d36"/>
+  <path d="M184 ${98 + oy} Q200 ${108 + oy} 216 ${98 + oy}" fill="none" stroke="#2b2d36" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#2b2d36" opacity=".55"><circle cx="196" cy="${168 + oy}" r="4"/><circle cx="208" cy="${168 + oy}" r="4"/></g>
   </svg>`;
 }
 
