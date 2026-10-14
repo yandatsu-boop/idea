@@ -22,6 +22,11 @@ for path in sorted(glob.glob(os.path.join(here, 'images', '*'))):
     imgs[name] = f'data:{mime};base64,{data}'
     print(f'{name}: {len(data)//1024} KB')
 src = open(os.path.join(here, 'index.html'), encoding='utf-8').read()
+# html2canvas を HTML に埋め込む（ネットが無くても「画面を記録する」が動く）
+tag = '<script src="vendor/html2canvas.min.js"></script>'
+if tag in src:
+    lib = open(os.path.join(here, 'vendor', 'html2canvas.min.js'), encoding='utf-8').read()
+    src = src.replace(tag, '<script>' + lib + '</script>')
 marker = 'const EMBEDDED_IMAGES = {/*EMBED*/};'
 assert marker in src
 dst = src.replace(marker, 'const EMBEDDED_IMAGES = ' + json.dumps(imgs, ensure_ascii=False) + ';')

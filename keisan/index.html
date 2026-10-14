@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>けいさんアプリ</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
 <style>
 :root{--bg:#f1f2f6;--card:#fff;--ink:#1d1f2a;--mute:#6b7280;--accent:#4f5dff;--ok:#4f9a64;--ng:#d6455d;--line:#dfe2ea;--key:#f3f4f6}
 *{box-sizing:border-box}
@@ -948,16 +948,23 @@ function stamp() {
 }
 function loadLog() { try { return JSON.parse(localStorage.getItem('keisan-log') || '[]'); } catch (e) { return []; } }
 function saveLog(a) { try { localStorage.setItem('keisan-log', JSON.stringify(a)); return true; } catch (e) { return false; } }
+let lastShot = null;
+const canvasBlob = (c, type, q) => new Promise(res => c.toBlob(res, type, q));
 async function recordScreen() {
-  if (typeof html2canvas === 'undefined') { toast('画面記録ライブラリを読み込めませんでした（ネット接続を確認してください）'); return; }
+  if (typeof html2canvas === 'undefined') { toast('画面記録のしくみを読み込めませんでした'); return; }
+  toast('撮影しています…');
   const target = $('#root');
   let canvas;
-  try { canvas = await html2canvas(target, {backgroundColor: '#f1f2f6', scale: 1.5, useCORS: true}); }
-  catch (e) { toast('記録に失敗しました'); return; }
-  const st = stamp();
-  const full = canvas.toDataURL('image/png');
-  // download
-  const a = document.createElement('a'); a.href = full; a.download = `keisan-${st.file}.png`; document.body.appendChild(a); a.click(); a.remove();
+  try {
+    // iPad のSafariはキャンバスの大きさに上限があるので、大きすぎるときは倍率を下げる
+    const scale = Math.min(1.5, Math.sqrt(12e6 / Math.max(1, target.scrollWidth * target.scrollHeight)));
+    canvas = await html2canvas(target, {backgroundColor: '#f1f2f6', scale, useCORS: true});
+  } catch (e) { toast('記録に失敗しました'); return; }
+  const st = stamp(), file = `keisan-${st.file}.png`;
+  const blob = await canvasBlob(canvas, 'image/png');
+  if (!blob) { toast('記録に失敗しました'); return; }
+  if (lastShot) URL.revokeObjectURL(lastShot.url);
+  lastShot = {blob, file, url: URL.createObjectURL(blob)};
   // small copy for the in-app log
   const sm = document.createElement('canvas'); const r = 480 / canvas.width;
   sm.width = 480; sm.height = Math.round(canvas.height * r);
@@ -965,14 +972,38 @@ async function recordScreen() {
   const log = loadLog();
   const title = app === 'pocket' ? (shop && shop.theme ? THEMES[shop.theme].title : 'お小遣いアプリ') : '計算方法を選ぶアプリ';
   const summary = `出題${stats.asked}・正解${stats.correct}・正解率${stats.asked ? Math.round(stats.correct / stats.asked * 100) : 0}%・ランク${rankOf()}`;
-  log.unshift({t: st.label, title, summary, img: sm.toDataURL('image/jpeg', .6), file: `keisan-${st.file}.png`});
+  log.unshift({t: st.label, title, summary, img: sm.toDataURL('image/jpeg', .6), file});
   while (log.length > 12) log.pop();
   if (!saveLog(log)) { log.length = Math.min(log.length, 4); saveLog(log); }
-  toast('画面を記録しました（画像も保存されます）');
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  showShot();
+}
+/* 撮影後にプレビューを出し、保存は「ボタンを押した瞬間」に行う（iPad対応） */
+function showShot() {
+  $('#overlay').innerHTML = `<div class="modal" data-a="closeModal"><div class="box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b>画面を記録しました</b><button data-a="closeModal" style="border:0;background:none;font-size:22px">×</button></div>
+    <img src="${lastShot.url}" alt="記録した画面" style="display:block;width:100%;max-height:50vh;object-fit:contain;background:#f1f2f6;border-radius:10px">
+    <div class="rbtn" style="margin-top:14px"><button data-a="shareShot">保存・共有する</button><button class="sub" data-a="dlShot">ダウンロード</button></div>
+    <p style="color:var(--mute);font-size:13px;margin:10px 0 0">iPadでは「保存・共有する」から「画像を保存」をえらべます。うまくいかないときは、上の画像を長押しして「“写真”に追加」をえらんでください。</p>
+  </div></div>`;
+}
+async function shareShot() {
+  if (!lastShot) return;
+  const f = new File([lastShot.blob], lastShot.file, {type: 'image/png'});
+  try {
+    if (navigator.canShare && navigator.canShare({files: [f]})) { await navigator.share({files: [f], title: 'けいさんアプリの記録'}); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  dlShot();
+}
+function dlShot() {
+  if (!lastShot) return;
+  const a = document.createElement('a'); a.href = lastShot.url; a.download = lastShot.file;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('ダウンロードします。表示されないときは画像を長押ししてください');
 }
 function showGallery() {
   const log = loadLog();
-  $('#overlay').innerHTML = `<div class="modal" data-a="closeModal"><div class="box" onclick="event.stopPropagation()">
+  $('#overlay').innerHTML = `<div class="modal" data-a="closeModal"><div class="box">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b>きろく（${log.length}）</b><button data-a="closeModal" style="border:0;background:none;font-size:22px">×</button></div>
     ${log.length ? `<div class="gal">${log.map((l, i) => `<figure><img src="${l.img}" alt=""><figcaption><b>${l.title}</b><br>${l.t}<br>${l.summary}<br><button data-a="dl" data-i="${i}">画像を保存</button></figcaption></figure>`).join('')}</div>` : '<p style="color:var(--mute)">まだ記録がありません。「画面を記録する」を押すと、ここに残ります。</p>'}
   </div></div>`;
@@ -981,7 +1012,7 @@ function showGallery() {
 /* ---------- events ---------- */
 const H = {
   start1: startApp1, start2: startApp2, home: showMenu,
-  rec: recordScreen, gallery: showGallery, closeModal: () => { $('#overlay').innerHTML = ''; },
+  rec: recordScreen, shareShot, dlShot, gallery: showGallery, closeModal: () => { $('#overlay').innerHTML = ''; },
   op: d => quizOp(d.op),
   num: d => quizInput(() => { if (quiz.input.length < 9) quiz.input = (quiz.input === '0' ? '' : quiz.input) + d.d; }),
   clr: () => quizInput(() => { quiz.input = ''; }),
