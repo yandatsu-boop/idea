@@ -626,9 +626,9 @@ function finishApp2(results) {
   if (shop.theme === 'pancake') dish = (nm(['strawberry', 'banana', 'blueberry', 'mikan'])[0] || '') + 'の' + (nm(['plain', 'souffle', 'mini'])[0] || 'パンケーキ').replace('ふつうの', '');
   if (shop.theme === 'robot') dish = ({red: 'あかい', blue: 'あおい', yellow: 'きいろい', silver: 'ぎんいろの'}[['red', 'blue', 'yellow', 'silver'].find(has)] || '') + (nm(['biped', 'wheel', 'fly'])[0] || 'ロボ');
   const svg = pencilize({curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot}[shop.theme](q));
-  const imgKey = illustKey(shop.theme, q);
+  const imgKeys = illustKeys(shop.theme, q);
   shop.last = {dish, pts, rk, total, change};
-  setTimeout(() => tryImage(imgKey), 0);
+  setTimeout(() => tryImage(imgKeys), 0);
   $('#main').innerHTML = `<div class="card result">
     <h2>できあがり！</h2><div style="font-size:18px;font-weight:800;color:var(--accent)">${dish}</div>
     <div class="illust">${svg}</div>
@@ -651,23 +651,39 @@ function showImage(src) {
   const box = document.querySelector('.illust'); if (!box) return;
   box.innerHTML = `<img src="${src}" alt="" style="display:block;width:100%;height:auto">`;
 }
-function illustKey(theme, q) {
-  const order = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'], plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'], pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly']}[theme];
-  const main = order.find(id => (q[id] || 0) > 0) || order[0];
-  return `${theme}-${main}`;
+/* 選んだ組み合わせに合う画像のキーを、優先順に返す。
+   見つからなければ SVG のイラストのまま（色などを反映できる）。 */
+function illustKeys(theme, q) {
+  const has = id => (q[id] || 0) > 0, pick = ids => ids.find(has);
+  const main = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'],
+    plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'],
+    pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly']}[theme];
+  const m = pick(main) || main[0], base = `${theme}-${m}`;
+  if (theme === 'curry') return pick(['sweet', 'hot']) === 'hot' ? [`${base}-hot`, base] : [base];
+  if (theme === 'parfait') return has('jumbo') ? [`${base}-jumbo`, base] : [base];
+  if (theme === 'plarail') return has('bridge') ? [`${base}-bridge`, base] : [base];
+  if (theme === 'car') return [`${base}-${pick(['red', 'blue', 'yellow', 'black'])}`];
+  if (theme === 'robot') return [`${base}-${pick(['red', 'blue', 'yellow', 'silver'])}`];
+  if (theme === 'pancake') return [`${base}-${pick(['maple', 'honey', 'chocosauce'])}`];
+  return [base];
 }
 const EMBEDDED_IMAGES = {/*EMBED*/};
-function tryImage(key) {
-  if (EMBEDDED_IMAGES[key]) { showImage(EMBEDDED_IMAGES[key]); return; }
+function tryImage(keys) {
   const exts = ['png', 'jpg', 'jpeg', 'webp'];
-  const next = i => {
-    if (i >= exts.length) return;
-    const im = new Image();
-    im.onload = () => showImage(im.src);
-    im.onerror = () => next(i + 1);
-    im.src = `images/${key}.${exts[i]}`;
+  const key = keys.find(k => EMBEDDED_IMAGES[k]);
+  if (key) { showImage(EMBEDDED_IMAGES[key]); return; }
+  const tryKey = ki => {
+    if (ki >= keys.length) return;
+    const next = i => {
+      if (i >= exts.length) { tryKey(ki + 1); return; }
+      const im = new Image();
+      im.onload = () => showImage(im.src);
+      im.onerror = () => next(i + 1);
+      im.src = `images/${keys[ki]}.${exts[i]}`;
+    };
+    next(0);
   };
-  next(0);
+  tryKey(0);
 }
 
 /* 色鉛筆風: 線のゆらぎ + 紙のざらつき */
