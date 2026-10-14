@@ -87,7 +87,10 @@ button:disabled{cursor:default}
 .seg{display:inline-flex;border:2px solid var(--accent);border-radius:12px;overflow:hidden}
 .seg button{border:0;background:#fff;color:var(--accent);padding:10px 22px;font-weight:700;font-size:16px}
 .seg button.on{background:var(--accent);color:#fff}
-.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.themes{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:20px}
+.themes>*{grid-column:span 2}
+.themes>:nth-child(3n+1):nth-last-child(2){grid-column:2/span 2}
+.themes>:nth-child(3n+2):last-child{grid-column:4/span 2}
 .shop{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
 .money{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
 .money b{font-size:22px}
@@ -149,6 +152,7 @@ button:disabled{cursor:default}
  .shop{grid-template-columns:1fr}
  .basket{position:static}
  .themes,.menu{grid-template-columns:1fr}
+ .themes>*{grid-column:auto!important}
  .expr{font-size:36px}
 }
 </style>
@@ -464,6 +468,33 @@ const THEMES = {
         {id: 'crossing', name: 'ふみきり', price: 150, e: '🚧'}, {id: 'tunnel', name: 'トンネル', price: 250, e: '⛰️'}, {id: 'tree', name: '木', price: 40, e: '🌳'},
         {id: 'signal', name: 'しんごう', price: 80, e: '🚦'}, {id: 'bridge', name: 'はし', price: 200, e: '🌉'}]}
     ]
+  },
+  car: {
+    name: 'カスタムカー', title: 'カスタムカーを作ろう', emoji: '🏎️', desc: 'ボディ・色・タイヤ・パーツで自分だけの車に',
+    cats: [
+      {id: 'body', name: 'ボディ', min: 1, hint: '1こ', items: [
+        {id: 'sports', name: 'スポーツカー', price: 350, e: '🏎️'}, {id: 'kei', name: 'けいカー', price: 250, e: '🚗'}, {id: 'truck', name: 'トラック', price: 300, e: '🛻'}]},
+      {id: 'paint', name: 'いろ（ペンキ）', min: 1, hint: '1こ以上', items: [
+        {id: 'red', name: 'あかいペンキ', price: 50, e: '🟥'}, {id: 'blue', name: 'あおいペンキ', price: 50, e: '🟦'}, {id: 'yellow', name: 'きいろのペンキ', price: 50, e: '🟨'}, {id: 'black', name: 'くろいペンキ', price: 60, e: '⬛'}]},
+      {id: 'wheel', name: 'タイヤ', min: 1, hint: '1こ以上', items: [
+        {id: 'tire', name: 'ふつうのタイヤ', price: 80, e: '⚫'}, {id: 'alloy', name: 'ピカピカホイール', price: 150, e: '⚙️'}]},
+      {id: 'parts', name: 'カスタムパーツ', min: 0, hint: 'おこのみで', items: [
+        {id: 'wing', name: 'ウイング', price: 120, e: '🪽'}, {id: 'light', name: 'ライト', price: 80, e: '💡'}, {id: 'sticker', name: 'ステッカー', price: 40, e: '⭐'},
+        {id: 'muffler', name: 'マフラー', price: 100, e: '💨'}, {id: 'neon', name: 'ネオン', price: 130, e: '✨'}]}
+    ]
+  },
+  pancake: {
+    name: 'パンケーキ', title: 'パンケーキを作ろう', emoji: '🥞', desc: 'ふわふわのパンケーキにソースとフルーツをのせよう',
+    cats: [
+      {id: 'cake', name: 'パンケーキ', min: 1, hint: '1こ以上', items: [
+        {id: 'plain', name: 'ふつうのパンケーキ', price: 200, e: '🥞'}, {id: 'souffle', name: 'スフレパンケーキ', price: 300, e: '🍮'}, {id: 'mini', name: 'ミニパンケーキ', price: 150, e: '🧁'}]},
+      {id: 'sauce', name: 'ソース', min: 1, hint: '1こ以上', items: [
+        {id: 'maple', name: 'メープル', price: 80, e: '🍁'}, {id: 'honey', name: 'はちみつ', price: 90, e: '🍯'}, {id: 'chocosauce', name: 'チョコソース', price: 60, e: '🍫'}]},
+      {id: 'fruit', name: 'フルーツ', min: 1, hint: '1こ以上', items: [
+        {id: 'strawberry', name: 'いちご', price: 200, e: '🍓'}, {id: 'banana', name: 'バナナ', price: 100, e: '🍌'}, {id: 'blueberry', name: 'ブルーベリー', price: 180, e: '🫐'}, {id: 'mikan', name: 'みかん', price: 90, e: '🍊'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'butter', name: 'バター', price: 50, e: '🧈'}, {id: 'whip', name: 'ホイップ', price: 120, e: '☁️'}, {id: 'icecream', name: 'アイス', price: 130, e: '🍦'}, {id: 'sugar', name: 'こなざとう', price: 30, e: '❄️'}]}
+    ]
   }
 };
 const MAXQ = 4;
@@ -577,7 +608,9 @@ function finishApp2(results) {
   if (shop.theme === 'curry') dish = (nm(['chicken', 'beef', 'pork']).map(s => s.replace('にく', '')).join('と') || '') + 'カレー';
   if (shop.theme === 'parfait') dish = (nm(['vanilla', 'choco', 'berry', 'matcha'])[0] || '') + 'と' + (nm(['strawberry', 'banana', 'mikan', 'cherry', 'kiwi'])[0] || '') + 'のパフェ';
   if (shop.theme === 'plarail') dish = (nm(['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'])[0] || 'でんしゃ') + 'がとまる駅';
-  const svg = pencilize({curry: svgCurry, parfait: svgParfait, plarail: svgPlarail}[shop.theme](q));
+  if (shop.theme === 'car') dish = ({red: 'あかい', blue: 'あおい', yellow: 'きいろい', black: 'くろい'}[['red', 'blue', 'yellow', 'black'].find(has)] || '') + 'カスタム' + (nm(['sports', 'kei', 'truck'])[0] || 'くるま');
+  if (shop.theme === 'pancake') dish = (nm(['strawberry', 'banana', 'blueberry', 'mikan'])[0] || '') + 'の' + (nm(['plain', 'souffle', 'mini'])[0] || 'パンケーキ').replace('ふつうの', '');
+  const svg = pencilize({curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake}[shop.theme](q));
   const imgKey = illustKey(shop.theme, q);
   shop.last = {dish, pts, rk, total, change};
   setTimeout(() => tryImage(imgKey), 0);
@@ -604,7 +637,7 @@ function showImage(src) {
   box.innerHTML = `<img src="${src}" alt="" style="display:block;width:100%;height:auto">`;
 }
 function illustKey(theme, q) {
-  const order = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'], plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu']}[theme];
+  const order = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'], plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'], pancake: ['plain', 'souffle', 'mini']}[theme];
   const main = order.find(id => (q[id] || 0) > 0) || order[0];
   return `${theme}-${main}`;
 }
@@ -769,6 +802,67 @@ function svgPlarail(q) {
   ${has('signal') ? `<g><rect x="278" y="${loop ? 160 : 168}" width="5" height="40" fill="#555"/><rect x="271" y="${loop ? 148 : 156}" width="19" height="20" rx="4" fill="#2b2d36"/><circle cx="280.5" cy="${loop ? 154 : 162}" r="4" fill="#ff4d4d"/><circle cx="280.5" cy="${loop ? 162 : 170}" r="4" fill="#4dff88" opacity=".35"/></g>` : ''}
   ${trees}
   ${train}
+  </svg>`;
+}
+
+function svgCar(q) {
+  const has = id => (q[id] || 0) > 0;
+  const col = {red: '#d6455d', blue: '#3d7be0', yellow: '#f2c230', black: '#33363f'}[['red', 'blue', 'yellow', 'black'].find(has)] || '#9aa3b5';
+  const dark = {red: '#a52f44', blue: '#2a58a8', yellow: '#c79a14', black: '#1c1e25'}[['red', 'blue', 'yellow', 'black'].find(has)] || '#6b7280';
+  const kind = has('truck') ? 'truck' : has('kei') ? 'kei' : 'sports';
+  const alloy = has('alloy');
+  const wheel = x => `<g><circle cx="${x}" cy="214" r="24" fill="#2b2d36"/><circle cx="${x}" cy="214" r="${alloy ? 15 : 10}" fill="${alloy ? '#e6e8ee' : '#8a8f9c'}" stroke="#555" stroke-width="2"/>${alloy ? `<path d="M${x} 199V229M${x - 15} 214H${x + 15}M${x - 11} 203L${x + 11} 225M${x + 11} 203L${x - 11} 225" stroke="#9aa0ae" stroke-width="2"/>` : ''}</g>`;
+  let body = '';
+  if (kind === 'sports') body = `<path d="M60 200 Q62 172 110 168 L160 140 Q200 128 250 140 L292 166 Q344 170 348 200 Z" fill="${col}" stroke="${dark}" stroke-width="3"/>
+    <path d="M168 146 Q200 136 238 146 L270 166 L156 166 Z" fill="#cfe9ff" stroke="${dark}" stroke-width="2"/><path d="M60 188H348" stroke="#fff" stroke-width="3" opacity=".7"/>`;
+  else if (kind === 'kei') body = `<path d="M70 204 V158 Q70 138 92 136 L130 112 H266 L310 136 Q336 140 336 164 V204 Z" fill="${col}" stroke="${dark}" stroke-width="3"/>
+    <path d="M140 120 H214 V158 H128 Z M222 120 H262 L292 158 H222 Z" fill="#cfe9ff" stroke="${dark}" stroke-width="2"/>`;
+  else body = `<path d="M48 204 V170 Q48 160 62 160 H196 V120 Q196 112 208 112 H262 L300 150 Q338 154 344 180 V204 Z" fill="${col}" stroke="${dark}" stroke-width="3"/>
+    <path d="M206 122 H258 L288 152 H206 Z" fill="#cfe9ff" stroke="${dark}" stroke-width="2"/><rect x="62" y="150" width="124" height="10" fill="${dark}"/>`;
+  const wing = has('wing') ? `<g fill="${dark}" stroke="#222" stroke-width="2"><rect x="${kind === 'truck' ? 46 : 62}" y="${kind === 'kei' ? 112 : 142}" width="6" height="30"/><rect x="${kind === 'truck' ? 36 : 50}" y="${kind === 'kei' ? 106 : 136}" width="44" height="9" rx="3"/></g>` : '';
+  const light = has('light') ? `<g><rect x="326" y="172" width="20" height="12" rx="5" fill="#fff6b0" stroke="#c79a14" stroke-width="2"/><path d="M346 178 L392 168 V190 Z" fill="#fff6b0" opacity=".5"/></g>` : '';
+  const sticker = has('sticker') ? `<g fill="#fff" stroke="${dark}" stroke-width="2"><circle cx="190" cy="186" r="13" fill="#fff"/><path d="M190 176 L193 183 L201 184 L195 189 L197 197 L190 193 L183 197 L185 189 L179 184 L187 183 Z" fill="#f2c230" stroke="#c79a14" stroke-width="1"/></g>` : '';
+  const muffler = has('muffler') ? `<g><rect x="30" y="202" width="40" height="9" rx="4" fill="#c9ccd6" stroke="#555" stroke-width="2"/><circle cx="22" cy="196" r="6" fill="#dfe2ea" opacity=".8"/><circle cx="10" cy="186" r="8" fill="#eceef3" opacity=".7"/></g>` : '';
+  const neon = has('neon') ? `<ellipse cx="200" cy="238" rx="150" ry="9" fill="#5ad6ff" opacity=".65"/><ellipse cx="200" cy="238" rx="110" ry="5" fill="#b4f0ff" opacity=".85"/>` : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="0" y="232" width="400" height="68" fill="#cfd3dc"/><rect x="0" y="228" width="400" height="6" fill="#b4b9c6"/>
+  <g stroke="#fff" stroke-width="4" stroke-dasharray="26 18"><path d="M0 268H400"/></g>
+  <rect x="232" y="64" width="140" height="110" fill="#e8d3a8" stroke="#caa86a" stroke-width="2"/><polygon points="224,64 302,30 380,64" fill="#d6455d" stroke="#a52f44" stroke-width="2"/><rect x="262" y="104" width="80" height="70" fill="#8a8f9c" stroke="#555" stroke-width="2"/><path d="M262 120H342M262 136H342M262 152H342" stroke="#6b707c" stroke-width="2"/>
+  <circle cx="60" cy="52" r="22" fill="#ffe27a"/><ellipse cx="150" cy="50" rx="38" ry="12" fill="#fff"/>
+  ${neon}${muffler}${body}${wing}${sticker}${wheel(115)}${wheel(290)}${light}
+  </svg>`;
+}
+
+function svgPancake(q) {
+  const has = id => (q[id] || 0) > 0;
+  const mini = has('mini') && !has('plain') && !has('souffle');
+  const tall = has('souffle');
+  const n = mini ? 6 : tall ? 3 : Math.min(3 + (has('plain') ? 1 : 0), 4);
+  const w = mini ? 90 : 190, h = mini ? 16 : tall ? 34 : 22;
+  const base = 224;
+  let stack = '';
+  for (let i = 0; i < n; i++) {
+    const y = base - (i + 1) * (h - 4), cx = 200 + (mini ? ((i % 2) ? 14 : -14) : 0);
+    stack += `<g><ellipse cx="${cx}" cy="${y + h - 6}" rx="${w / 2}" ry="${h / 2 + 3}" fill="#c98a3c" stroke="#a5692a" stroke-width="2"/><rect x="${cx - w / 2}" y="${y}" width="${w}" height="${h - 6}" fill="#e8b25e" stroke="#a5692a" stroke-width="2"/><ellipse cx="${cx}" cy="${y}" rx="${w / 2}" ry="${h / 2 + 3}" fill="#f2c476" stroke="#a5692a" stroke-width="2"/></g>`;
+  }
+  const topY = base - n * (h - 4) - 2;
+  const syrup = has('maple') ? '#b5651d' : has('honey') ? '#f2b705' : has('chocosauce') ? '#5a3320' : null;
+  const sauce = syrup ? `<g fill="${syrup}"><ellipse cx="200" cy="${topY + 4}" rx="${w / 2 - 14}" ry="9" opacity=".9"/><path d="M${200 - w / 2 + 14} ${topY + 6} q6 30 12 0 M${200 + w / 2 - 34} ${topY + 6} q6 40 12 0"/></g>` : '';
+  const pieces = [];
+  if (has('strawberry')) pieces.push(`<g><path d="M0 -10 Q12 -10 11 2 Q9 12 0 14 Q-9 12 -11 2 Q-12 -10 0 -10Z" fill="#e0384f"/><path d="M-6 -11 L0 -17 L6 -11Z" fill="#3f9d4a"/></g>`);
+  if (has('banana')) pieces.push(`<g><circle r="10" fill="#fbe07a" stroke="#d6b341" stroke-width="2"/><circle r="3" fill="#f3cf5a"/></g>`);
+  if (has('blueberry')) pieces.push(`<g><circle r="8" fill="#4c5bb3"/><circle cy="-6" r="2" fill="#2b3478"/></g>`);
+  if (has('mikan')) pieces.push(`<g><path d="M-11 0 A11 11 0 0 1 11 0 Z" fill="#ff9f1c" stroke="#d17a00" stroke-width="2"/></g>`);
+  const fruitSvg = pieces.length ? [-52, -20, 14, 48].map((dx, i) => `<g transform="translate(${200 + dx} ${topY - 4 - (i % 2) * 4})">${pieces[i % pieces.length]}</g>`).join('') : '';
+  const butter = has('butter') ? `<rect x="188" y="${topY - 14}" width="26" height="14" rx="2" fill="#ffe98a" stroke="#d6b341" stroke-width="2"/>` : '';
+  const whip = has('whip') ? `<g fill="#fff" stroke="#d9dce4" stroke-width="2"><circle cx="150" cy="${topY - 4}" r="14"/><circle cx="168" cy="${topY - 16}" r="14"/><circle cx="244" cy="${topY - 6}" r="12"/></g>` : '';
+  const ice = has('icecream') ? `<g><circle cx="262" cy="${topY - 14}" r="18" fill="#fff3d6" stroke="#e0c98e" stroke-width="2"/></g>` : '';
+  const sugar = has('sugar') ? `<g fill="#fff">${Array.from({length: 14}, (_, i) => `<circle cx="${150 + (i * 37) % 100}" cy="${topY - 10 + (i * 11) % 18}" r="1.6"/>`).join('')}</g>` : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="0" y="236" width="400" height="64" fill="#e2c08a"/>
+  <ellipse cx="200" cy="238" rx="150" ry="30" fill="#fff" stroke="#cfd3dc" stroke-width="3"/><ellipse cx="200" cy="234" rx="112" ry="20" fill="#f4f5f8" stroke="#dfe2ea" stroke-width="2"/>
+  ${stack}${sauce}${butter}${whip}${ice}${fruitSvg}${sugar}
+  <g><rect x="336" y="150" width="30" height="40" rx="6" fill="#d6455d" stroke="#a52f44" stroke-width="2"/></g>
   </svg>`;
 }
 
