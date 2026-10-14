@@ -509,6 +509,50 @@ const THEMES = {
         {id: 'arm', name: 'ロケットパンチ', price: 150, e: '👊'}, {id: 'eye', name: 'ビームアイ', price: 90, e: '👁️'}, {id: 'antenna', name: 'アンテナ', price: 40, e: '📡'},
         {id: 'jet', name: 'ジェット', price: 130, e: '🔥'}, {id: 'shield', name: 'シールド', price: 120, e: '🛡️'}]}
     ]
+  },
+  pizza: {
+    name: 'ピザ', title: 'ピザを作ろう', emoji: '🍕', desc: 'きじ・ソース・チーズ・ぐをのせて焼こう',
+    cats: [
+      {id: 'crust', name: 'きじ', min: 1, hint: '1こ', items: [
+        {id: 'thin', name: 'うすやき', price: 200, e: '🫓'}, {id: 'thick', name: 'あつやき', price: 250, e: '🍞'}, {id: 'cheesecrust', name: 'チーズのふち', price: 350, e: '🧀'}]},
+      {id: 'sauce', name: 'ソース', min: 1, hint: '1こ以上', items: [
+        {id: 'tomato', name: 'トマトソース', price: 80, e: '🍅'}, {id: 'white', name: 'ホワイトソース', price: 100, e: '🥛'}]},
+      {id: 'cheese', name: 'チーズ', min: 1, hint: '1こ以上', items: [
+        {id: 'mozza', name: 'モッツァレラ', price: 150, e: '🧀'}, {id: 'cheddar', name: 'チェダー', price: 120, e: '🟨'}]},
+      {id: 'top', name: 'ぐ（トッピング）', min: 0, hint: 'おこのみで', items: [
+        {id: 'salami', name: 'サラミ', price: 120, e: '🍖'}, {id: 'shrimp', name: 'えび', price: 180, e: '🦐'}, {id: 'corn', name: 'コーン', price: 60, e: '🌽'},
+        {id: 'mushroom', name: 'マッシュルーム', price: 80, e: '🍄'}, {id: 'pineapple', name: 'パイナップル', price: 90, e: '🍍'}, {id: 'pepper', name: 'ピーマン', price: 50, e: '🫑'}]}
+    ]
+  },
+  sushi: {
+    name: 'お寿司', title: 'お寿司を作ろう', emoji: '🍣', desc: 'シャリにネタをのせて、おすしやさんごっこ',
+    cats: [
+      {id: 'style', name: 'かたち', min: 1, hint: '1こ以上', items: [
+        {id: 'nigiri', name: 'にぎりずし', price: 100, e: '🍙'}, {id: 'maki', name: 'まきずし', price: 150, e: '🍥'}]},
+      {id: 'neta', name: 'ネタ', min: 1, hint: '1こ以上', items: [
+        {id: 'tuna', name: 'まぐろ', price: 200, e: '🐟'}, {id: 'salmon', name: 'サーモン', price: 150, e: '🍣'}, {id: 'egg', name: 'たまご', price: 80, e: '🥚'},
+        {id: 'shrimp', name: 'えび', price: 120, e: '🦐'}, {id: 'squid', name: 'いか', price: 100, e: '🦑'}, {id: 'ikura', name: 'いくら', price: 250, e: '🔴'}, {id: 'eel', name: 'うなぎ', price: 300, e: '🐍'}]},
+      {id: 'side', name: 'おとも', min: 0, hint: 'おこのみで', items: [
+        {id: 'wasabi', name: 'わさび', price: 30, e: '🟩'}, {id: 'shoyu', name: 'おしょうゆ', price: 20, e: '🫙'}, {id: 'gari', name: 'ガリ', price: 40, e: '🌸'},
+        {id: 'tea', name: 'おちゃ', price: 60, e: '🍵'}, {id: 'miso', name: 'みそしる', price: 100, e: '🥣'}]}
+    ]
+  },
+  burger: {
+    name: 'ハンバーガー', title: 'ハンバーガーを作ろう', emoji: '🍔', desc: 'バンズにパティとやさいをはさもう',
+    cats: [
+      {id: 'bun', name: 'バンズ', min: 1, hint: '1こ', items: [
+        {id: 'plain', name: 'ふつうのバンズ', price: 80, e: '🍞'}, {id: 'sesame', name: 'ごまバンズ', price: 100, e: '🥯'}]},
+      {id: 'patty', name: 'パティ', min: 1, hint: '1こ以上', items: [
+        {id: 'beef', name: 'ぎゅうにく', price: 250, e: '🥩'}, {id: 'chicken', name: 'チキン', price: 200, e: '🍗'}, {id: 'fish', name: 'フィッシュ', price: 180, e: '🐟'}, {id: 'veggie', name: 'やさいパティ', price: 150, e: '🥕'}]},
+      {id: 'veg', name: 'やさい', min: 1, hint: 'あわせて1こ以上', items: [
+        {id: 'lettuce', name: 'レタス', price: 50, e: '🥬'}, {id: 'tomato', name: 'トマト', price: 60, e: '🍅'}, {id: 'onion', name: 'たまねぎ', price: 40, e: '🧅'}, {id: 'pickle', name: 'ピクルス', price: 40, e: '🥒'}]},
+      {id: 'extra', name: 'プラス', min: 0, hint: 'おこのみで', items: [
+        {id: 'cheese', name: 'チーズ', price: 70, e: '🧀'}, {id: 'bacon', name: 'ベーコン', price: 100, e: '🥓'}, {id: 'egg', name: 'めだまやき', price: 70, e: '🍳'}]},
+      {id: 'sauce', name: 'ソース', min: 1, hint: '1こ以上', items: [
+        {id: 'ketchup', name: 'ケチャップ', price: 20, e: '🍅'}, {id: 'mustard', name: 'マスタード', price: 20, e: '🟡'}, {id: 'bbq', name: 'バーベキュー', price: 30, e: '🔥'}]},
+      {id: 'set', name: 'セット', min: 0, hint: 'おこのみで', items: [
+        {id: 'fries', name: 'ポテト', price: 120, e: '🍟'}, {id: 'drink', name: 'ドリンク', price: 100, e: '🥤'}]}
+    ]
   }
 };
 const MAXQ = 4;
@@ -625,7 +669,10 @@ function finishApp2(results) {
   if (shop.theme === 'car') dish = ({red: 'あかい', blue: 'あおい', yellow: 'きいろい', black: 'くろい'}[['red', 'blue', 'yellow', 'black'].find(has)] || '') + 'カスタム' + (nm(['sports', 'kei', 'truck'])[0] || 'くるま');
   if (shop.theme === 'pancake') dish = (nm(['strawberry', 'banana', 'blueberry', 'mikan'])[0] || '') + 'の' + (nm(['plain', 'souffle', 'mini'])[0] || 'パンケーキ').replace('ふつうの', '');
   if (shop.theme === 'robot') dish = ({red: 'あかい', blue: 'あおい', yellow: 'きいろい', silver: 'ぎんいろの'}[['red', 'blue', 'yellow', 'silver'].find(has)] || '') + (nm(['biped', 'wheel', 'fly'])[0] || 'ロボ');
-  const svg = pencilize({curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot}[shop.theme](q));
+  if (shop.theme === 'pizza') { const t = nm(['salami', 'shrimp', 'corn', 'mushroom', 'pineapple', 'pepper'])[0]; dish = (t ? t + 'の' : 'チーズ') + (has('white') && !has('tomato') ? 'ホワイト' : '') + 'ピザ'; }
+  if (shop.theme === 'sushi') { const ns = nm(['tuna', 'salmon', 'egg', 'shrimp', 'squid', 'ikura', 'eel']); dish = ns.length >= 3 ? 'おすしもりあわせ' : ns.join('と') + 'の' + (has('maki') && !has('nigiri') ? 'まきずし' : 'にぎり'); }
+  if (shop.theme === 'burger') { const p = {beef: 'ぎゅうにく', chicken: 'チキン', fish: 'フィッシュ', veggie: 'やさい'}[['beef', 'chicken', 'fish', 'veggie'].find(has)] || ''; dish = (has('cheese') ? 'チーズ' : '') + p + 'バーガー' + (has('fries') && has('drink') ? 'セット' : ''); }
+  const svg = pencilize({curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot, pizza: svgPizza, sushi: svgSushi, burger: svgBurger}[shop.theme](q));
   const imgKeys = illustKeys(shop.theme, q);
   shop.last = {dish, pts, rk, total, change};
   setTimeout(() => tryImage(imgKeys), 0);
@@ -657,7 +704,20 @@ function illustKeys(theme, q) {
   const has = id => (q[id] || 0) > 0, pick = ids => ids.find(has);
   const main = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'],
     plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'],
-    pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly']}[theme];
+    pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly'], pizza: [], sushi: [], burger: []}[theme];
+  if (theme === 'pizza') {
+    const t = pick(['salami', 'shrimp', 'corn', 'mushroom', 'pineapple', 'pepper']) || 'plain', b = `pizza-${t}`;
+    return has('white') && !has('tomato') ? [`${b}-white`] : [b];
+  }
+  if (theme === 'sushi') {
+    const ns = ['tuna', 'salmon', 'egg', 'shrimp', 'squid', 'ikura', 'eel'], n = pick(ns) || 'tuna', b = `sushi-${n}`;
+    if (ns.filter(has).length >= 3) return ['sushi-platter'];
+    return has('maki') && !has('nigiri') ? [`${b}-maki`] : [b];
+  }
+  if (theme === 'burger') {
+    const b = `burger-${pick(['beef', 'chicken', 'fish', 'veggie']) || 'beef'}`;
+    return has('fries') && has('drink') ? [`${b}-set`] : has('cheese') ? [`${b}-cheese`] : [b];
+  }
   const m = pick(main) || main[0], base = `${theme}-${m}`;
   if (theme === 'curry') return pick(['sweet', 'hot']) === 'hot' ? [`${base}-hot`, base] : [base];
   if (theme === 'parfait') return has('jumbo') ? [`${base}-jumbo`, base] : [base];
@@ -931,6 +991,78 @@ function svgRobot(q) {
   <circle cx="182" cy="${80 + oy}" r="11" fill="${eyeFill}" stroke="#2b2d36" stroke-width="2"/><circle cx="218" cy="${80 + oy}" r="11" fill="${eyeFill}" stroke="#2b2d36" stroke-width="2"/><circle cx="182" cy="${80 + oy}" r="4" fill="#2b2d36"/><circle cx="218" cy="${80 + oy}" r="4" fill="#2b2d36"/>
   <path d="M184 ${98 + oy} Q200 ${108 + oy} 216 ${98 + oy}" fill="none" stroke="#2b2d36" stroke-width="3" stroke-linecap="round"/>
   <g fill="#2b2d36" opacity=".55"><circle cx="196" cy="${168 + oy}" r="4"/><circle cx="208" cy="${168 + oy}" r="4"/></g>
+  </svg>`;
+}
+
+function svgPizza(q) {
+  const has = id => (q[id] || 0) > 0;
+  const white = has('white') && !has('tomato');
+  const crustCol = has('cheesecrust') ? '#f2c230' : '#e0a458';
+  const R = has('thin') && !has('thick') && !has('cheesecrust') ? 112 : 118;
+  const dots = (n, cx, cy, rad, f) => Array.from({length: n}, (_, i) => { const a = i * 2.4, r = rad * Math.sqrt((i + .5) / n); return f(cx + r * Math.cos(a), cy + r * Math.sin(a), i); }).join('');
+  let tops = '';
+  if (has('salami')) tops += dots(7, 200, 156, 84, (x, y) => `<circle cx="${x}" cy="${y}" r="13" fill="#b5392f" stroke="#7d2420" stroke-width="2"/>`);
+  if (has('shrimp')) tops += dots(5, 200, 156, 76, (x, y) => `<path d="M${x - 11} ${y} q11 -16 22 0 q-4 8 -11 8 q-9 0 -11 -8Z" fill="#ff9a7a" stroke="#d46a4a" stroke-width="2"/>`);
+  if (has('corn')) tops += dots(16, 200, 156, 90, (x, y) => `<circle cx="${x}" cy="${y}" r="5" fill="#ffd93d"/>`);
+  if (has('mushroom')) tops += dots(6, 200, 156, 80, (x, y) => `<path d="M${x - 11} ${y + 4} a11 10 0 0 1 22 0Z" fill="#e8d8c0" stroke="#b5a285" stroke-width="2"/><rect x="${x - 3}" y="${y + 4}" width="6" height="7" fill="#e8d8c0"/>`);
+  if (has('pineapple')) tops += dots(6, 200, 156, 80, (x, y) => `<rect x="${x - 9}" y="${y - 9}" width="18" height="18" rx="3" fill="#ffe066" stroke="#d9b82e" stroke-width="2"/>`);
+  if (has('pepper')) tops += dots(7, 200, 156, 84, (x, y) => `<path d="M${x - 11} ${y} q11 -12 22 0" fill="none" stroke="#3f9d4a" stroke-width="5" stroke-linecap="round"/>`);
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="40" y="20" width="320" height="260" rx="18" fill="#c9965a" stroke="#a5732f" stroke-width="3"/>
+  <circle cx="200" cy="156" r="${R + 6}" fill="#8a5a2b" opacity=".25"/>
+  <circle cx="200" cy="150" r="${R}" fill="${crustCol}" stroke="#a5692a" stroke-width="3"/>
+  <circle cx="200" cy="150" r="${R - 14}" fill="${white ? '#fff3d6' : '#d6452d'}"/>
+  <circle cx="200" cy="150" r="${R - 20}" fill="${has('cheddar') && !has('mozza') ? '#ffc247' : '#ffe9a0'}" opacity=".85"/>
+  <g transform="translate(0 -6)">${tops}</g>
+  <path d="M200 38V262M82 150H318" stroke="#a5692a" stroke-width="2" opacity=".35"/>
+  </svg>`;
+}
+
+function svgSushi(q) {
+  const has = id => (q[id] || 0) > 0;
+  const color = {tuna: '#d6455d', salmon: '#ff8a5c', egg: '#ffd451', shrimp: '#ffb59a', squid: '#f6f1e6', ikura: '#e8532d', eel: '#6b4423'};
+  const ns = Object.keys(color).filter(has);
+  const list = ns.length ? ns : ['tuna'];
+  const maki = has('maki') && !has('nigiri');
+  const pieces = list.flatMap(n => [n, n]).slice(0, 8).map((n, i) => {
+    const x = 70 + (i % 4) * 76, y = 120 + Math.floor(i / 4) * 78;
+    return maki
+      ? `<g><circle cx="${x}" cy="${y}" r="26" fill="#222a2e"/><circle cx="${x}" cy="${y}" r="20" fill="#fff"/><circle cx="${x}" cy="${y}" r="9" fill="${color[n]}" stroke="#00000022" stroke-width="2"/></g>`
+      : `<g><rect x="${x - 28}" y="${y - 2}" width="56" height="26" rx="12" fill="#fffdf5" stroke="#d9d3c0" stroke-width="2"/><path d="M${x - 33} ${y - 4} q33 -22 66 0 q-4 16 -33 16 q-29 0 -33 -16Z" fill="${color[n]}" stroke="#00000033" stroke-width="2"/>${n === 'ikura' ? `<rect x="${x - 26}" y="${y - 12}" width="52" height="8" fill="#222a2e"/>` : ''}</g>`;
+  }).join('');
+  const side = (has('wasabi') ? '<ellipse cx="344" cy="82" rx="14" ry="9" fill="#7cc46a" stroke="#4f9a64" stroke-width="2"/>' : '') + (has('gari') ? '<ellipse cx="344" cy="116" rx="18" ry="10" fill="#ffc9d6" stroke="#e08ca3" stroke-width="2"/>' : '') + (has('shoyu') ? '<ellipse cx="344" cy="150" rx="18" ry="10" fill="#fff" stroke="#9aa3b5" stroke-width="2"/><ellipse cx="344" cy="150" rx="12" ry="6" fill="#3b2a1c"/>' : '') + (has('tea') ? '<g><rect x="326" y="190" width="38" height="44" rx="6" fill="#e6e8ee" stroke="#9aa3b5" stroke-width="2"/><rect x="330" y="194" width="30" height="12" fill="#9bc96a"/></g>' : '') + (has('miso') ? '<g><ellipse cx="344" cy="250" rx="26" ry="12" fill="#a0522d"/><ellipse cx="344" cy="246" rx="22" ry="8" fill="#d9a066"/></g>' : '');
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="20" y="40" width="290" height="220" rx="16" fill="#b5834a" stroke="#8a5f2b" stroke-width="3"/>
+  <path d="M20 90H310M20 150H310M20 210H310" stroke="#8a5f2b" stroke-width="1" opacity=".3"/>
+  ${pieces}${side}
+  </svg>`;
+}
+
+function svgBurger(q) {
+  const has = id => (q[id] || 0) > 0;
+  const bun = has('sesame') ? '#d9902f' : '#e8a94a';
+  const patty = {beef: '#6b3a22', chicken: '#e0a458', fish: '#f0cf8a', veggie: '#8a6b2f'}[['beef', 'chicken', 'fish', 'veggie'].find(has)] || '#6b3a22';
+  const layers = [];
+  let y = 218;
+  const add = (h, f) => { y -= h; layers.push(f(y, h)); };
+  add(18, (y, h) => `<path d="M100 ${y} H300 q10 0 10 ${h / 2} q0 ${h / 2} -10 ${h / 2} H100 q-10 0 -10 -${h / 2} q0 -${h / 2} 10 -${h / 2}Z" fill="${bun}" stroke="#a5692a" stroke-width="2"/>`);
+  if (has('ketchup')) add(8, (y) => `<rect x="104" y="${y}" width="192" height="8" rx="4" fill="#d6452d"/>`);
+  if (has('mustard')) add(8, (y) => `<rect x="104" y="${y}" width="192" height="8" rx="4" fill="#f2c230"/>`);
+  if (has('bbq')) add(8, (y) => `<rect x="104" y="${y}" width="192" height="8" rx="4" fill="#7a3b1d"/>`);
+  if (has('onion')) add(8, (y) => `<rect x="100" y="${y}" width="200" height="8" rx="4" fill="#f6e6ff" stroke="#c9a8e0" stroke-width="1.5"/>`);
+  if (has('tomato')) add(12, (y) => `<rect x="98" y="${y}" width="204" height="12" rx="5" fill="#e0384f"/>`);
+  if (has('pickle')) add(8, (y) => `<rect x="104" y="${y}" width="192" height="8" rx="4" fill="#6bbf59"/>`);
+  if (has('lettuce')) add(12, (y) => `<path d="M90 ${y + 12} q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 q14 -16 28 0 V${y + 14} H90Z" fill="#7cc46a" stroke="#4f9a64" stroke-width="2"/>`);
+  if (has('egg')) add(10, (y) => `<g><ellipse cx="200" cy="${y + 5}" rx="96" ry="9" fill="#fff"/><circle cx="200" cy="${y + 3}" r="9" fill="#ffc400"/></g>`);
+  if (has('bacon')) add(8, (y) => `<path d="M92 ${y} h216 v8 h-216Z" fill="#c0504d" stroke="#8a2f2c" stroke-width="2"/>`);
+  if (has('cheese')) add(8, (y) => `<path d="M96 ${y} H304 L318 ${y + 14} L282 ${y + 8} L200 ${y + 14} L118 ${y + 8} L82 ${y + 14}Z" fill="#ffc247" stroke="#d9982e" stroke-width="2"/>`);
+  add(22, (y, h) => `<rect x="94" y="${y}" width="212" height="${h}" rx="11" fill="${patty}" stroke="#00000033" stroke-width="2"/>`);
+  add(26, (y, h) => `<path d="M100 ${y + h} q-12 0 -10 -10 Q92 ${y - 40} 200 ${y - 44} Q308 ${y - 40} 310 ${y + h - 10} q2 10 -10 10Z" fill="${bun}" stroke="#a5692a" stroke-width="2"/>${has('sesame') ? [150, 180, 210, 240, 165, 225].map((x, i) => `<ellipse cx="${x}" cy="${y - 22 + (i > 3 ? 12 : 0)}" rx="5" ry="2.5" fill="#fff3d6"/>`).join('') : ''}`);
+  const fries = has('fries') ? '<g><rect x="322" y="190" width="46" height="62" rx="5" fill="#d6452d"/><g stroke="#ffd451" stroke-width="7" stroke-linecap="round"><path d="M332 190V160M344 190V152M356 190V162"/></g></g>' : '';
+  const drink = has('drink') ? '<g><path d="M26 160H70L64 252H32Z" fill="#fff" stroke="#9aa3b5" stroke-width="2"/><rect x="24" y="152" width="48" height="10" rx="3" fill="#d6452d"/><rect x="46" y="130" width="5" height="26" fill="#d6452d"/></g>' : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbeed2"/><ellipse cx="200" cy="250" rx="140" ry="22" fill="#fff" stroke="#cfd3dc" stroke-width="3"/>
+  ${fries}${drink}${layers.join('')}
   </svg>`;
 }
 
