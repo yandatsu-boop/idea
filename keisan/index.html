@@ -610,7 +610,7 @@ function renderShop(warn) {
     </div>
     <div class="card" style="margin-top:14px">${catsHTML}</div></div>
     <div class="basket"><div class="card"><h3>🧺 かご</h3>
-      ${{burger: svgBurger, pizza: svgPizza, sushi: svgSushi}[shop.theme] ? `<div class="livepv">${({burger: svgBurger, pizza: svgPizza, sushi: svgSushi})[shop.theme](shop.qty)}</div>` : ''}
+      ${{burger: svgBurger, pizza: svgPizza, sushi: svgSushi, plarail: svgPlarail}[shop.theme] ? `<div class="livepv">${({burger: svgBurger, pizza: svgPizza, sushi: svgSushi, plarail: svgPlarail})[shop.theme](shop.qty)}</div>` : ''}
       ${lines.length ? lines.map(l => `<div class="bl"><span>${l.e} ${l.name} ×${l.q}</span><span>${fmt(l.price)}円</span></div>`).join('') : '<div class="bl" style="color:var(--mute)">まだ何も入っていません</div>'}
       <div class="req">${req}</div>
       <button class="go" data-a="checkout" ${shopReady() ? '' : 'disabled'}>おかいけいへ</button>
@@ -676,7 +676,7 @@ function finishApp2(results) {
   if (shop.theme === 'sushi') { const ns = nm(['tuna', 'salmon', 'egg', 'shrimp', 'squid', 'ikura', 'eel']); dish = ns.length >= 3 ? 'おすしもりあわせ' : ns.join('と') + 'の' + (has('maki') && !has('nigiri') ? 'まきずし' : 'にぎり'); }
   if (shop.theme === 'burger') { const p = {beef: 'ぎゅうにく', chicken: 'チキン', fish: 'フィッシュ', veggie: 'やさい'}[['beef', 'chicken', 'fish', 'veggie'].find(has)] || ''; const pc = ['beef', 'chicken', 'fish', 'veggie'].reduce((a, id) => a + (q[id] || 0), 0), N = burgerStack(q).length; dish = (pc >= 5 ? 'ジャイアント' : pc >= 3 ? 'トリプル' : pc === 2 ? 'ダブル' : '') + (has('cheese') ? 'チーズ' : '') + p + 'バーガー' + (has('fries') && has('drink') ? 'セット' : '') + `（${N}だん）`; }
   const draw = {curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot, pizza: svgPizza, sushi: svgSushi, burger: svgBurger}[shop.theme](q);
-  const svg = ['burger', 'pizza', 'sushi'].includes(shop.theme) ? draw : pencilize(draw);
+  const svg = ['burger', 'pizza', 'sushi', 'plarail'].includes(shop.theme) ? draw : pencilize(draw);
   const imgKeys = illustKeys(shop.theme, q);
   shop.last = {dish, pts, rk, total, change};
   setTimeout(() => tryImage(imgKeys), 0);
@@ -709,7 +709,7 @@ function illustKeys(theme, q) {
   const main = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'],
     plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'],
     pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly'], pizza: [], sushi: [], burger: []}[theme];
-  if (theme === 'pizza' || theme === 'sushi') return [];   // 選んだものをそのまま並べて描く（部品画像）
+  if (theme === 'pizza' || theme === 'sushi' || theme === 'plarail') return [];   // 選んだものをそのまま並べて描く（部品画像）
   if (theme === 'burger') return [];   // 選んだ材料をそのまま積み上げて描く（部品画像）
   const m = pick(main) || main[0], base = `${theme}-${m}`;
   if (theme === 'curry') return pick(['sweet', 'hot']) === 'hot' ? [`${base}-hot`, base] : [base];
@@ -838,54 +838,49 @@ function svgParfait(q) {
   </g></svg>`;
 }
 
+/* プラレール: レールのこ数・でんしゃの両数・えき・そえものを、買った数だけ並べる（Canvaで描いた部品） */
+const PL_PART = {   // 部品名: 縦/横の比
+  'pl-car-shinkansen': .28, 'pl-car-train': .442, 'pl-car-sl': .504, 'pl-car-keihan': .454, 'pl-car-kintetsu': .308,
+  'pl-station': .833, 'pl-platform': .274, 'pl-crossing': .78, 'pl-tunnel': .645, 'pl-tree': 1.32, 'pl-signal': 2.7, 'pl-bridge': .277
+};
 function svgPlarail(q) {
-  const has = id => (q[id] || 0) > 0, n = id => q[id] || 0;
-  const loop = has('curve');
-  const hasT = ['shinkansen', 'train', 'keihan', 'kintetsu'].some(has);
-  const track = loop
-    ? `<ellipse cx="200" cy="222" rx="160" ry="38" fill="none" stroke="#b08a5a" stroke-width="10" stroke-dasharray="3 7"/>
-       <ellipse cx="200" cy="222" rx="160" ry="38" fill="none" stroke="#6b6f7a" stroke-width="3"/><ellipse cx="200" cy="222" rx="154" ry="33" fill="none" stroke="#6b6f7a" stroke-width="3"/>`
-    : `<line x1="25" y1="226" x2="375" y2="226" stroke="#b08a5a" stroke-width="12" stroke-dasharray="3 7"/>
-       <line x1="25" y1="221" x2="375" y2="221" stroke="#6b6f7a" stroke-width="3"/><line x1="25" y1="231" x2="375" y2="231" stroke="#6b6f7a" stroke-width="3"/>`;
-  const ty = loop ? 252 : 226;
-  let train = '';
-  if (has('shinkansen')) train = `<g><rect x="125" y="${ty - 28}" width="150" height="26" rx="12" fill="#fff" stroke="#9aa3b5" stroke-width="2"/><rect x="125" y="${ty - 14}" width="150" height="6" fill="#1f6fd1"/>
-    <path d="M275 ${ty - 28} Q312 ${ty - 20} 318 ${ty - 4} L275 ${ty - 2}Z" fill="#fff" stroke="#9aa3b5" stroke-width="2"/>
-    <g fill="#5aa8e8"><rect x="140" y="${ty - 24}" width="14" height="7"/><rect x="164" y="${ty - 24}" width="14" height="7"/><rect x="188" y="${ty - 24}" width="14" height="7"/><rect x="212" y="${ty - 24}" width="14" height="7"/><rect x="236" y="${ty - 24}" width="14" height="7"/></g></g>`;
-  else if (has('keihan')) train = `<g><rect x="125" y="${ty - 30}" width="150" height="28" rx="6" fill="#fff" stroke="#9aa3b5" stroke-width="2"/><rect x="125" y="${ty - 14}" width="150" height="12" fill="#c8102e"/><rect x="125" y="${ty - 16}" width="150" height="3" fill="#f2c500"/>
-    <g fill="#5aa8e8" stroke="#9aa3b5"><rect x="136" y="${ty - 26}" width="20" height="9"/><rect x="164" y="${ty - 26}" width="20" height="9"/><rect x="192" y="${ty - 26}" width="20" height="9"/><rect x="220" y="${ty - 26}" width="20" height="9"/><rect x="248" y="${ty - 26}" width="20" height="9"/></g></g>`;
-  else if (has('kintetsu')) train = `<g><rect x="125" y="${ty - 30}" width="150" height="28" rx="8" fill="#c8102e" stroke="#8a0b20" stroke-width="2"/><rect x="125" y="${ty - 14}" width="150" height="5" fill="#f2c500"/><rect x="125" y="${ty - 30}" width="150" height="5" rx="2" fill="#e6e8ee"/>
-    <g fill="#d8f0ff" stroke="#8a0b20"><rect x="136" y="${ty - 24}" width="20" height="9"/><rect x="164" y="${ty - 24}" width="20" height="9"/><rect x="192" y="${ty - 24}" width="20" height="9"/><rect x="220" y="${ty - 24}" width="20" height="9"/><rect x="248" y="${ty - 24}" width="20" height="9"/></g></g>`;
-  else if (has('train')) train = `<g><rect x="130" y="${ty - 30}" width="140" height="28" rx="6" fill="#4caf7a" stroke="#2f7a52" stroke-width="2"/><rect x="130" y="${ty - 12}" width="140" height="5" fill="#f5a623"/>
-    <g fill="#d8f0ff" stroke="#2f7a52"><rect x="140" y="${ty - 25}" width="20" height="11"/><rect x="170" y="${ty - 25}" width="20" height="11"/><rect x="200" y="${ty - 25}" width="20" height="11"/><rect x="230" y="${ty - 25}" width="20" height="11"/></g></g>`;
-  if (has('sl')) {
-    const dx = hasT ? 0 : 0;
-    train += `<g transform="translate(${dx} 0)"><rect x="${hasT ? 20 : 140}" y="${ty - 28}" width="${hasT ? 90 : 120}" height="24" rx="6" fill="#2b2d36"/>
-      <rect x="${hasT ? 24 : 144}" y="${ty - 44}" width="14" height="16" fill="#2b2d36"/>
-      <circle cx="${hasT ? 34 : 154}" cy="${ty - 52}" r="8" fill="#c9ccd6" opacity=".8"/><circle cx="${hasT ? 46 : 166}" cy="${ty - 64}" r="11" fill="#dfe2ea" opacity=".7"/>
-      <rect x="${hasT ? 60 : 180}" y="${ty - 42}" width="38" height="16" rx="3" fill="#d6455d"/>
-      <g fill="#c9a227" stroke="#2b2d36" stroke-width="2"><circle cx="${hasT ? 42 : 162}" cy="${ty - 3}" r="7"/><circle cx="${hasT ? 72 : 192}" cy="${ty - 3}" r="7"/><circle cx="${hasT ? 100 : 220}" cy="${ty - 3}" r="7"/></g></g>`;
+  const n = id => q[id] || 0;
+  const img = (name, cx, bottom, w) => { const h = w * PL_PART[name]; return `<image href="${partHref(name)}" x="${cx - w / 2}" y="${bottom - h}" width="${w}" height="${h}"/>`; };
+  const rails = n('straight') + n('curve'), loop = n('curve') > 0;
+  // レール（青い線路）。1この区切りごとに白い継ぎ目を入れる
+  const CX = 200, CY = 196, RX = 172, RY = 46;
+  let track = '', joints = '';
+  if (loop) {
+    const pts = Array.from({length: Math.max(rails, 1)}, (_, i) => { const a = Math.PI / 2 + (i / Math.max(rails, 1)) * Math.PI * 2; return [CX + RX * Math.cos(a), CY + RY * Math.sin(a), a]; });
+    track = `<ellipse cx="${CX}" cy="${CY}" rx="${RX}" ry="${RY}" fill="none" stroke="#b08a5a" stroke-width="9" stroke-dasharray="2.5 5.5"/><ellipse cx="${CX}" cy="${CY}" rx="${RX + 4}" ry="${RY + 3}" fill="none" stroke="#2f6fd0" stroke-width="3.5"/><ellipse cx="${CX}" cy="${CY}" rx="${RX - 4}" ry="${RY - 3}" fill="none" stroke="#2f6fd0" stroke-width="3.5"/>`;
+    joints = pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.2" fill="#fff" stroke="#1d4b9e" stroke-width="1.2"/>`).join('');
+  } else {
+    const len = 300, y = CY + RY + 6, m = Math.max(rails, 1);
+    track = `<line x1="${200 - len / 2}" y1="${y}" x2="${200 + len / 2}" y2="${y}" stroke="#b08a5a" stroke-width="9" stroke-dasharray="2.5 5.5"/><line x1="${200 - len / 2}" y1="${y - 3.5}" x2="${200 + len / 2}" y2="${y - 3.5}" stroke="#2f6fd0" stroke-width="3.5"/><line x1="${200 - len / 2}" y1="${y + 3.5}" x2="${200 + len / 2}" y2="${y + 3.5}" stroke="#2f6fd0" stroke-width="3.5"/>`;
+    joints = Array.from({length: m + 1}, (_, i) => `<circle cx="${200 - len / 2 + i * len / m}" cy="${y}" r="3.2" fill="#fff" stroke="#1d4b9e" stroke-width="1.2"/>`).join('');
   }
-  const trees = Array.from({length: Math.min(n('tree'), 6)}, (_, i) => {
-    const p = [[40, 170], [360, 168], [95, 266], [310, 270], [20, 245], [380, 245]][i];
-    return `<g><rect x="${p[0] - 3}" y="${p[1]}" width="6" height="16" fill="#8b5a2b"/><circle cx="${p[0]}" cy="${p[1] - 8}" r="15" fill="#3f9d4a"/><circle cx="${p[0] - 8}" cy="${p[1]}" r="10" fill="#4cb35a"/></g>`;
-  }).join('');
+  const trackY = loop ? CY + RY : CY + RY + 6;           // 手前の線路の高さ
+  // でんしゃ: 買った両数ぶん、右むきに連結する
+  const cars = [];
+  ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'].forEach(id => { for (let i = 0; i < n(id); i++) cars.push(id); });
+  const cw = Math.min(96, 350 / Math.max(1, cars.length));
+  const total = cars.length * cw;
+  const trainSvg = cars.map((id, i) => `<image href="${partHref('pl-car-' + id)}" x="${200 - total / 2 + i * cw}" y="${trackY + 8 - cw * .52}" width="${cw}" height="${cw * .52}" preserveAspectRatio="xMidYMax meet"/>`).join('');
+  const extras = [
+    n('tunnel') ? img('pl-tunnel', 58, trackY - 4, 100) : '',
+    n('bridge') ? `<rect x="256" y="${trackY - 2}" width="132" height="22" fill="#6fb8ee" stroke="#4d93c7" stroke-width="2"/>` + img('pl-bridge', 322, trackY + 9, 132) : '',
+    n('crossing') ? img('pl-crossing', 118, trackY + 14, 64) : '',
+    n('signal') ? img('pl-signal', 352, trackY - 18, 26) : '',
+  ].join('');
+  const treeSpots = [[34, 160, 40], [366, 168, 40], [84, 120, 34], [330, 118, 34], [24, 270, 36], [376, 272, 36]];
+  const trees = Array.from({length: Math.min(n('tree'), 6)}, (_, i) => img('pl-tree', treeSpots[i][0], treeSpots[i][1] + 40, treeSpots[i][2])).join('');
+  const station = (n('building') ? img('pl-station', 200, 170, 124) : '') + (n('platform') ? img('pl-platform', 200, trackY - 4, n('building') ? 216 : 250) : '');
+  const nc = cars.length;
   return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-  <rect width="400" height="300" fill="#d8efff"/><circle cx="340" cy="46" r="24" fill="#ffe27a"/><ellipse cx="90" cy="50" rx="40" ry="14" fill="#fff"/><ellipse cx="120" cy="42" rx="28" ry="12" fill="#fff"/>
-  <rect x="10" y="150" width="380" height="136" rx="16" fill="#8ccf7a" stroke="#5da24d" stroke-width="3"/>
-  ${has('bridge') ? `<rect x="306" y="156" width="40" height="124" fill="#7fc4f2"/><path d="M306 156V280M346 156V280" stroke="#5aa5d6" stroke-width="3"/>` : ''}
-  ${track}
-  ${has('bridge') ? `<rect x="300" y="${loop ? 212 : 216}" width="52" height="${loop ? 20 : 20}" rx="3" fill="#b08a5a" stroke="#7a5a30" stroke-width="2"/><path d="M304 ${loop ? 212 : 216} Q326 ${loop ? 196 : 200} 348 ${loop ? 212 : 216}" fill="none" stroke="#7a5a30" stroke-width="3"/>` : ''}
-  ${has('building') ? `<g><rect x="140" y="104" width="120" height="58" fill="#f7e7c6" stroke="#caa86a" stroke-width="2"/><polygon points="130,104 200,72 270,104" fill="#d6455d" stroke="#a52f44" stroke-width="2"/>
-    <rect x="176" y="112" width="48" height="16" rx="3" fill="#fff" stroke="#caa86a"/><text x="200" y="125" font-size="12" font-weight="700" text-anchor="middle" fill="#333" font-family="sans-serif">えき</text>
-    <rect x="152" y="134" width="22" height="28" fill="#8fd0ff" stroke="#caa86a"/><rect x="226" y="134" width="22" height="28" fill="#8fd0ff" stroke="#caa86a"/><rect x="188" y="136" width="24" height="26" fill="#a0693a"/></g>` : ''}
-  ${has('platform') ? `<rect x="${has('building') ? 110 : 90}" y="${loop ? 178 : 190}" width="${has('building') ? 180 : 220}" height="12" rx="3" fill="#c9ccd6" stroke="#9aa0ae" stroke-width="2"/><rect x="${has('building') ? 110 : 90}" y="${loop ? 190 : 202}" width="${has('building') ? 180 : 220}" height="5" fill="#9aa0ae"/>` : ''}
-  ${has('tunnel') ? `<g><path d="M14 224 V190 Q14 150 56 150 Q98 150 98 190 V224Z" fill="#a17a52" stroke="#7a5a30" stroke-width="3"/><path d="M30 224 V196 Q30 172 56 172 Q82 172 82 196 V224Z" fill="#2b2d36"/></g>` : ''}
-  ${has('crossing') ? `<g><rect x="106" y="190" width="5" height="40" fill="#fff" stroke="#999"/><rect x="104" y="188" width="9" height="10" fill="#d6455d"/><rect x="${has('platform') ? 100 : 100}" y="196" width="64" height="5" fill="#d6455d" transform="rotate(-8 106 196)"/>
-    <rect x="126" y="196" width="10" height="5" fill="#fff" transform="rotate(-8 106 196)"/><rect x="146" y="196" width="10" height="5" fill="#fff" transform="rotate(-8 106 196)"/></g>` : ''}
-  ${has('signal') ? `<g><rect x="278" y="${loop ? 160 : 168}" width="5" height="40" fill="#555"/><rect x="271" y="${loop ? 148 : 156}" width="19" height="20" rx="4" fill="#2b2d36"/><circle cx="280.5" cy="${loop ? 154 : 162}" r="4" fill="#ff4d4d"/><circle cx="280.5" cy="${loop ? 162 : 170}" r="4" fill="#4dff88" opacity=".35"/></g>` : ''}
-  ${trees}
-  ${train}
+  <rect width="400" height="300" fill="#d8efff"/><circle cx="352" cy="38" r="22" fill="#ffe27a"/><ellipse cx="86" cy="42" rx="40" ry="14" fill="#fff"/><ellipse cx="116" cy="34" rx="28" ry="12" fill="#fff"/>
+  <rect x="8" y="104" width="384" height="188" rx="18" fill="#8ccf7a" stroke="#5da24d" stroke-width="3"/>
+  ${track}${joints}${station}${extras}${trees}${trainSvg}
+  <g><rect x="12" y="12" width="${nc >= 10 ? 102 : 90}" height="34" rx="17" fill="#fff" stroke="#e0a458" stroke-width="3"/><text x="${nc >= 10 ? 63 : 57}" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a5692a" font-family="sans-serif">${nc}りょう！</text></g>
   </svg>`;
 }
 
