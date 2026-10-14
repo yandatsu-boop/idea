@@ -9,6 +9,10 @@ for path in sorted(glob.glob(os.path.join(here, 'images', '*'))):
     name, ext = os.path.splitext(os.path.basename(path))
     if ext.lower() not in ('.png', '.jpg', '.jpeg', '.webp'):
         continue
+    if name.startswith('part-'):   # 透明PNGの部品はJPEGにせず、そのまま使う
+        imgs[name] = 'data:image/png;base64,' + base64.b64encode(open(path, 'rb').read()).decode()
+        print(f'{name}: png')
+        continue
     out = os.path.join(tempfile.mkdtemp(), name + '.jpg')
     # 横幅900pxに縮小してJPEG化（macOS標準のsips。失敗したら元ファイルをそのまま使う）
     try:
