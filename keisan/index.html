@@ -844,8 +844,9 @@ const PL_PART = {   // 部品名: 縦/横の比
   'pl-station': .833, 'pl-platform': .274, 'pl-crossing': .78, 'pl-tunnel': .645, 'pl-tree': 1.32, 'pl-signal': 2.7, 'pl-bridge': .277
 };
 function svgPlarail(q) {
+  partsBegin();
   const n = id => q[id] || 0;
-  const img = (name, cx, bottom, w) => { const h = w * PL_PART[name]; return `<image href="${partHref(name)}" x="${cx - w / 2}" y="${bottom - h}" width="${w}" height="${h}"/>`; };
+  const img = (name, cx, bottom, w) => { const h = w * PL_PART[name]; return partUse(name, cx - w / 2, bottom - h, w, h); };
   const rails = n('straight') + n('curve'), loop = n('curve') > 0;
   // レール（青い線路）。1この区切りごとに白い継ぎ目を入れる
   const CX = 200, CY = 196, RX = 172, RY = 46;
@@ -865,7 +866,7 @@ function svgPlarail(q) {
   ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'].forEach(id => { for (let i = 0; i < n(id); i++) cars.push(id); });
   const cw = Math.min(96, 350 / Math.max(1, cars.length));
   const total = cars.length * cw;
-  const trainSvg = cars.map((id, i) => `<image href="${partHref('pl-car-' + id)}" x="${200 - total / 2 + i * cw}" y="${trackY + 8 - cw * .52}" width="${cw}" height="${cw * .52}" preserveAspectRatio="xMidYMax meet"/>`).join('');
+  const trainSvg = cars.map((id, i) => partUse('pl-car-' + id, 200 - total / 2 + i * cw, trackY + 8 - cw * .52, cw, cw * .52, 'xMidYMax')).join('');
   const extras = [
     n('tunnel') ? img('pl-tunnel', 58, trackY - 4, 100) : '',
     n('bridge') ? `<rect x="256" y="${trackY - 2}" width="132" height="22" fill="#6fb8ee" stroke="#4d93c7" stroke-width="2"/>` + img('pl-bridge', 322, trackY + 9, 132) : '',
@@ -876,7 +877,7 @@ function svgPlarail(q) {
   const trees = Array.from({length: Math.min(n('tree'), 6)}, (_, i) => img('pl-tree', treeSpots[i][0], treeSpots[i][1] + 40, treeSpots[i][2])).join('');
   const station = (n('building') ? img('pl-station', 200, 170, 124) : '') + (n('platform') ? img('pl-platform', 200, trackY - 4, n('building') ? 216 : 250) : '');
   const nc = cars.length;
-  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
   <rect width="400" height="300" fill="#d8efff"/><circle cx="352" cy="38" r="22" fill="#ffe27a"/><ellipse cx="86" cy="42" rx="40" ry="14" fill="#fff"/><ellipse cx="116" cy="34" rx="28" ry="12" fill="#fff"/>
   <rect x="8" y="104" width="384" height="188" rx="18" fill="#8ccf7a" stroke="#5da24d" stroke-width="3"/>
   ${track}${joints}${station}${extras}${trees}${trainSvg}
@@ -982,11 +983,30 @@ function svgRobot(q) {
   </svg>`;
 }
 
+/* 部品画像の縦横比（縦/横）。images/part-*.png から作った固定値 */
+const PART_AR = {"bacon": 0.3275, "bunB": 0.285, "bunT": 0.3425, "bunTplain": 0.4375, "cheese": 0.15, "egg": 0.2425, "lettuce": 0.2975, "maki-eel": 1.0727, "maki-egg": 1.0636, "maki-ikura": 1.1727, "maki-salmon": 1.0818, "maki-shrimp": 1.0818, "maki-squid": 1.0, "maki-tuna": 1.0364, "nigiri-eel": 0.6, "nigiri-egg": 0.68, "nigiri-ikura": 0.9267, "nigiri-salmon": 0.6333, "nigiri-shrimp": 0.6867, "nigiri-squid": 0.64, "nigiri-tuna": 0.6, "onion": 0.11, "patty-beef": 0.2525, "patty-chicken": 0.2125, "patty-fish": 0.2575, "patty-veggie": 0.2875, "pickle": 0.1925, "pizzabase-cheesecrust-tomato": 0.975, "pizzabase-cheesecrust-white": 0.9833, "pizzabase-thick-tomato": 1.0, "pizzabase-thick-white": 0.9611, "pizzabase-thin-tomato": 1.0, "pizzabase-thin-white": 0.9944, "pl-bridge": 0.2767, "pl-car-keihan": 0.4538, "pl-car-kintetsu": 0.3077, "pl-car-shinkansen": 0.2808, "pl-car-sl": 0.5038, "pl-car-train": 0.4423, "pl-crossing": 0.7812, "pl-platform": 0.2737, "pl-signal": 2.7, "pl-station": 0.8333, "pl-tree": 1.3167, "pl-tunnel": 0.6455, "side-ginger": 0.7364, "side-miso": 0.8917, "side-soy": 0.7417, "side-tea": 1.28, "side-wasabi": 0.95, "sushi-board": 0.4365, "tomato": 0.19, "topping-corn": 1.0, "topping-mushroom": 1.01, "topping-pepper": 0.99, "topping-pineapple": 0.94, "topping-salami": 1.0273, "topping-shrimp": 1.0273};
+/* 部品画像は <defs> に1度だけ入れて <use> で使い回す（同じ画像データを何度も埋め込まない）。
+   <symbol> は画面記録（html2canvas）で大きさが効かないので、単位正方形の <image> を拡大縮小して使う */
+let _pu = null, _puSeq = 0;
+function partsBegin() { _pu = {seq: ++_puSeq, used: new Map()}; }
+function partUse(name, x, y, w, h, align = 'xMidYMid', rot = 0) {
+  let id = _pu.used.get(name);
+  if (!id) { id = `p${_pu.seq}_${_pu.used.size}`; _pu.used.set(name, id); }
+  const ar = PART_AR[name] || h / w;                      // 縦/横
+  const iw = Math.min(w, h / ar), ih = iw * ar;           // 枠の中におさめる（meet）
+  const ix = x + (w - iw) / 2, iy = align === 'xMidYMax' ? y + h - ih : y + (h - ih) / 2;
+  const r = rot ? `rotate(${rot} ${x + w / 2} ${y + h / 2}) ` : '';
+  return `<use href="#${id}" transform="${r}translate(${+ix.toFixed(2)} ${+iy.toFixed(2)}) scale(${+iw.toFixed(2)} ${+ih.toFixed(2)})"/>`;
+}
+function partsDefs() {
+  return '<defs>' + [..._pu.used.entries()].map(([name, id]) => `<image id="${id}" width="1" height="1" preserveAspectRatio="none" href="${partHref(name)}"/>`).join('') + '</defs>';
+}
 const partHref = name => EMBEDDED_IMAGES['part-' + name] || `images/part-${name}.png`;
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
 /* ピザ: きじの数だけピザを並べ、ぐは買った数だけ散らす（Canvaで描いた部品） */
 function svgPizza(q) {
+  partsBegin();
   const n = id => q[id] || 0;
   const crusts = [];
   ['thin', 'thick', 'cheesecrust'].forEach(c => { for (let i = 0; i < n(c); i++) crusts.push(c); });
@@ -1000,7 +1020,7 @@ function svgPizza(q) {
   spots.forEach(([cx, cy, R], pi) => {
     const rand = rng(seed + pi * 101);
     out += `<ellipse cx="${cx + 3}" cy="${cy + R * .92}" rx="${R * .95}" ry="${R * .16}" fill="#00000030"/>`;
-    out += `<image href="${partHref('pizzabase-' + crusts[pi] + '-' + sauce)}" x="${cx - R}" y="${cy - R}" width="${2 * R}" height="${2 * R}"/>`;
+    out += partUse('pizzabase-' + crusts[pi] + '-' + sauce, cx - R, cy - R, 2 * R, 2 * R);
     if (cheddar) out += `<circle cx="${cx}" cy="${cy}" r="${R * .8}" fill="#ffa21f" opacity=".3"/>`;
     // 具: 1ふくろ分ずつ全ピザにわけて散らす
     const pieces = [];
@@ -1018,12 +1038,12 @@ function svgPizza(q) {
         if (clear || t === 23) { best = [x, y]; if (clear) break; }
       }
       placed.push([best[0], best[1], sd]);
-      out += `<image href="${partHref('topping-' + id)}" x="${best[0] - sd / 2}" y="${best[1] - sd / 2}" width="${sd}" height="${sd}" transform="rotate(${Math.round(rand() * 360)} ${best[0]} ${best[1]})"/>`;
+      out += partUse('topping-' + id, best[0] - sd / 2, best[1] - sd / 2, sd, sd, 'xMidYMid', Math.round(rand() * 360));
     });
   });
   const cnt = ['salami', 'shrimp', 'corn', 'mushroom', 'pineapple', 'pepper'].reduce((a, id) => a + n(id), 0);
   const badge = P > 1 ? `<g><rect x="12" y="12" width="84" height="34" rx="17" fill="#fff" stroke="#e0a458" stroke-width="3"/><text x="54" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a5692a" font-family="sans-serif">${P}まい！</text></g>` : '';
-  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
   <rect width="400" height="300" fill="#fbeed2"/><rect x="14" y="10" width="372" height="280" rx="20" fill="#c9965a" stroke="#a5732f" stroke-width="3"/><path d="M14 80H386M14 150H386M14 220H386" stroke="#a5732f" stroke-width="1" opacity=".25"/>
   ${out}${badge}
   </svg>`;
@@ -1031,6 +1051,7 @@ function svgPizza(q) {
 
 /* お寿司: 台の上に、えらんだネタを買った数だけ並べる（1こ注文 = 2かん） */
 function svgSushi(q) {
+  partsBegin();
   const n = id => q[id] || 0;
   const netas = ['tuna', 'salmon', 'egg', 'shrimp', 'squid', 'ikura', 'eel'];
   const maki = n('maki') > 0 && n('nigiri') === 0, both = n('maki') > 0 && n('nigiri') > 0;
@@ -1054,14 +1075,14 @@ function svgSushi(q) {
       const [id, kind] = list[r * cols + c];
       const x = x0 + c * w, y = BY + (rows === 1 ? BH / 2 - h / 2 : r * (BH - h) / (rows - 1)) + (rand() - .5) * 3;
       const sz = kind === 'maki' ? Math.min(w, h * 1.2) : w;
-      pieces += `<image href="${partHref(kind + '-' + id)}" x="${x}" y="${y}" width="${w}" height="${kind === 'maki' ? Math.min(h * 1.25, w) : h}" preserveAspectRatio="xMidYMax meet"/>`;
+      pieces += partUse(kind + '-' + id, x, y, w, kind === 'maki' ? Math.min(h * 1.25, w) : h, 'xMidYMax');
     }
   }
   const sides = [['tea', 112, 30, 46], ['miso', 164, 28, 62], ['wasabi', 232, 38, 40], ['ginger', 276, 34, 54], ['soy', 336, 38, 56]]
-    .filter(([id]) => n(id) > 0).map(([id, x, y, sw]) => `<image href="${partHref('side-' + id)}" x="${x}" y="${y}" width="${sw}" height="${sw}" preserveAspectRatio="xMidYMid meet"/>`).join('');
-  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+    .filter(([id]) => n(id) > 0).map(([id, x, y, sw]) => partUse('side-' + id, x, y, sw, sw)).join('');
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
   <rect width="400" height="300" fill="#fbeed2"/><rect x="0" y="262" width="400" height="38" fill="#e2c08a"/>
-  <image href="${partHref('sushi-board')}" x="30" y="108" width="340" height="148"/>
+  ${partUse('sushi-board', 30, 108, 340, 148)}
   ${pieces}${sides}
   <g><rect x="12" y="12" width="${N >= 10 ? 96 : 84}" height="34" rx="17" fill="#fff" stroke="#e0a458" stroke-width="3"/><text x="${N >= 10 ? 60 : 54}" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a5692a" font-family="sans-serif">${N}かん！</text></g>
   </svg>`;
@@ -1092,6 +1113,7 @@ const BURGER_PART = {   // 部品名: [縦/横の比, 次の段との重なり�
   cheese: [.15, .5], bacon: [.328, .5], egg: [.242, .55]
 };
 function svgBurger(q) {
+  partsBegin();
   const n = id => q[id] || 0;
   const layers = burgerStack(q);
   const W = 220, sesame = n('sesame') > 0 && n('sesame') >= n('plain');
@@ -1101,15 +1123,14 @@ function svgBurger(q) {
   const parts = layers.map(l => {
     if (sauce[l.t]) { const h = 7; const r = `<rect x="${200 - W / 2 + 14}" y="${base - h - 2}" width="${W - 28}" height="${h}" rx="3.5" fill="${sauce[l.t]}"/>`; base -= 5; top = Math.min(top, base - h); return r; }
     const name = partOf(l.t), [ar, step] = BURGER_PART[name], h = W * ar, y = base - h;
-    const key = 'part-' + name, href = EMBEDDED_IMAGES[key] || `images/${key}.png`;
     base -= h * step; top = Math.min(top, y);
-    return `<image href="${href}" x="${200 - W / 2}" y="${y}" width="${W}" height="${h}"/>`;
+    return partUse(name, 200 - W / 2, y, W, h);
   });
   const sc = Math.min(1, 205 / -top);
   const fries = n('fries') ? '<g><rect x="326" y="190" width="46" height="62" rx="5" fill="#d6452d"/><g stroke="#ffd451" stroke-width="7" stroke-linecap="round"><path d="M336 190V160M348 190V152M360 190V162"/></g></g>' : '';
   const drink = n('drink') ? '<g><path d="M26 160H70L64 252H32Z" fill="#fff" stroke="#9aa3b5" stroke-width="2"/><rect x="24" y="152" width="48" height="10" rx="3" fill="#d6452d"/><rect x="46" y="130" width="5" height="26" fill="#d6452d"/></g>' : '';
   const nl = layers.length;
-  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
   <rect width="400" height="300" fill="#fbeed2"/><ellipse cx="200" cy="250" rx="150" ry="22" fill="#fff" stroke="#cfd3dc" stroke-width="3"/><ellipse cx="200" cy="244" rx="${Math.max(60, 105 * sc)}" ry="8" fill="#00000022"/>
   ${fries}${drink}
   <g transform="translate(${200 - 200 * sc} 244) scale(${sc})">${parts.join('')}</g>
