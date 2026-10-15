@@ -1,0 +1,611 @@
+<title>おかいけいゲーム</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root {
+  --bg: #f4efe4;
+  --ink: #2b2a33;
+  --muted: #6d6a75;
+  --accent: #e8590c;
+  --accent-ink: #fff;
+  --ok: #2f9e44;
+  --ng: #e03131;
+  --panel: #fffdf8;
+  --line: #d9d2c1;
+  --btn: #e7e0cf;
+  --sel: #fff1e6;
+  --chip: #f6f0e2;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1f1e24; --ink: #f1ede4; --muted: #a9a5b3; --accent: #ff8a3d; --accent-ink: #1f1e24; --ok: #51cf66; --ng: #ff6b6b;
+  --panel: #2a2930; --line: #44424d; --btn: #3a3943; --sel: #3d2c20; --chip: #34333c; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #1f1e24; --ink: #f1ede4; --muted: #a9a5b3; --accent: #ff8a3d; --accent-ink: #1f1e24; --ok: #51cf66; --ng: #ff6b6b;
+  --panel: #2a2930; --line: #44424d; --btn: #3a3943; --sel: #3d2c20; --chip: #34333c; color-scheme: dark; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  touch-action: manipulation;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  overflow: hidden;
+}
+button { font: inherit; color: inherit; touch-action: manipulation; }
+.screen {
+  position: fixed; inset: 0;
+  padding: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  display: none; flex-direction: column; gap: 14px;
+}
+.screen.active { display: flex; }
+
+.btn {
+  border: 0; border-radius: 16px; padding: 14px 24px; min-height: 56px;
+  font-size: 20px; font-weight: 700; cursor: pointer;
+  background: var(--btn); color: var(--ink);
+}
+.btn:active { transform: scale(.97); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); }
+.btn.green { background: var(--ok); color: var(--accent-ink); }
+.btn.confirm { background: var(--ng); color: #fff; }
+.btn.big { font-size: 28px; min-height: 76px; padding: 14px 40px; }
+
+/* ---------- title ---------- */
+#title { align-items: center; justify-content: center; text-align: center; overflow-y: auto; }
+#title h1 { font-size: clamp(36px, 6vw, 60px); margin: 0; letter-spacing: .04em; }
+#title p.sub { margin: 0; color: var(--muted); font-size: 20px; }
+.diffs { display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 14px; width: min(760px, 100%); }
+.diff {
+  background: var(--panel); border: 3px solid var(--line); border-radius: 20px;
+  padding: 16px 18px; text-align: left; cursor: pointer;
+}
+.diff[aria-pressed="true"] { border-color: var(--accent); background: var(--sel); box-shadow: 0 0 0 3px rgba(232,89,12,.18); }
+.diff .name { font-size: 26px; font-weight: 800; }
+.diff .desc { font-size: 16px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.diff .best { font-size: 15px; margin-top: 6px; color: var(--accent); font-weight: 700; }
+.row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+/* ---------- play ---------- */
+.hud { display: flex; align-items: stretch; gap: 12px; }
+.hud .cell {
+  background: var(--panel); border: 2px solid var(--line); border-radius: 16px;
+  padding: 8px 16px; min-width: 110px;
+}
+.hud .cell small { display: block; color: var(--muted); font-size: 13px; }
+.hud .cell b { font-size: 26px; font-variant-numeric: tabular-nums; }
+.hud .spacer { flex: 1; }
+.hud .quit { align-self: center; min-height: 44px; padding: 8px 16px; font-size: 16px; }
+
+.target {
+  background: var(--panel); border: 3px solid var(--ink); border-radius: 22px;
+  display: flex; align-items: center; justify-content: space-around; gap: 16px;
+  padding: 10px 20px; flex-wrap: wrap;
+}
+.target .label { font-size: 18px; color: var(--muted); }
+.target .amount { font-size: clamp(44px, 8vw, 76px); font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.target .paid { text-align: right; }
+.target .paid .amount { font-size: clamp(36px, 6vw, 56px); }
+.target .paid .amount.match { color: var(--ok); }
+.target .paid .amount.over { color: var(--ng); }
+.timebar { height: 10px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.timebar > i { display: block; height: 100%; width: 100%; background: var(--ok); transform-origin: left; }
+
+.tray {
+  flex: 1 1 0; min-height: 120px; overflow-y: auto;
+  background: repeating-linear-gradient(45deg, #2f6b4f 0 14px, #2c654a 14px 28px);
+  border: 4px solid #5b3a1e; border-radius: 22px; padding: 12px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;
+}
+.tray .hint { color: rgba(255,255,255,.75); font-size: 20px; margin: auto; }
+.tray.shake { animation: shake .35s; }
+@keyframes shake { 0%,100% { transform: translateX(0) } 20% { transform: translateX(-10px) } 60% { transform: translateX(10px) } }
+
+.supply {
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center;
+  background: var(--panel); border: 2px solid var(--line); border-radius: 22px; padding: 12px;
+}
+.actions { display: flex; gap: 12px; }
+.actions .btn { flex: 1; }
+.actions .btn.pay { flex: 2; }
+
+/* money */
+.money {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; color: #3a3326; cursor: pointer; flex: none;
+  border: 0; padding: 0; font-variant-numeric: tabular-nums;
+  box-shadow: 0 3px 0 rgba(0,0,0,.25), 0 4px 8px rgba(0,0,0,.18);
+}
+.money:active { transform: translateY(2px) scale(.97); }
+.money.bill { border-radius: 8px; width: 150px; height: 72px; font-size: 24px; border: 3px solid rgba(0,0,0,.25); }
+.money.bill::before { content: ""; position: absolute; inset: 6px; border: 2px solid rgba(255,255,255,.55); border-radius: 5px; }
+.money.bill span { position: relative; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+.money.coin { border-radius: 50%; border: 3px solid rgba(0,0,0,.22); font-size: 22px; }
+.money.coin::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; border: 2px solid rgba(255,255,255,.45); }
+.money.coin span { position: relative; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+.money.holed::after {
+  content: ""; position: absolute; width: 16%; height: 16%; border-radius: 50%; left: 50%; top: 14%;
+  transform: translateX(-50%); background: var(--bg); box-shadow: inset 0 1px 2px rgba(0,0,0,.4);
+}
+.money.small.bill { width: 105px; height: 50px; font-size: 17px; }
+.money.small.bill::before { inset: 4px; }
+.money.small.coin { font-size: 15px; }
+.money.small.coin::before { inset: 3px; }
+
+/* ---------- result ---------- */
+#result { overflow-y: auto; align-items: center; }
+.card {
+  width: min(900px, 100%); background: var(--panel); border: 3px solid var(--ink);
+  border-radius: 24px; padding: 20px 24px; display: flex; flex-direction: column; gap: 12px;
+}
+.card h2 { margin: 0; font-size: 28px; }
+.card .meta { color: var(--muted); font-size: 16px; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.summary div { background: var(--chip); border-radius: 14px; padding: 10px 14px; }
+.summary small { display: block; color: var(--muted); font-size: 13px; }
+.summary b { font-size: 28px; font-variant-numeric: tabular-nums; }
+.summary .rank b { font-size: 44px; color: var(--accent); line-height: 1; }
+table { border-collapse: collapse; width: 100%; font-size: 17px; font-variant-numeric: tabular-nums; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 14px; }
+.newbest { color: var(--accent); font-weight: 800; font-size: 20px; }
+
+.toast {
+  position: fixed; left: 50%; top: 90px; transform: translateX(-50%);
+  background: rgba(30,30,36,.92); color: #fff; padding: 14px 24px; border-radius: 14px;
+  font-size: 18px; opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 10; max-width: 90vw; text-align: center;
+}
+.toast.show { opacity: 1; }
+.flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 9; }
+.flash.go { animation: flash .35s; }
+@keyframes flash { 0% { opacity: .85 } 100% { opacity: 0 } }
+@media (max-height: 700px) { .money.bill { width: 120px; height: 58px; font-size: 20px; } }
+</style>
+
+
+<!-- タイトル / 難易度選択 -->
+<section id="title" class="screen active">
+  <h1>💴 おかいけいゲーム</h1>
+  <p class="sub">金額にぴったりのお札と硬貨を、はやく正確にえらぼう！</p>
+  <div class="diffs" id="diffs" role="group" aria-label="難易度"></div>
+  <div class="row">
+    <button class="btn primary big" id="startBtn">ゲームスタート</button>
+    <button class="btn big" id="bestShotBtn">📷 ベスト記録を画像で保存</button>
+  </div>
+</section>
+
+<!-- プレイ画面 -->
+<section id="play" class="screen">
+  <div class="hud">
+    <div class="cell"><small>難易度</small><b id="hudDiff">-</b></div>
+    <div class="cell"><small>問題</small><b id="hudQ">1/5</b></div>
+    <div class="cell"><small>スコア</small><b id="hudScore">0</b></div>
+    <div class="cell"><small>タイム</small><b id="hudTime">0.0</b></div>
+    <div class="spacer"></div>
+    <button class="btn quit" id="quitBtn">やめる</button>
+  </div>
+  <div class="timebar"><i id="timebar"></i></div>
+  <div class="target">
+    <div><div class="label">しはらう金額</div><div class="amount" id="targetAmt">¥0</div></div>
+    <div class="paid"><div class="label">いま出している金額</div><div class="amount" id="paidAmt">¥0</div></div>
+  </div>
+  <div class="tray" id="tray"></div>
+  <div class="supply" id="supply"></div>
+  <div class="actions">
+    <button class="btn" id="clearBtn">ぜんぶ戻す</button>
+    <button class="btn" id="passBtn">パス</button>
+    <button class="btn green big pay" id="payBtn">はらう！</button>
+  </div>
+</section>
+
+<!-- 結果画面 -->
+<section id="result" class="screen">
+  <div class="card" id="resultCard">
+    <h2 id="resCaption">けっか</h2>
+    <div class="meta" id="resMeta"></div>
+    <div class="summary" id="resSummary"></div>
+    <div id="resBest"></div>
+    <table id="resTable"></table>
+  </div>
+  <div class="row">
+    <button class="btn green big" id="shotBtn">📷 成績を画像で保存</button>
+    <button class="btn primary big" id="againBtn">もういちど</button>
+    <button class="btn big" id="homeBtn">難易度えらびへ</button>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+<div class="flash" id="flash"></div>
+
+
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= 設定 ================= */
+  var DENOMS = {
+    5000: { type: "bill", bg: "linear-gradient(135deg,#c9b4e0,#a68cc8)" },
+    1000: { type: "bill", bg: "linear-gradient(135deg,#bcd3ea,#8fb0d4)" },
+    500:  { type: "coin", size: 82, bg: "radial-gradient(circle at 35% 30%,#f3e6a8,#cdb658)" },
+    100:  { type: "coin", size: 70, bg: "radial-gradient(circle at 35% 30%,#fafafa,#bdbdc4)" },
+    50:   { type: "coin", size: 64, bg: "radial-gradient(circle at 35% 30%,#fafafa,#b4b4bd)", hole: true },
+    10:   { type: "coin", size: 72, bg: "radial-gradient(circle at 35% 30%,#f0b78a,#b8693a)" },
+    5:    { type: "coin", size: 66, bg: "radial-gradient(circle at 35% 30%,#f3e6a8,#c9b250)", hole: true },
+    1:    { type: "coin", size: 58, bg: "radial-gradient(circle at 35% 30%,#ffffff,#c6c8cf)" }
+  };
+  var DIFFICULTIES = [
+    { id: "easy",   name: "かんたん",   desc: "100円単位・〜1,000円\nお札と大きい硬貨だけ",  questions: 5,  max: 1000,  unit: 100, limit: 20, denoms: [1000, 500, 100] },
+    { id: "normal", name: "ふつう",     desc: "10円単位・〜2,000円\n50円・10円も登場",       questions: 5,  max: 2000,  unit: 10,  limit: 25, denoms: [1000, 500, 100, 50, 10] },
+    { id: "hard",   name: "むずかしい", desc: "1円単位・〜9,999円\n5円・1円も使う",          questions: 8,  max: 9999,  unit: 1,   limit: 35, denoms: [5000, 1000, 500, 100, 50, 10, 5, 1] },
+    { id: "master", name: "たつじん",   desc: "1円単位・〜9,999円・10問\n制限時間きびしめ",   questions: 10, max: 9999,  unit: 1,   limit: 22, denoms: [5000, 1000, 500, 100, 50, 10, 5, 1] }
+  ];
+  var PTS_CORRECT = 100, PTS_TIME_MAX = 100, PTS_EFFICIENT = 50, PTS_MISS = 20;
+  var STORE_KEY = "okaikei-game-v1";
+
+  /* ================= ユーティリティ ================= */
+  function $(id) { return document.getElementById(id); }
+  function yen(n) { return "¥" + n.toLocaleString("ja-JP"); }
+  function sec(ms) { return (ms / 1000).toFixed(1); }
+  function pad(n) { return n < 10 ? "0" + n : "" + n; }
+  function nowText() {
+    var d = new Date();
+    return d.getFullYear() + "/" + pad(d.getMonth() + 1) + "/" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+  function loadBest() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { return {}; }
+  }
+  function saveBest(b) { try { localStorage.setItem(STORE_KEY, JSON.stringify(b)); } catch (e) {} }
+  function diffById(id) { return DIFFICULTIES.filter(function (d) { return d.id === id; })[0]; }
+  function minPieces(amount, denoms) {   // 日本の貨幣はグリーディで最少枚数になる
+    var n = 0, rest = amount;
+    denoms.slice().sort(function (a, b) { return b - a; }).forEach(function (d) {
+      n += Math.floor(rest / d); rest %= d;
+    });
+    return n;
+  }
+  function showScreen(id) {
+    ["title", "play", "result"].forEach(function (s) { $(s).classList.toggle("active", s === id); });
+  }
+  var toastTimer;
+  function toast(msg) {
+    var t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 3200);
+  }
+
+  /* ================= 状態 ================= */
+  var selected = "easy";
+  var game = null;       // 進行中のゲーム
+  var lastRun = null;
+  var dl = null;
+  try { if (window.claude && claude.use) claude.use("downloads").then(function (d) { dl = d; }, function () {}); } catch (e) {}    // 直近の成績（保存用）
+
+  /* ================= 難易度ボタン ================= */
+  function renderDiffs() {
+    var best = loadBest(), box = $("diffs");
+    box.innerHTML = "";
+    DIFFICULTIES.forEach(function (d) {
+      var b = document.createElement("button");
+      b.className = "diff"; b.type = "button";
+      b.setAttribute("aria-pressed", d.id === selected ? "true" : "false");
+      var bs = best[d.id];
+      b.innerHTML = '<div class="name"></div><div class="desc"></div><div class="best"></div>';
+      b.querySelector(".name").textContent = d.name;
+      b.querySelector(".desc").innerHTML = d.desc.replace(/\n/g, "<br>");
+      b.querySelector(".best").textContent = bs ? "ベスト " + bs.score + "点（" + bs.rank + "）" : "まだ記録なし";
+      b.addEventListener("click", function () { selected = d.id; renderDiffs(); });
+      box.appendChild(b);
+    });
+  }
+
+  /* ================= お金の表示 ================= */
+  function makeMoney(d, small) {
+    var def = DENOMS[d], el = document.createElement("button");
+    el.type = "button";
+    el.className = "money " + def.type + (small ? " small" : "") + (def.hole ? " holed" : "");
+    el.style.background = def.bg;
+    if (def.type === "coin") {
+      var s = Math.round(def.size * (small ? 0.72 : 1));
+      el.style.width = s + "px"; el.style.height = s + "px";
+    }
+    el.setAttribute("aria-label", d + "円");
+    var sp = document.createElement("span");
+    sp.textContent = def.type === "bill" ? d.toLocaleString("ja-JP") + "円" : d;
+    if (def.hole) sp.style.marginTop = "28%";
+    el.appendChild(sp);
+    return el;
+  }
+
+  /* ================= ゲーム進行 ================= */
+  function startGame() {
+    var diff = diffById(selected), qs = [], seen = {};
+    while (qs.length < diff.questions) {
+      var steps = Math.floor(diff.max / diff.unit);
+      var a = (1 + Math.floor(Math.random() * steps)) * diff.unit;
+      if (diff.unit === 1 && a < 10) continue;
+      if (seen[a]) continue;
+      seen[a] = true; qs.push(a);
+    }
+    game = { diff: diff, qs: qs, idx: 0, score: 0, results: [], tray: [], misses: 0, qStart: 0, raf: 0, startedAt: Date.now() };
+    $("hudDiff").textContent = diff.name;
+    buildSupply();
+    showScreen("play");
+    nextQuestion();
+  }
+
+  function buildSupply() {
+    var box = $("supply"); box.innerHTML = "";
+    game.diff.denoms.forEach(function (d) {
+      var el = makeMoney(d, false);
+      el.addEventListener("click", function () { addMoney(d); });
+      box.appendChild(el);
+    });
+  }
+
+  function nextQuestion() {
+    game.tray = []; game.misses = 0;
+    game.qStart = performance.now();
+    $("hudQ").textContent = (game.idx + 1) + "/" + game.qs.length;
+    $("hudScore").textContent = game.score;
+    $("targetAmt").textContent = yen(game.qs[game.idx]);
+    renderTray();
+    cancelAnimationFrame(game.raf);
+    tick();
+  }
+
+  function tick() {
+    if (!game) return;
+    var el = performance.now() - game.qStart, limit = game.diff.limit * 1000;
+    $("hudTime").textContent = sec(el);
+    var ratio = Math.max(0, 1 - el / limit), bar = $("timebar");
+    bar.style.transform = "scaleX(" + ratio + ")";
+    bar.style.background = ratio > 0.5 ? "var(--ok)" : ratio > 0.2 ? "#f08c00" : "var(--ng)";
+    game.raf = requestAnimationFrame(tick);
+  }
+
+  function trayTotal() { return game.tray.reduce(function (s, d) { return s + d; }, 0); }
+
+  function addMoney(d) {
+    if (game.tray.length >= 40) { toast("これ以上はのせられません"); return; }
+    game.tray.push(d);
+    game.tray.sort(function (a, b) { return b - a; });
+    renderTray();
+  }
+  function removeAt(i) { game.tray.splice(i, 1); renderTray(); }
+
+  function renderTray() {
+    var tray = $("tray"), total = trayTotal(), target = game.qs[game.idx];
+    tray.innerHTML = "";
+    if (!game.tray.length) {
+      var h = document.createElement("div"); h.className = "hint";
+      h.textContent = "下のお金をタップしてトレーにのせよう（トレーのお金をタップで戻す）";
+      tray.appendChild(h);
+    }
+    game.tray.forEach(function (d, i) {
+      var el = makeMoney(d, true);
+      el.addEventListener("click", function () { removeAt(i); });
+      tray.appendChild(el);
+    });
+    var p = $("paidAmt");
+    p.textContent = yen(total);
+    p.className = "amount" + (total === target ? " match" : total > target ? " over" : "");
+  }
+
+  function pay() {
+    var target = game.qs[game.idx], total = trayTotal();
+    if (total !== target) {
+      game.misses++;
+      var tray = $("tray");
+      tray.classList.remove("shake"); void tray.offsetWidth; tray.classList.add("shake");
+      toast(total < target ? "あと " + yen(target - total) + " たりません（−" + PTS_MISS + "点）" : yen(total - target) + " 多すぎます（−" + PTS_MISS + "点）");
+      return;
+    }
+    var ms = performance.now() - game.qStart, limit = game.diff.limit * 1000;
+    var pieces = game.tray.length, minP = minPieces(target, game.diff.denoms);
+    var timePts = Math.round(PTS_TIME_MAX * Math.max(0, 1 - ms / limit));
+    var effPts = pieces === minP ? PTS_EFFICIENT : 0;
+    var pts = Math.max(0, PTS_CORRECT + timePts + effPts - PTS_MISS * game.misses);
+    finishQuestion({ target: target, ms: ms, pieces: pieces, minPieces: minP, misses: game.misses, pts: pts, passed: false });
+  }
+
+  function pass() {
+    finishQuestion({ target: game.qs[game.idx], ms: performance.now() - game.qStart, pieces: game.tray.length, minPieces: minPieces(game.qs[game.idx], game.diff.denoms), misses: game.misses, pts: 0, passed: true });
+  }
+
+  function finishQuestion(r) {
+    game.results.push(r);
+    game.score += r.pts;
+    $("hudScore").textContent = game.score;
+    if (!r.passed) toast("せいかい！ +" + r.pts + "点" + (r.pieces === r.minPieces ? "（最少枚数ボーナス！）" : ""));
+    game.idx++;
+    if (game.idx >= game.qs.length) endGame(); else nextQuestion();
+  }
+
+  function rankOf(score, n) {
+    var r = score / ((PTS_CORRECT + PTS_TIME_MAX + PTS_EFFICIENT) * n);
+    return r >= 0.85 ? "S" : r >= 0.7 ? "A" : r >= 0.5 ? "B" : r >= 0.3 ? "C" : "D";
+  }
+
+  function endGame() {
+    cancelAnimationFrame(game.raf);
+    var g = game, totalMs = g.results.reduce(function (s, r) { return s + r.ms; }, 0);
+    var correct = g.results.filter(function (r) { return !r.passed; }).length;
+    var perfect = g.results.filter(function (r) { return !r.passed && r.misses === 0; }).length;
+    var run = {
+      diffId: g.diff.id, diffName: g.diff.name, score: g.score, rank: rankOf(g.score, g.qs.length),
+      totalMs: totalMs, correct: correct, perfect: perfect, n: g.qs.length, results: g.results, at: nowText(), newBest: false
+    };
+    var best = loadBest(), old = best[run.diffId];
+    if (!old || run.score > old.score || (run.score === old.score && run.totalMs < old.totalMs)) {
+      best[run.diffId] = { score: run.score, rank: run.rank, totalMs: run.totalMs, at: run.at };
+      saveBest(best); run.newBest = true;
+    }
+    lastRun = run; game = null;
+    renderResult(run);
+    showScreen("result");
+  }
+
+  function renderResult(run) {
+    $("resCaption").textContent = "けっか　" + run.diffName;
+    $("resMeta").textContent = run.at;
+    var cells = [
+      ['<div class="rank"><small>ランク</small><b>' + run.rank + "</b></div>"],
+      ["<div><small>スコア</small><b>" + run.score + "点</b></div>"],
+      ["<div><small>合計タイム</small><b>" + sec(run.totalMs) + "秒</b></div>"],
+      ["<div><small>せいかい / ノーミス</small><b>" + run.correct + "/" + run.n + " ・ " + run.perfect + "</b></div>"]
+    ];
+    $("resSummary").innerHTML = cells.join("");
+    $("resBest").innerHTML = run.newBest ? '<div class="newbest">🎉 ベスト記録を更新しました！</div>' : "";
+    var rows = '<tr><th>#</th><th>金額</th><th>タイム</th><th>枚数</th><th>ミス</th><th>得点</th></tr>';
+    run.results.forEach(function (r, i) {
+      rows += "<tr><td>" + (i + 1) + "</td><td>" + yen(r.target) + "</td><td>" + (r.passed ? "パス" : sec(r.ms) + "秒") +
+        "</td><td>" + (r.passed ? "-" : r.pieces + "(最少" + r.minPieces + ")") + "</td><td>" + r.misses + "</td><td>" + r.pts + "</td></tr>";
+    });
+    $("resTable").innerHTML = rows;
+  }
+
+  /* ================= 画面を画像として保存 ================= */
+  var FONT = '"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans CJK JP",sans-serif';
+  function rr(ctx, x, y, w, h, r) {
+    ctx.beginPath(); ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  function txt(ctx, s, x, y, size, color, align, weight) {
+    ctx.font = (weight || 700) + " " + size + "px " + FONT;
+    ctx.fillStyle = color; ctx.textAlign = align || "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillText(s, x, y);
+  }
+
+  // 成績カードを描画する。run があればその成績、なければベスト記録の一覧。
+  function drawRecordCanvas(run) {
+    var W = 1600, scale = 1;
+    var rowsN = run ? run.results.length : DIFFICULTIES.length;
+    var H = run ? 560 + rowsN * 52 + 90 : 760;
+    var c = document.createElement("canvas");
+    c.width = W * scale; c.height = H * scale;
+    var ctx = c.getContext("2d");
+    ctx.fillStyle = "#f4efe4"; ctx.fillRect(0, 0, W, H);
+    rr(ctx, 40, 40, W - 80, H - 80, 28);
+    ctx.fillStyle = "#fffdf8"; ctx.fill(); ctx.lineWidth = 5; ctx.strokeStyle = "#2b2a33"; ctx.stroke();
+
+    txt(ctx, "💴 おかいけいゲーム", 90, 130, 54, "#2b2a33");
+    if (run) {
+      txt(ctx, "成績　" + run.diffName + "　" + run.at, W - 90, 130, 32, "#6d6a75", "right", 600);
+      var items = [
+        ["ランク", run.rank], ["スコア", run.score + "点"], ["合計タイム", sec(run.totalMs) + "秒"],
+        ["せいかい", run.correct + " / " + run.n], ["ノーミス", run.perfect + "問"]
+      ];
+      var bw = 270, gap = 20, x0 = 90;
+      items.forEach(function (it, i) {
+        var x = x0 + i * (bw + gap);
+        rr(ctx, x, 175, bw, 150, 20); ctx.fillStyle = "#f6f0e2"; ctx.fill();
+        txt(ctx, it[0], x + 24, 220, 26, "#6d6a75", "left", 600);
+        txt(ctx, it[1], x + 24, 295, i === 0 ? 76 : 50, i === 0 ? "#e8590c" : "#2b2a33");
+      });
+      if (run.newBest) txt(ctx, "🎉 ベスト記録を更新！", 90, 385, 36, "#e8590c");
+      var y = 450, cols = [90, 190, 520, 760, 1020, 1180];
+      ["#", "金額", "タイム", "枚数(最少)", "ミス", "得点"].forEach(function (h, i) {
+        txt(ctx, h, i === 0 ? cols[i] : cols[i] + 200, y, 26, "#6d6a75", i === 0 ? "left" : "right", 600);
+      });
+      run.results.forEach(function (r, i) {
+        var yy = y + 52 * (i + 1);
+        ctx.fillStyle = "#d9d2c1"; ctx.fillRect(90, yy - 40, W - 180, 2);
+        txt(ctx, String(i + 1), cols[0], yy, 32, "#2b2a33");
+        txt(ctx, yen(r.target), cols[1] + 200, yy, 32, "#2b2a33", "right");
+        txt(ctx, r.passed ? "パス" : sec(r.ms) + "秒", cols[2] + 200, yy, 32, "#2b2a33", "right");
+        txt(ctx, r.passed ? "-" : r.pieces + "(" + r.minPieces + ")", cols[3] + 200, yy, 32, "#2b2a33", "right");
+        txt(ctx, String(r.misses), cols[4] + 200, yy, 32, r.misses ? "#e03131" : "#2b2a33", "right");
+        txt(ctx, String(r.pts), cols[5] + 200, yy, 32, "#2b2a33", "right");
+      });
+    } else {
+      txt(ctx, "ベスト記録　" + nowText(), W - 90, 130, 32, "#6d6a75", "right", 600);
+      var best = loadBest();
+      DIFFICULTIES.forEach(function (d, i) {
+        var y2 = 200 + i * 130, b = best[d.id];
+        rr(ctx, 90, y2, W - 180, 105, 20); ctx.fillStyle = "#f6f0e2"; ctx.fill();
+        txt(ctx, d.name, 120, y2 + 68, 46, "#2b2a33");
+        if (b) {
+          txt(ctx, b.rank, 560, y2 + 76, 70, "#e8590c");
+          txt(ctx, b.score + "点", 800, y2 + 68, 46, "#2b2a33", "right");
+          txt(ctx, sec(b.totalMs) + "秒", 1100, y2 + 68, 40, "#2b2a33", "right");
+          txt(ctx, b.at, W - 120, y2 + 66, 28, "#6d6a75", "right", 600);
+        } else {
+          txt(ctx, "まだ記録なし", 560, y2 + 66, 36, "#6d6a75", "left", 600);
+        }
+      });
+    }
+    return c;
+  }
+
+  function saveCanvas(canvas, name) {
+    $("flash").classList.remove("go"); void $("flash").offsetWidth; $("flash").classList.add("go");
+    canvas.toBlob(function (blob) {
+      if (!blob) { toast("画像の作成に失敗しました"); return; }
+      if (dl) {
+        dl.save({ filename: name, data: blob }).then(function () {
+          toast("画像を保存しました");
+        }).catch(function (err) {
+          if (err && err.code === "declined") return;
+          toast("保存できませんでした。もう一度お試しください");
+        });
+        return;
+      }
+      var file;
+      try { file = new File([blob], name, { type: "image/png" }); } catch (e) { file = null; }
+      if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        // iPad: 共有シートが開く →「画像を保存」で写真アプリに保存
+        navigator.share({ files: [file], title: "おかいけいゲーム 成績" }).then(function () {
+          toast("共有シートで「画像を保存」を選ぶと「写真」に保存されます");
+        }).catch(function (err) {
+          if (err && err.name === "AbortError") return;
+          downloadBlob(blob, name);
+        });
+      } else {
+        downloadBlob(blob, name);
+      }
+    }, "image/png");
+  }
+  function downloadBlob(blob, name) {
+    var url = URL.createObjectURL(blob), a = document.createElement("a");
+    a.href = url; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 4000);
+    toast("画像を保存しました（ファイルアプリ／ダウンロード）");
+  }
+  function stamp() {
+    var d = new Date();
+    return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + "-" + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+  }
+
+  /* ================= イベント ================= */
+  $("startBtn").addEventListener("click", startGame);
+  $("payBtn").addEventListener("click", function () { if (game) pay(); });
+  $("passBtn").addEventListener("click", function () { if (game) pass(); });
+  $("clearBtn").addEventListener("click", function () { if (game) { game.tray = []; renderTray(); } });
+  $("quitBtn").addEventListener("click", function () {
+    if (!game) return;
+    var q = $("quitBtn");
+    if (!q.classList.contains("confirm")) {
+      q.classList.add("confirm"); q.textContent = "もう一度タップでやめる";
+      setTimeout(function () { q.classList.remove("confirm"); q.textContent = "やめる"; }, 3000);
+      return;
+    }
+    q.classList.remove("confirm"); q.textContent = "やめる";
+    cancelAnimationFrame(game.raf); game = null; renderDiffs(); showScreen("title");
+  });
+  $("againBtn").addEventListener("click", startGame);
+  $("homeBtn").addEventListener("click", function () { renderDiffs(); showScreen("title"); });
+  $("shotBtn").addEventListener("click", function () {
+    if (lastRun) saveCanvas(drawRecordCanvas(lastRun), "okaikei-" + lastRun.diffId + "-" + stamp() + ".png");
+  });
+  $("bestShotBtn").addEventListener("click", function () {
+    saveCanvas(drawRecordCanvas(null), "okaikei-best-" + stamp() + ".png");
+  });
+
+  renderDiffs();
+
+  // テスト用フック
+  window.__okaikei = { minPieces: minPieces, rankOf: rankOf };
+})();
+</script>
