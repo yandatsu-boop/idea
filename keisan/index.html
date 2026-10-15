@@ -1154,16 +1154,65 @@ function loadLog() { try { return JSON.parse(localStorage.getItem('keisan-log') 
 function saveLog(a) { try { localStorage.setItem('keisan-log', JSON.stringify(a)); return true; } catch (e) { return false; } }
 let lastShot = null;
 const canvasBlob = (c, type, q) => new Promise(res => c.toBlob(res, type, q));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+/* 絵（SVG）を、中の部品画像がそろってから確実にPNG画像にする。
+   撮影ライブラリにSVGを直接わたすと、部品の読み込みが間に合わず絵が抜けることがあるため。 */
+async function svgToPng(svg) {
+  const vb = svg.viewBox.baseVal, W = vb.width, H = vb.height;
+  const outW = Math.round(Math.min(1600, Math.max(800, svg.getBoundingClientRect().width * 2))), outH = Math.round(outW * H / W);
+  // 部品画像を先に読み込んで展開しておく（SVGの中で使うときに間に合うように）
+  const hrefs = [...new Set([...svg.querySelectorAll('image')].map(im => im.getAttribute('href')).filter(Boolean))];
+  await Promise.all(hrefs.map(h => { const im = new Image(); im.src = h; return im.decode().catch(() => {}); }));
+  const xml = new XMLSerializer().serializeToString(svg);
+  const url = URL.createObjectURL(new Blob([xml], {type: 'image/svg+xml;charset=utf-8'}));
+  try {
+    const img = new Image();
+    await new Promise((ok, ng) => { img.onload = ok; img.onerror = () => ng(new Error('svg')); img.src = url; });
+    try { await img.decode(); } catch (e) {}
+    const c = document.createElement('canvas'); c.width = outW; c.height = outH;
+    const ctx = c.getContext('2d'), probe = document.createElement('canvas'); probe.width = 48; probe.height = 36;
+    const pctx = probe.getContext('2d');
+    // 描いて、少し待って、もう一度描く。絵が変わらなくなるまでくり返す
+    let prev = null, sig = 0;
+    for (let i = 0; i < 8; i++) {
+      ctx.clearRect(0, 0, outW, outH); ctx.drawImage(img, 0, 0, outW, outH);
+      pctx.clearRect(0, 0, 48, 36); pctx.drawImage(c, 0, 0, 48, 36);
+      const d = pctx.getImageData(0, 0, 48, 36).data; sig = 0;
+      for (let k = 0; k < d.length; k += 4) sig = (sig * 31 + d[k] + d[k + 1] * 3 + d[k + 2] * 7 + d[k + 3] * 13) % 1000000007;
+      if (sig === prev) break;
+      prev = sig; await sleep(i === 0 ? 80 : 160);
+    }
+    return c.toDataURL('image/png');
+  } finally { URL.revokeObjectURL(url); }
+}
+/* 撮影の間だけ、画面の絵を画像に置きかえる。もどす関数を返す */
+async function freezeIllustrations(root) {
+  const swaps = [];
+  for (const svg of root.querySelectorAll('.illust svg, .livepv svg')) {
+    try {
+      const r = svg.getBoundingClientRect();
+      const img = new Image(); img.src = await svgToPng(svg);
+      img.style.cssText = `display:block;width:${r.width}px;height:${r.height}px`;
+      await img.decode();
+      svg.replaceWith(img); swaps.push([svg, img]);
+    } catch (e) { /* 失敗したらそのまま撮る */ }
+  }
+  // 写真の絵（<img>）も読み込みを待つ
+  await Promise.all([...root.querySelectorAll('.illust img')].map(i => i.decode ? i.decode().catch(() => {}) : 0));
+  return () => swaps.forEach(([svg, img]) => { if (img.isConnected) img.replaceWith(svg); });
+}
 async function recordScreen() {
   if (typeof html2canvas === 'undefined') { toast('画面記録のしくみを読み込めませんでした'); return; }
   toast('撮影しています…');
   const target = $('#root');
-  let canvas;
+  let canvas, restore = () => {};
   try {
+    restore = await freezeIllustrations(target);
     // iPad のSafariはキャンバスの大きさに上限があるので、大きすぎるときは倍率を下げる
     const scale = Math.min(1.5, Math.sqrt(12e6 / Math.max(1, target.scrollWidth * target.scrollHeight)));
     canvas = await html2canvas(target, {backgroundColor: '#f1f2f6', scale, useCORS: true});
-  } catch (e) { toast('記録に失敗しました'); return; }
+  } catch (e) { restore(); toast('記録に失敗しました'); return; }
+  restore();
   const st = stamp(), file = `keisan-${st.file}.png`;
   const blob = await canvasBlob(canvas, 'image/png');
   if (!blob) { toast('記録に失敗しました'); return; }
