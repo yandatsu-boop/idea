@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>まねっこ ポーズ</title>
+<style>
+  :root {
+    --bg: #fff6d6;
+    --ink: #3b2f63;
+    --pink: #ff6fa5;
+    --orange: #ff9f2e;
+    --blue: #4aa8ff;
+    --green: #4cd08a;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Meiryo", sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100%;
+    padding: 12px 16px 24px;
+    gap: 10px;
+    user-select: none;
+  }
+  h1 { margin: 4px 0 0; font-size: 26px; color: var(--pink); letter-spacing: .05em; }
+  .stage {
+    position: relative; width: 100%; max-width: 420px;
+  }
+  canvas {
+    display: block; width: 100%; height: auto;
+    border-radius: 28px;
+    box-shadow: 0 8px 0 rgba(0,0,0,.12);
+    background: #fff;
+  }
+  canvas.pop { animation: pop .35s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes pop { from { transform: scale(.6) rotate(-6deg); opacity: .2; } to { transform: none; opacity: 1; } }
+  .bar { width: 100%; max-width: 420px; height: 16px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,.15); }
+  .bar > div { height: 100%; width: 0; background: linear-gradient(90deg, var(--green), var(--orange)); border-radius: 8px; }
+  .row { display: flex; gap: 10px; width: 100%; max-width: 420px; align-items: center; justify-content: center; }
+  button {
+    font: inherit; font-weight: bold; border: 0; border-radius: 22px;
+    padding: 14px 18px; color: #fff; cursor: pointer;
+    box-shadow: 0 6px 0 rgba(0,0,0,.2);
+    transition: transform .05s, box-shadow .05s;
+  }
+  button:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.2); }
+  #start { background: var(--green); font-size: 28px; flex: 1; }
+  #start.running { background: #ff6b6b; }
+  #done { background: var(--orange); font-size: 24px; flex: 1; }
+  .small { background: var(--blue); font-size: 15px; padding: 10px 14px; }
+  .small.off { background: #b9b9c9; }
+  .speed {
+    width: 100%; max-width: 420px; background: #fff; border-radius: 22px;
+    padding: 10px 16px 14px; box-shadow: 0 5px 0 rgba(0,0,0,.1);
+  }
+  .speed .title { text-align: center; font-weight: bold; margin-bottom: 2px; }
+  .speed .line { display: flex; align-items: center; gap: 10px; }
+  .speed .emoji { font-size: 34px; }
+  input[type=range] { flex: 1; height: 44px; accent-color: var(--pink); }
+  .speed .sec { text-align: center; font-size: 14px; opacity: .8; }
+  #stars { font-size: 22px; min-height: 30px; text-align: center; max-width: 420px; word-break: break-all; }
+</style>
+</head>
+<body>
+  <h1>🎵 まねっこ ポーズ 🎵</h1>
+
+  <div class="stage"><canvas id="c" width="800" height="940"></canvas></div>
+  <div class="bar"><div id="prog"></div></div>
+
+  <div class="row">
+    <button id="start">▶ スタート</button>
+    <button id="done" disabled>できた！ ⭐</button>
+  </div>
+
+  <div class="speed">
+    <div class="title">カードの はやさ</div>
+    <div class="line">
+      <span class="emoji">🐢</span>
+      <input id="speed" type="range" min="1" max="10" step="1" value="4" aria-label="カードのはやさ">
+      <span class="emoji">🐇</span>
+    </div>
+    <div class="sec" id="secLabel"></div>
+  </div>
+
+  <div class="row">
+    <button class="small" id="musicBtn">🎵 おんがく</button>
+    <button class="small" id="voiceBtn">🗣️ こえ</button>
+  </div>
+  <div id="stars"></div>
+
+<script>
+/* ---------- ポーズ定義 ----------
+   各うでは [かた→ひじ, ひじ→て] の角度。0=まっすぐ下、90=横、180=真上、
+   プラスは外側、マイナス(または180超)は内側。画面は「鏡」のように描く。
+   hot: 動かすところ（オレンジで目立たせる） */
+const REST_ARM = [12, 8];
+const REST_LEG = [8, 6];
+const POSES = [
+  { name: 'みぎてを あげよう',   emoji: '🙋', arms: { R: [150, 172] },                      hot: ['R'] },
+  { name: 'ひだりてを あげよう', emoji: '🙋', arms: { L: [150, 172] },                      hot: ['L'] },
+  { name: 'りょうてを あげよう', emoji: '🙌', arms: { R: [155, 175], L: [155, 175] },       hot: ['R','L'] },
+  { name: 'てを よこに ひろげよう', emoji: '🦅', arms: { R: [90, 90], L: [90, 90] },         hot: ['R','L'] },
+  { name: 'てを あたまに のせよう', emoji: '🧢', arms: { R: [105, 225], L: [105, 225] },     hot: ['R','L'] },
+  { name: 'てを こしに あてよう', emoji: '💪', arms: { R: [65, 335], L: [65, 335] },         hot: ['R','L'] },
+  { name: 'はくしゅ ぱちぱち',   emoji: '👏', arms: { R: [50, 278], L: [50, 278] },         hot: ['R','L'] },
+  { name: 'みぎあしを まげよう', emoji: '🦩', legs: { R: [78, 0] },                         hot: ['legR'] },
+  { name: 'ひだりあしを まげよう', emoji: '🦩', legs: { L: [78, 0] },                       hot: ['legL'] },
+  { name: 'あしを ひらこう',     emoji: '⭐', legs: { R: [32, 32], L: [32, 32] },            hot: ['legR','legL'] },
+  { name: 'てと あしを ひらこう', emoji: '🌟', arms: { R: [135, 135], L: [135, 135] }, legs: { R: [30, 30], L: [30, 30] }, hot: ['R','L','legR','legL'] },
+  { name: 'ばんざい！',         emoji: '🎉', arms: { R: [170, 178], L: [170, 178] },        hot: ['R','L'] },
+];
+
+/* ---------- 絵をキャンバスにかく ---------- */
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const BODY = ['#4aa8ff', '#ff6fa5', '#4cd08a', '#b07cff', '#ffb02e'];
+const SKIN = '#ffd9b3';
+const HOT = '#ff7a1a';
+const BGS = ['#fff1b8', '#d8f3ff', '#ffe0ee', '#dcf8d8', '#ece0ff'];
+
+function pt(x, y, len, deg, side) {
+  const r = deg * Math.PI / 180;
+  return [x + side * Math.sin(r) * len, y + Math.cos(r) * len];
+}
+function thick(a, b, w, color) {
+  ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+}
+function circle(x, y, r, color) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
+
+function drawPose(index, colorIdx = index) {
+  const p = POSES[index];
+  const W = cv.width, H = cv.height;
+  const body = BODY[colorIdx % BODY.length];
+  ctx.clearRect(0, 0, W, H);
+
+  // はいけい
+  ctx.fillStyle = BGS[colorIdx % BGS.length];
+  ctx.fillRect(0, 0, W, H);
+  // もようの まる
+  ctx.globalAlpha = .5; ctx.fillStyle = '#fff';
+  [[90,90,50],[700,140,70],[120,820,60],[690,760,45],[400,60,28]].forEach(([x,y,r]) => circle(x, y, r, '#fff'));
+  ctx.globalAlpha = 1;
+  // じめん
+  ctx.fillStyle = 'rgba(0,0,0,.08)';
+  ctx.beginPath(); ctx.ellipse(W/2, 750, 190, 28, 0, 0, 7); ctx.fill();
+
+  ctx.save();
+  ctx.translate(W/2, 390);   // かたの まんなか
+  ctx.scale(1.25, 1.25);
+
+  const hot = new Set(p.hot);
+  const armLen = 72, legLen = 82, hipY = 105;
+
+  // あし
+  for (const [k, side] of [['R', 1], ['L', -1]]) {
+    const ang = (p.legs && p.legs[k]) || REST_LEG;
+    const isHot = hot.has('leg' + k);
+    const c = isHot ? HOT : '#3b3b8f';
+    const h = [side * 20, hipY];
+    const knee = pt(h[0], h[1], legLen, ang[0], side);
+    const foot = pt(knee[0], knee[1], legLen, ang[1], side);
+    thick(h, knee, 26, c); thick(knee, foot, 26, c);
+    // くつ
+    ctx.fillStyle = isHot ? '#ff4d4d' : '#e8505b';
+    ctx.beginPath(); ctx.ellipse(foot[0] + side * 8, foot[1] + 6, 22, 13, 0, 0, 7); ctx.fill();
+  }
+
+  // どうたい
+  thick([0, 0], [0, hipY - 5], 76, body);
+
+  // うで
+  for (const [k, side] of [['R', 1], ['L', -1]]) {
+    const ang = (p.arms && p.arms[k]) || REST_ARM;
+    const isHot = hot.has(k);
+    const c = isHot ? HOT : body;
+    const s = [side * 32, 4];
+    const elbow = pt(s[0], s[1], armLen, ang[0], side);
+    const hand = pt(elbow[0], elbow[1], armLen, ang[1], side);
+    thick(s, elbow, 24, c); thick(elbow, hand, 24, c);
+    circle(hand[0], hand[1], 17, SKIN);
+    if (isHot) { // きらきら
+      ctx.strokeStyle = '#ffd400'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(hand[0], hand[1], 28, 0, 7); ctx.stroke();
+    }
+  }
+
+  // あたま
+  const hy = -62;
+  circle(0, hy, 52, SKIN);
+  // かみ
+  ctx.fillStyle = '#6b4226';
+  ctx.beginPath(); ctx.arc(0, hy, 52, Math.PI * 1.05, Math.PI * 1.95); ctx.quadraticCurveTo(0, hy - 30, -52 * Math.cos(.05*Math.PI) , hy - 8); ctx.fill();
+  // め
+  circle(-19, hy + 4, 7, '#222'); circle(19, hy + 4, 7, '#222');
+  circle(-17, hy + 1, 2.5, '#fff'); circle(21, hy + 1, 2.5, '#fff');
+  // ほっぺ
+  ctx.globalAlpha = .6; circle(-33, hy + 20, 9, '#ff9aa8'); circle(33, hy + 20, 9, '#ff9aa8'); ctx.globalAlpha = 1;
+  // くち
+  ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(0, hy + 16, 14, .15 * Math.PI, .85 * Math.PI); ctx.stroke();
+
+  ctx.restore();
+
+  // なまえ
+  ctx.fillStyle = 'rgba(255,255,255,.92)';
+  roundRect(40, 20, W - 80, 118, 40); ctx.fill();
+  ctx.fillStyle = '#3b2f63'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let fs = 56;
+  ctx.font = `bold ${fs}px "Hiragino Maru Gothic ProN","Yu Gothic UI",sans-serif`;
+  const label = p.emoji + ' ' + p.name;
+  while (ctx.measureText(label).width > W - 140 && fs > 30) { fs -= 2; ctx.font = `bold ${fs}px "Hiragino Maru Gothic ProN","Yu Gothic UI",sans-serif`; }
+  ctx.fillText(label, W / 2, 80);
+}
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+/* ---------- おと ---------- */
+let ac = null, master = null;
+let musicOn = true, voiceOn = true;
+function initAudio() {
+  if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = .5; master.connect(ac.destination);
+}
+function tone(freq, t, dur, type = 'sine', vol = .2, dest = master) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + .015);
+  g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + .05);
+}
+function sfxPop() {   // カードが でた「ぽん！」
+  if (!ac) return; const t = ac.currentTime;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(900, t + .12);
+  g.gain.setValueAtTime(.35, t); g.gain.exponentialRampToValueAtTime(.001, t + .2);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + .25);
+}
+function sfxGood() {  // できた「きらきら〜」
+  if (!ac) return; const t = ac.currentTime;
+  [784, 988, 1175, 1568].forEach((f, i) => tone(f, t + i * .08, .35, 'triangle', .22));
+}
+function sfxNext() {  // じかんぎれ「ぴろん」
+  if (!ac) return; const t = ac.currentTime;
+  tone(660, t, .15, 'square', .08); tone(880, t + .1, .2, 'square', .08);
+}
+// たのしい BGM（ドレミソラ の ペンタトニック）
+const PENTA = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25];
+const MELODY = [0,2,4,2, 4,5,4,2, 3,4,5,4, 2,0,2,-1,  0,2,4,5, 7,5,4,2, 3,2,0,2, 4,2,0,-1];
+const BASS = [0,0,3,3, 4,4,3,3];
+let musicTimer = null, nextNoteTime = 0, step = 0;
+function beatSec() { return 0.42 - (+speedEl.value - 1) * 0.022; } // はやいほど テンポアップ
+function scheduler() {
+  while (nextNoteTime < ac.currentTime + .25) {
+    const n = MELODY[step % MELODY.length];
+    if (n >= 0 && musicOn) tone(PENTA[n], nextNoteTime, beatSec() * .9, 'triangle', .13);
+    if (step % 4 === 0 && musicOn) tone(PENTA[BASS[(step / 4) % BASS.length]] / 2, nextNoteTime, beatSec() * 3.5, 'sine', .16);
+    if (step % 2 === 1 && musicOn) tone(1800, nextNoteTime, .04, 'square', .02); // ちっち
+    nextNoteTime += beatSec(); step++;
+  }
+}
+function startMusic() { if (musicTimer) return; nextNoteTime = ac.currentTime + .1; step = 0; musicTimer = setInterval(scheduler, 80); }
+function stopMusic() { clearInterval(musicTimer); musicTimer = null; }
+
+function speak(text) {
+  if (!voiceOn || !('speechSynthesis' in window)) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ja-JP'; u.rate = .9; u.pitch = 1.3; speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* ---------- ゲームの うごき ---------- */
+const startBtn = document.getElementById('start');
+const doneBtn = document.getElementById('done');
+const speedEl = document.getElementById('speed');
+const secLabel = document.getElementById('secLabel');
+const prog = document.getElementById('prog');
+const starsEl = document.getElementById('stars');
+let running = false, cur = -1, cardStart = 0, raf = 0, stars = 0, colorN = 0;
+
+// スライダー：1(ゆっくり)=12びょう 〜 10(はやい)=1.5びょう
+function cardSeconds() { const v = +speedEl.value; return 12 - (v - 1) * (10.5 / 9); }
+function updateLabel() { secLabel.textContent = `${cardSeconds().toFixed(1)} びょうで つぎの カード`; }
+speedEl.addEventListener('input', updateLabel);
+updateLabel();
+
+function showCard() {
+  let n; do { n = Math.floor(Math.random() * POSES.length); } while (n === cur && POSES.length > 1);
+  cur = n; colorN++;
+  drawPose(cur, colorN);
+  cv.classList.remove('pop'); void cv.offsetWidth; cv.classList.add('pop');
+  sfxPop(); speak(POSES[cur].name);
+  cardStart = performance.now();
+}
+function tick(now) {
+  if (!running) return;
+  const dur = cardSeconds() * 1000;
+  const f = (now - cardStart) / dur;
+  prog.style.width = Math.min(100, f * 100) + '%';
+  if (f >= 1) { sfxNext(); showCard(); }
+  raf = requestAnimationFrame(tick);
+}
+function start() {
+  initAudio(); running = true; startMusic();
+  startBtn.textContent = '■ やすむ'; startBtn.classList.add('running'); doneBtn.disabled = false;
+  showCard(); raf = requestAnimationFrame(tick);
+}
+function stop() {
+  running = false; cancelAnimationFrame(raf); stopMusic();
+  try { speechSynthesis.cancel(); } catch (e) {}
+  startBtn.textContent = '▶ スタート'; startBtn.classList.remove('running'); doneBtn.disabled = true;
+  prog.style.width = '0';
+}
+startBtn.addEventListener('click', () => running ? stop() : start());
+doneBtn.addEventListener('click', () => {
+  if (!running) return;
+  stars++; starsEl.textContent = '⭐'.repeat(Math.min(stars, 30)) + (stars > 30 ? ` ×${stars}` : '');
+  sfxGood(); showCard();
+});
+document.getElementById('musicBtn').addEventListener('click', e => {
+  musicOn = !musicOn; e.currentTarget.classList.toggle('off', !musicOn);
+});
+document.getElementById('voiceBtn').addEventListener('click', e => {
+  voiceOn = !voiceOn; e.currentTarget.classList.toggle('off', !voiceOn);
+  if (!voiceOn) try { speechSynthesis.cancel(); } catch (err) {}
+});
+
+drawPose(0, 0);  // さいしょの ようす
+</script>
+</body>
+</html>
