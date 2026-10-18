@@ -226,6 +226,7 @@ th { color: var(--muted); font-weight: 600; font-size: 14px; }
   <div class="row">
     <button class="btn" id="statsBtn">📊 苦手分析を見る</button>
     <button class="btn" id="bestShotBtn">📷 ベスト記録を画像で保存</button>
+    <button class="btn" id="appDlBtn" hidden>⬇️ アプリをダウンロード</button>
   </div>
 </section>
 
@@ -404,7 +405,9 @@ th { color: var(--muted); font-weight: 600; font-size: 14px; }
   var game = null;       // 進行中のゲーム
   var lastRun = null;    // 直近の成績（保存・シェア用）
   var dl = null;         // アーティファクトの「ダウンロード」機能（なければ null）
-  try { if (window.claude && claude.use) claude.use("downloads").then(function (d) { dl = d; }, function () {}); } catch (e) {}
+  // アーティファクト版だけ、ゲーム本体（単体で動く1枚のHTML）をダウンロードできる
+  function showAppDl() { $("appDlBtn").hidden = !(dl && window.__APP_SOURCE__); }
+  try { if (window.claude && claude.use) claude.use("downloads").then(function (d) { dl = d; showAppDl(); }, function () {}); } catch (e) {}
 
   /* ================= モード・難易度ボタン ================= */
   function renderTitle() {
@@ -942,6 +945,15 @@ th { color: var(--muted); font-weight: 600; font-size: 14px; }
   $("shareBtn").addEventListener("click", function () { if (lastRun) doShare(lastRun); });
   $("bestShotBtn").addEventListener("click", function () {
     saveCanvas(drawRecordCanvas(null), "okaikei-best-" + stamp() + ".png");
+  });
+  $("appDlBtn").addEventListener("click", function () {
+    if (!dl || !window.__APP_SOURCE__) return;
+    dl.save({ filename: "okaikei-game.html", data: window.__APP_SOURCE__ }).then(function () {
+      toast("ゲームを保存しました（okaikei-game.html）");
+    }).catch(function (err) {
+      if (err && err.code === "declined") return;
+      toast("保存できませんでした。もう一度お試しください");
+    });
   });
   $("statsBtn").addEventListener("click", function () { renderStats(); showScreen("stats"); });
   $("statsBackBtn").addEventListener("click", function () { showScreen("title"); });
