@@ -226,7 +226,7 @@ th { color: var(--muted); font-weight: 600; font-size: 14px; }
   <div class="row">
     <button class="btn" id="statsBtn">📊 苦手分析を見る</button>
     <button class="btn" id="bestShotBtn">📷 ベスト記録を画像で保存</button>
-    <button class="btn" id="appDlBtn" hidden>⬇️ アプリをダウンロード</button>
+    <button class="btn" id="appDlBtn" hidden>⬇️ アプリ（HTML）をダウンロード</button>
   </div>
 </section>
 
@@ -406,8 +406,9 @@ th { color: var(--muted); font-weight: 600; font-size: 14px; }
   var lastRun = null;    // 直近の成績（保存・シェア用）
   var dl = null;         // アーティファクトの「ダウンロード」機能（なければ null）
   // アーティファクト版だけ、ゲーム本体（単体で動く1枚のHTML）をダウンロードできる
-  function showAppDl() { $("appDlBtn").hidden = !(dl && window.__APP_SOURCE__); }
+  function showAppDl() { $("appDlBtn").hidden = !window.__APP_SOURCE__; }
   try { if (window.claude && claude.use) claude.use("downloads").then(function (d) { dl = d; showAppDl(); }, function () {}); } catch (e) {}
+  showAppDl();
 
   /* ================= モード・難易度ボタン ================= */
   function renderTitle() {
@@ -870,11 +871,11 @@ th { color: var(--muted); font-weight: 600; font-size: 14px; }
       }
     }, "image/png");
   }
-  function downloadBlob(blob, name) {
+  function downloadBlob(blob, name, msg) {
     var url = URL.createObjectURL(blob), a = document.createElement("a");
     a.href = url; a.download = name; document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 4000);
-    toast("画像を保存しました（ファイルアプリ／ダウンロード）");
+    toast(msg || "画像を保存しました（ファイルアプリ／ダウンロード）");
   }
   function stamp() {
     var d = new Date();
@@ -947,12 +948,17 @@ th { color: var(--muted); font-weight: 600; font-size: 14px; }
     saveCanvas(drawRecordCanvas(null), "okaikei-best-" + stamp() + ".png");
   });
   $("appDlBtn").addEventListener("click", function () {
-    if (!dl || !window.__APP_SOURCE__) return;
-    dl.save({ filename: "okaikei-game.html", data: window.__APP_SOURCE__ }).then(function () {
+    var src = window.__APP_SOURCE__;
+    if (!src) return;
+    function fallback() {
+      downloadBlob(new Blob([src], { type: "text/html" }), "okaikei-game.html", "ゲームをダウンロードしました（okaikei-game.html）");
+    }
+    if (!dl) { fallback(); return; }
+    dl.save({ filename: "okaikei-game.html", data: src }).then(function () {
       toast("ゲームを保存しました（okaikei-game.html）");
     }).catch(function (err) {
       if (err && err.code === "declined") return;
-      toast("保存できませんでした。もう一度お試しください");
+      fallback();
     });
   });
   $("statsBtn").addEventListener("click", function () { renderStats(); showScreen("stats"); });
