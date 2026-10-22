@@ -582,8 +582,8 @@ const THEMES = {
     ]
   }
 };
-const BUDGETS = [1000, 2000, 3000, 4000, 5000, 10000];
-const maxQ = () => ({1000: 4, 2000: 4, 3000: 6, 4000: 7, 5000: 8, 10000: 12}[shop.budget] || 4);   // おこづかいが多いほど、たくさん買える
+const BUDGETS = [1000, 2000, 3000, 4000];
+const maxQ = () => ({1000: 4, 2000: 4, 3000: 6, 4000: 7}[shop.budget] || 4);   // おこづかいが多いほど、たくさん買える
 
 function startApp2() {
   app = 'pocket'; stats = freshStats(); quiz = null;
