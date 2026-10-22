@@ -84,8 +84,8 @@ button:disabled{cursor:default}
 .mcard p{margin:0;font-size:13px;color:var(--mute);line-height:1.7}
 
 /* theme / shop */
-.seg{display:inline-flex;border:2px solid var(--accent);border-radius:12px;overflow:hidden}
-.seg button{border:0;background:#fff;color:var(--accent);padding:10px 22px;font-weight:700;font-size:16px}
+.seg{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.seg button{border:2px solid var(--accent);border-radius:12px;background:#fff;color:var(--accent);padding:10px 20px;font-weight:700;font-size:16px}
 .seg button.on{background:var(--accent);color:#fff}
 .themes{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:20px}
 .themes>*{grid-column:span 2}
@@ -539,6 +539,31 @@ const THEMES = {
         {id: 'tea', name: 'おちゃ', price: 60, e: '🍵'}, {id: 'miso', name: 'みそしる', price: 100, e: '🥣'}]}
     ]
   },
+  icecream: {
+    name: 'アイスクリーム', title: 'アイスクリームを作ろう', emoji: '🍦', desc: 'コーンやカップにアイスをのせて、トッピングでかざろう',
+    cats: [
+      {id: 'holder', name: 'いれもの', min: 1, hint: '1こ以上', items: [
+        {id: 'cone', name: 'コーン', price: 150, e: '🍦'}, {id: 'waffle', name: 'ワッフルコーン', price: 200, e: '🧇'}, {id: 'cup', name: 'カップ', price: 120, e: '🥣'}]},
+      {id: 'flavor', name: 'アイス', min: 1, hint: '1こ以上', items: [
+        {id: 'vanilla', name: 'バニラ', price: 130, e: '🍦'}, {id: 'choco', name: 'チョコ', price: 130, e: '🍫'}, {id: 'strawberry', name: 'いちご', price: 140, e: '🍓'},
+        {id: 'matcha', name: 'まっちゃ', price: 150, e: '🍵'}, {id: 'mint', name: 'ミント', price: 140, e: '🌿'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'sauce', name: 'チョコソース', price: 60, e: '🟤'}, {id: 'sprinkle', name: 'スプリンクル', price: 50, e: '✨'}, {id: 'cherry', name: 'さくらんぼ', price: 150, e: '🍒'},
+        {id: 'wafer', name: 'ウエハース', price: 80, e: '🧇'}, {id: 'whip', name: 'ホイップ', price: 120, e: '☁️'}]}
+    ]
+  },
+  gyudon: {
+    name: '牛丼', title: '牛丼を作ろう', emoji: '🍲', desc: 'ごはんにお肉をのせて、トッピングとセットをえらぼう',
+    cats: [
+      {id: 'size', name: 'サイズ', min: 1, hint: '1こ以上', items: [
+        {id: 'regular', name: 'なみもり', price: 400, e: '🍚'}, {id: 'large', name: 'おおもり', price: 500, e: '🍚'}, {id: 'xl', name: 'とくもり', price: 600, e: '🍚'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'egg', name: 'たまご', price: 70, e: '🥚'}, {id: 'cheese', name: 'チーズ', price: 120, e: '🧀'}, {id: 'negi', name: 'ねぎ', price: 60, e: '🌱'},
+        {id: 'shoga', name: 'べにしょうが', price: 40, e: '🔴'}, {id: 'kimchi', name: 'キムチ', price: 100, e: '🌶️'}]},
+      {id: 'set', name: 'セット', min: 0, hint: 'おこのみで', items: [
+        {id: 'miso', name: 'みそしる', price: 100, e: '🥣'}, {id: 'salad', name: 'サラダ', price: 150, e: '🥗'}, {id: 'shinko', name: 'おしんこ', price: 80, e: '🥒'}, {id: 'tea', name: 'おちゃ', price: 60, e: '🍵'}]}
+    ]
+  },
   burger: {
     name: 'ハンバーガー', title: 'ハンバーガーを作ろう', emoji: '🍔', desc: 'バンズにパティとやさいをはさもう',
     cats: [
@@ -557,7 +582,8 @@ const THEMES = {
     ]
   }
 };
-const MAXQ = 4;
+const BUDGETS = [1000, 2000, 3000, 4000, 5000, 10000];
+const maxQ = () => ({1000: 4, 2000: 4, 3000: 6, 4000: 7, 5000: 8, 10000: 12}[shop.budget] || 4);   // おこづかいが多いほど、たくさん買える
 
 function startApp2() {
   app = 'pocket'; stats = freshStats(); quiz = null;
@@ -568,7 +594,7 @@ function renderTheme() {
   renderHeader();
   $('#main').innerHTML = `<div class="card" style="text-align:center;padding:30px 20px">
     <div class="ask">まず、お小遣いの金額をえらぼう</div>
-    <div class="seg">${[1000, 2000].map(b => `<button data-a="budget" data-b="${b}" class="${shop.budget === b ? 'on' : ''}">${fmt(b)}円</button>`).join('')}</div>
+    <div class="seg">${BUDGETS.map(b => `<button data-a="budget" data-b="${b}" class="${shop.budget === b ? 'on' : ''}">${fmt(b)}円</button>`).join('')}</div>
     <div class="ask" style="margin-top:22px">なにを作る？</div>
     <div class="themes">${Object.entries(THEMES).map(([k, t]) => `<button class="mcard" data-a="theme" data-t="${k}" style="padding:26px 12px">
       <div class="em" style="font-size:52px">${t.emoji}</div><h2 style="font-size:18px">${t.title}</h2><p>${t.desc}</p></button>`).join('')}</div>
@@ -595,7 +621,7 @@ function renderShop(warn) {
       const q = shop.qty[it.id] || 0;
       return `<div class="item ${q ? 'sel' : ''}"><div class="e">${it.e}</div><div class="n">${it.name}</div><div class="p">${fmt(it.price)}円</div>
         <div class="qty"><button data-a="dec" data-id="${it.id}" ${q ? '' : 'disabled'}>−</button><span>${q}</span>
-        <button class="plus" data-a="inc" data-id="${it.id}" ${q >= MAXQ ? 'disabled' : ''}>+</button></div></div>`;
+        <button class="plus" data-a="inc" data-id="${it.id}" ${q >= maxQ() ? 'disabled' : ''}>+</button></div></div>`;
     }).join('')}</div></div>`;
   }).join('');
   const lines = shopLines();
@@ -610,7 +636,7 @@ function renderShop(warn) {
     </div>
     <div class="card" style="margin-top:14px">${catsHTML}</div></div>
     <div class="basket"><div class="card"><h3>🧺 かご</h3>
-      ${{burger: svgBurger, pizza: svgPizza, sushi: svgSushi, plarail: svgPlarail}[shop.theme] ? `<div class="livepv">${({burger: svgBurger, pizza: svgPizza, sushi: svgSushi, plarail: svgPlarail})[shop.theme](shop.qty)}</div>` : ''}
+      ${LIVE_DRAW[shop.theme] ? `<div class="livepv">${LIVE_DRAW[shop.theme](shop.qty)}</div>` : ''}
       ${lines.length ? lines.map(l => `<div class="bl"><span>${l.e} ${l.name} ×${l.q}</span><span>${fmt(l.price)}円</span></div>`).join('') : '<div class="bl" style="color:var(--mute)">まだ何も入っていません</div>'}
       <div class="req">${req}</div>
       <button class="go" data-a="checkout" ${shopReady() ? '' : 'disabled'}>おかいけいへ</button>
@@ -624,7 +650,7 @@ function shopChange(id, d) {
   const it = T.cats.flatMap(c => c.items).find(i => i.id === id);
   const q = shop.qty[id] || 0;
   if (d > 0) {
-    if (q >= MAXQ) return;
+    if (q >= maxQ()) return;
     shop.qty[id] = q + 1;
   } else if (q > 0) shop.qty[id] = q - 1;
   renderShop('');
@@ -675,8 +701,17 @@ function finishApp2(results) {
   if (shop.theme === 'pizza') { const t = nm(['salami', 'shrimp', 'corn', 'mushroom', 'pineapple', 'pepper'])[0]; dish = (t ? t + 'の' : 'チーズ') + (has('white') && !has('tomato') ? 'ホワイト' : '') + 'ピザ'; }
   if (shop.theme === 'sushi') { const ns = nm(['tuna', 'salmon', 'egg', 'shrimp', 'squid', 'ikura', 'eel']); dish = ns.length >= 3 ? 'おすしもりあわせ' : ns.join('と') + 'の' + (has('maki') && !has('nigiri') ? 'まきずし' : 'にぎり'); }
   if (shop.theme === 'burger') { const p = {beef: 'ぎゅうにく', chicken: 'チキン', fish: 'フィッシュ', veggie: 'やさい'}[['beef', 'chicken', 'fish', 'veggie'].find(has)] || ''; const pc = ['beef', 'chicken', 'fish', 'veggie'].reduce((a, id) => a + (q[id] || 0), 0), N = burgerStack(q).length; dish = (pc >= 5 ? 'ジャイアント' : pc >= 3 ? 'トリプル' : pc === 2 ? 'ダブル' : '') + (has('cheese') ? 'チーズ' : '') + p + 'バーガー' + (has('fries') && has('drink') ? 'セット' : '') + `（${N}だん）`; }
-  const draw = {curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot, pizza: svgPizza, sushi: svgSushi, burger: svgBurger}[shop.theme](q);
-  const svg = ['burger', 'pizza', 'sushi', 'plarail'].includes(shop.theme) ? draw : pencilize(draw);
+  if (shop.theme === 'icecream') {
+    const fl = nm(['vanilla', 'choco', 'strawberry', 'matcha', 'mint']), nS = ['vanilla', 'choco', 'strawberry', 'matcha', 'mint'].reduce((a, id) => a + (q[id] || 0), 0);
+    const hd = has('cone') ? 'コーン' : has('waffle') ? 'ワッフルコーン' : 'カップ';
+    dish = (fl.length >= 3 ? 'カラフル' : fl.slice(0, 2).join('と') + 'の') + hd + 'アイス' + (has('cherry') ? '・さくらんぼのせ' : '') + `（${nS}だま）`;
+  }
+  if (shop.theme === 'gyudon') {
+    const sz = {regular: 'なみもり', large: 'おおもり', xl: 'とくもり'}[['xl', 'large', 'regular'].find(has)] || 'なみもり', tp = nm(['egg', 'cheese', 'negi', 'shoga', 'kimchi'])[0];
+    dish = sz + (tp ? tp + 'のせ' : '') + '牛丼' + (nm(['miso', 'salad', 'shinko', 'tea']).length ? 'セット' : '');
+  }
+  const draw = {icecream: svgIcecream, gyudon: svgGyudon, curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot, pizza: svgPizza, sushi: svgSushi, burger: svgBurger}[shop.theme](q);
+  const svg = ['burger', 'pizza', 'sushi', 'plarail', 'icecream', 'gyudon'].includes(shop.theme) ? draw : pencilize(draw);
   const imgKeys = illustKeys(shop.theme, q);
   shop.last = {dish, pts, rk, total, change};
   setTimeout(() => tryImage(imgKeys), 0);
@@ -708,9 +743,9 @@ function illustKeys(theme, q) {
   const has = id => (q[id] || 0) > 0, pick = ids => ids.find(has);
   const main = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'],
     plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'],
-    pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly'], pizza: [], sushi: [], burger: []}[theme];
+    pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly'], pizza: [], sushi: [], burger: [], icecream: [], gyudon: []}[theme];
   if (theme === 'pizza' || theme === 'sushi' || theme === 'plarail') return [];   // 選んだものをそのまま並べて描く（部品画像）
-  if (theme === 'burger') return [];   // 選んだ材料をそのまま積み上げて描く（部品画像）
+  if (theme === 'burger' || theme === 'icecream' || theme === 'gyudon') return [];   // 選んだ材料をそのまま積み上げて描く（部品画像）
   const m = pick(main) || main[0], base = `${theme}-${m}`;
   if (theme === 'curry') return pick(['sweet', 'hot']) === 'hot' ? [`${base}-hot`, base] : [base];
   if (theme === 'parfait') return has('jumbo') ? [`${base}-jumbo`, base] : [base];
@@ -984,7 +1019,7 @@ function svgRobot(q) {
 }
 
 /* 部品画像の縦横比（縦/横）。images/part-*.png から作った固定値 */
-const PART_AR = {"bacon": 0.3275, "bunB": 0.285, "bunT": 0.3425, "bunTplain": 0.4375, "cheese": 0.15, "egg": 0.2425, "lettuce": 0.2975, "maki-eel": 1.0727, "maki-egg": 1.0636, "maki-ikura": 1.1727, "maki-salmon": 1.0818, "maki-shrimp": 1.0818, "maki-squid": 1.0, "maki-tuna": 1.0364, "nigiri-eel": 0.6, "nigiri-egg": 0.68, "nigiri-ikura": 0.9267, "nigiri-salmon": 0.6333, "nigiri-shrimp": 0.6867, "nigiri-squid": 0.64, "nigiri-tuna": 0.6, "onion": 0.11, "patty-beef": 0.2525, "patty-chicken": 0.2125, "patty-fish": 0.2575, "patty-veggie": 0.2875, "pickle": 0.1925, "pizzabase-cheesecrust-tomato": 0.975, "pizzabase-cheesecrust-white": 0.9833, "pizzabase-thick-tomato": 1.0, "pizzabase-thick-white": 0.9611, "pizzabase-thin-tomato": 1.0, "pizzabase-thin-white": 0.9944, "pl-bridge": 0.2767, "pl-car-keihan": 0.4538, "pl-car-kintetsu": 0.3077, "pl-car-shinkansen": 0.2808, "pl-car-sl": 0.5038, "pl-car-train": 0.4423, "pl-crossing": 0.7812, "pl-platform": 0.2737, "pl-signal": 2.7, "pl-station": 0.8333, "pl-tree": 1.3167, "pl-tunnel": 0.6455, "side-ginger": 0.7364, "side-miso": 0.8917, "side-soy": 0.7417, "side-tea": 1.28, "side-wasabi": 0.95, "sushi-board": 0.4365, "tomato": 0.19, "topping-corn": 1.0, "topping-mushroom": 1.01, "topping-pepper": 0.99, "topping-pineapple": 0.94, "topping-salami": 1.0273, "topping-shrimp": 1.0273};
+const PART_AR = {"ice-cone": 2.558, "ice-waffle": 2.515, "ice-cup": 0.881, "scoop-choco": 0.8975, "scoop-vanilla": 0.8375, "scoop-strawberry": 0.9175, "scoop-matcha": 0.8675, "scoop-mint": 0.77, "ice-cherry": 2.305, "ice-whip": 1.03, "ice-wafer": 0.844, "gy-bowl-regular": 0.875, "gy-bowl-large": 0.766, "gy-bowl-xl": 0.809, "gy-egg": 0.9, "gy-cheese": 1.008, "gy-negi": 1.017, "gy-shoga": 1.0, "gy-kimchi": 1.008, "gy-miso": 0.87, "gy-salad": 0.627, "gy-shinko": 0.713, "gy-tea": 1.617, "bacon": 0.3275, "bunB": 0.285, "bunT": 0.3425, "bunTplain": 0.4375, "cheese": 0.15, "egg": 0.2425, "lettuce": 0.2975, "maki-eel": 1.0727, "maki-egg": 1.0636, "maki-ikura": 1.1727, "maki-salmon": 1.0818, "maki-shrimp": 1.0818, "maki-squid": 1.0, "maki-tuna": 1.0364, "nigiri-eel": 0.6, "nigiri-egg": 0.68, "nigiri-ikura": 0.9267, "nigiri-salmon": 0.6333, "nigiri-shrimp": 0.6867, "nigiri-squid": 0.64, "nigiri-tuna": 0.6, "onion": 0.11, "patty-beef": 0.2525, "patty-chicken": 0.2125, "patty-fish": 0.2575, "patty-veggie": 0.2875, "pickle": 0.1925, "pizzabase-cheesecrust-tomato": 0.975, "pizzabase-cheesecrust-white": 0.9833, "pizzabase-thick-tomato": 1.0, "pizzabase-thick-white": 0.9611, "pizzabase-thin-tomato": 1.0, "pizzabase-thin-white": 0.9944, "pl-bridge": 0.2767, "pl-car-keihan": 0.4538, "pl-car-kintetsu": 0.3077, "pl-car-shinkansen": 0.2808, "pl-car-sl": 0.5038, "pl-car-train": 0.4423, "pl-crossing": 0.7812, "pl-platform": 0.2737, "pl-signal": 2.7, "pl-station": 0.8333, "pl-tree": 1.3167, "pl-tunnel": 0.6455, "side-ginger": 0.7364, "side-miso": 0.8917, "side-soy": 0.7417, "side-tea": 1.28, "side-wasabi": 0.95, "sushi-board": 0.4365, "tomato": 0.19, "topping-corn": 1.0, "topping-mushroom": 1.01, "topping-pepper": 0.99, "topping-pineapple": 0.94, "topping-salami": 1.0273, "topping-shrimp": 1.0273};
 /* 部品画像は <defs> に1度だけ入れて <use> で使い回す（同じ画像データを何度も埋め込まない）。
    <symbol> は画面記録（html2canvas）で大きさが効かないので、単位正方形の <image> を拡大縮小して使う */
 let _pu = null, _puSeq = 0;
@@ -1137,6 +1172,120 @@ function svgBurger(q) {
   <g><rect x="12" y="12" width="${nl >= 10 ? 96 : 84}" height="34" rx="17" fill="#fff" stroke="#e0a458" stroke-width="3"/><text x="${nl >= 10 ? 60 : 54}" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a5692a" font-family="sans-serif">${nl}だん！</text></g>
   </svg>`;
 }
+
+
+/* アイスクリーム: いれもの（コーン・カップ）に、えらんだ味のアイスを1だまずつ積む。トッピングものせる */
+const SCOOPS = ['vanilla', 'choco', 'strawberry', 'matcha', 'mint'];
+function svgIcecream(q) {
+  partsBegin();
+  const n = id => q[id] || 0;
+  const holders = [];
+  ['cone', 'waffle', 'cup'].forEach(h => { for (let i = 0; i < n(h); i++) holders.push(h); });
+  if (!holders.length) holders.push('cone');
+  const H = holders.length;
+  const scoops = []; SCOOPS.forEach(f => { for (let i = 0; i < n(f); i++) scoops.push(f); });
+  if (!scoops.length) scoops.push('vanilla');
+  const cols = holders.map(h => ({h, sc: [], top: {}}));
+  scoops.forEach((f, i) => cols[i % H].sc.push(f));
+  ['cherry', 'whip', 'wafer', 'sauce', 'sprinkle'].forEach(t => { for (let i = 0; i < n(t); i++) cols[i % H].top[t] = true; });
+  const SW = 100, step = 52;   // アイス1こ分の幅と、積むときの進み
+  const rand = rng(7);
+  // 1列ぶんを、下を(0,0)・上がマイナスの座標でつくる
+  const build = c => {
+    let out = '', y = 0;
+    const hw = c.h === 'cup' ? 118 : 54, hh = hw * PART_AR['ice-' + c.h];
+    const rimOverlap = c.h === 'cup' ? hh * .55 : 22;
+    out += partUse('ice-' + c.h, -hw / 2, -hh, hw, hh);
+    y = -hh + rimOverlap;                                  // 最初のアイスの下はし
+    let topY = y;
+    c.sc.forEach((f, i) => {
+      const h = SW * PART_AR['scoop-' + f];
+      out += partUse('scoop-' + f, -SW / 2, y - h, SW, h);
+      topY = y - h; y -= step;
+    });
+    const lastTop = topY, lastH = SW * PART_AR['scoop-' + c.sc[c.sc.length - 1]];
+    const cx = 0, capY = lastTop + 2;
+    if (c.top.wafer) out = partUse('ice-wafer', cx + 8, capY - 38, 88, 74, 'xMidYMid', 28) + out;   // うしろにさす
+    if (c.top.sauce) {
+      const w = SW * .86, x0 = -w / 2, yb = capY + lastH * .36;
+      out += `<path d="M${x0} ${yb} q${w * .08} -${lastH * .38} ${w * .5} -${lastH * .4} q${w * .42} 0 ${w * .5} ${lastH * .4} l-${w * .1} 8 q-8 22 -${w * .16} 6 q-${w * .05} -14 -${w * .14} 4 q-6 20 -${w * .15} 4 q-${w * .06} -12 -${w * .14} 2 q-8 16 -${w * .15} -2 q-${w * .05} -10 -${w * .16} 2z" fill="#4a2512" opacity=".93"/>`;
+    }
+    if (c.top.sprinkle) {
+      const cols2 = ['#ff5a7a', '#ffd23f', '#3fa7ff', '#6ddc7a', '#ffffff', '#b66bff'];
+      for (let k = 0; k < 20; k++) {
+        const a = rand() * Math.PI, r = (.12 + rand() * .36) * SW, px = Math.cos(a) * r * 1.1 * (rand() < .5 ? -1 : 1) * .9, py = capY + lastH * .5 - Math.sin(a) * lastH * .42;
+        out += `<rect x="${(px - 3.5).toFixed(1)}" y="${(py - 1.2).toFixed(1)}" width="7" height="2.6" rx="1.3" fill="${cols2[k % 6]}" transform="rotate(${Math.round(rand() * 180)} ${px.toFixed(1)} ${py.toFixed(1)})"/>`;
+      }
+    }
+    let ty = capY + 6;
+    if (c.top.whip) { out += partUse('ice-whip', -26, ty - 50, 52, 54); ty -= 38; }
+    if (c.top.cherry) out += partUse('ice-cherry', -11, ty - 52, 22, 52);
+    const total = -(Math.min(ty - 40, capY - 40));
+    return {svg: out, height: Math.max(total, 60), width: c.h === 'cup' ? hw : SW};
+  };
+  const built = cols.map(build);
+  const gap = 14, maxH = 215, areaW = 360;
+  const natW = built.reduce((a, b) => a + b.width, 0) + gap * (H - 1), natH = Math.max(...built.map(b => b.height));
+  const sc = Math.min(1.25, maxH / natH, areaW / natW);
+  let x = 200 - natW * sc / 2, g = '';
+  built.forEach(b => { g += `<g transform="translate(${(x + b.width * sc / 2).toFixed(1)} 262) scale(${sc.toFixed(3)})">${b.svg}</g>`; x += (b.width + gap) * sc; });
+  const N = scoops.length;
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
+  <rect width="400" height="300" fill="#e8f6fb"/><rect x="0" y="262" width="400" height="38" fill="#f5d9e6"/><ellipse cx="200" cy="264" rx="${Math.min(185, natW * sc / 2 + 30)}" ry="8" fill="#00000018"/>
+  ${g}
+  <g><rect x="12" y="12" width="${N >= 10 ? 96 : 84}" height="34" rx="17" fill="#fff" stroke="#e58fb0" stroke-width="3"/><text x="${N >= 10 ? 60 : 54}" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#b84a77" font-family="sans-serif">${N}だま！</text></g>
+  </svg>`;
+}
+
+/* 牛丼: サイズごとにどんぶりを1ぱいずつ。トッピングはどんぶりの上に、セットはおぼんの手前に */
+function svgGyudon(q) {
+  partsBegin();
+  const n = id => q[id] || 0;
+  const bowls = [];
+  ['regular', 'large', 'xl'].forEach(s => { for (let i = 0; i < n(s); i++) bowls.push(s); });
+  if (!bowls.length) bowls.push('regular');
+  const B = bowls.length, sides = ['miso', 'salad', 'shinko', 'tea'].filter(id => n(id) > 0);
+  const hasSides = sides.length > 0;
+  const topY0 = 40, areaH = hasSides ? 170 : 215, areaW = 372;
+  // 列数を決めて、どんぶりを並べる
+  let best = {w: 0};
+  for (let cols = 1; cols <= B; cols++) {
+    const rows = Math.ceil(B / cols), w = Math.min(190, areaW / cols - 4, areaH / rows / .82);
+    if (w > best.w) best = {w, cols, rows};
+  }
+  const {w: bw, cols, rows} = best;
+  const tops = ['egg', 'cheese', 'negi', 'shoga', 'kimchi'];
+  const per = bowls.map(() => ({}));
+  tops.forEach(t => { for (let i = 0; i < n(t); i++) { const b = per[i % B]; b[t] = (b[t] || 0) + 1; } });
+  const POS = {cheese: [.34, .34, .26, -12], kimchi: [.67, .34, .30, 0], shoga: [.40, .22, .26, 0], negi: [.60, .22, .26, 0], egg: [.50, .30, .26, 0]};
+  let bowlSvg = '';
+  bowls.forEach((sz, i) => {
+    const r = Math.floor(i / cols), inRow = Math.min(cols, B - r * cols), c = i % cols;
+    const bx = 200 - inRow * bw / 2 + c * bw, bh = bw * PART_AR['gy-bowl-' + sz];
+    const rowH = areaH / rows, by = topY0 + r * rowH + (rowH - bh) / 2 + 6;
+    bowlSvg += `<ellipse cx="${(bx + bw / 2).toFixed(1)}" cy="${(by + bh - 1).toFixed(1)}" rx="${(bw * .34).toFixed(1)}" ry="${(bw * .05).toFixed(1)}" fill="#00000022"/>`;
+    bowlSvg += partUse('gy-bowl-' + sz, bx + 2, by, bw - 4, bh);
+    ['kimchi', 'cheese', 'shoga', 'negi', 'egg'].forEach(t => {
+      const k = per[i][t] || 0; if (!k) return;
+      const [fx, fy, fw, rot] = POS[t];
+      for (let j = 0; j < Math.min(k, 3); j++) {
+        const tw = bw * fw, ox = (j - (Math.min(k, 3) - 1) / 2) * tw * .45;
+        bowlSvg += partUse('gy-' + t, bx + bw * fx - tw / 2 + ox, by + bh * fy - tw / 2 + j * 2, tw, tw, 'xMidYMid', rot);
+      }
+    });
+  });
+  const SZ = {miso: 56, salad: 62, shinko: 52, tea: 40};
+  const gap = 16, totW = sides.reduce((a, id) => a + SZ[id], 0) + gap * (sides.length - 1);
+  let sx = 200 - totW / 2, sideSvg = '';
+  sides.forEach(id => { sideSvg += partUse('gy-' + id, sx, 270 - SZ[id] * 1.7, SZ[id], SZ[id] * 1.7, 'xMidYMax'); sx += SZ[id] + gap; });
+  const tray = hasSides ? '<rect x="20" y="214" width="360" height="62" rx="12" fill="#c9a06a" opacity=".55"/>' : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
+  <rect width="400" height="300" fill="#f3e3c3"/><rect x="0" y="278" width="400" height="22" fill="#d9b982"/>
+  ${tray}${bowlSvg}${sideSvg}
+  <g><rect x="12" y="12" width="84" height="34" rx="17" fill="#fff" stroke="#d98a4a" stroke-width="3"/><text x="54" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a35a1d" font-family="sans-serif">${B}はい！</text></g>
+  </svg>`;
+}
+const LIVE_DRAW = {burger: svgBurger, pizza: svgPizza, sushi: svgSushi, plarail: svgPlarail, icecream: svgIcecream, gyudon: svgGyudon};
 
 /* =========================================================
    Screenshot (画面を記録する) & gallery
