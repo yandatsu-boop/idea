@@ -131,8 +131,8 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
   <h1><small>FREEHAND CUT CHALLENGE</small>🍕 ピザ・ケーキ 🍰<br>カットチャレンジ</h1>
   <p class="lead">指でスッと線を引いて、お題の分量にぴったり切り分けよう！<br>面積を自動で計算して <b>S〜D</b> のランクと <b>一致率</b> を判定します。</p>
   <div class="row" id="modeRow">
-    <button class="mode sel" data-mode="easy"><div class="ic">⬜</div><b>かんたん</b><span>四角い形 / 1/2〜1/6</span></button>
-    <button class="mode" data-mode="hard"><div class="ic">⭕</div><b>むずかしい</b><span>丸い形 / 1/8 や 3/8 も！</span></button>
+    <button class="mode sel" data-mode="easy"><div class="ic">⬜</div><b>かんたん</b><span>四角い形 / 1/2 → 1/6</span></button>
+    <button class="mode" data-mode="hard"><div class="ic">⭕</div><b>むずかしい</b><span>丸い形 / 1/2 → 1/8</span></button>
   </div>
   <div class="seg" id="foodSeg">
     <button data-food="pizza" class="sel">🍕 ピザ</button>
@@ -209,9 +209,10 @@ const M = 0.1;            // 盤面の余白(正規化座標)
 const ROUNDS = 5;
 const MAX_STROKES = 6;
 const SNAP = 0.04;        // 線の端が境界/他の線に自動接続される距離
+// 分子は常に1。先頭ほど簡単で、後ろの問題ほど難しくなる順に並べる
 const FRACS = {
-  easy: [[1,2],[1,3],[1,4],[1,5],[1,6]],
-  hard: [[1,2],[1,3],[1,4],[1,5],[1,6],[1,8],[3,8],[2,5]],
+  easy: [[1,2],[1,4],[1,3],[1,5],[1,6]],
+  hard: [[1,2],[1,4],[1,3],[1,6],[1,8]],
 };
 const RANKS = [
   {r:'S', min:97, msg:'パーフェクト！ プロの職人技！'},
@@ -542,7 +543,7 @@ const fmtFrac=([n,d])=>`<i>${n}</i><i>${d}</i>`;
 
 function startGame(){
   st.round=0; st.results=[];
-  st.fracs=shuffle(FRACS[st.mode]).slice(0,ROUNDS);
+  st.fracs=FRACS[st.mode].slice(0,ROUNDS);
   startRound();
   show('game'); requestAnimationFrame(resize);
 }
