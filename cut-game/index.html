@@ -93,10 +93,34 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 #list .p{flex:1;text-align:right}
 #list .r{width:30px;font-size:22px}
 
+.seg button{white-space:nowrap}
+#panel.res .btns,#panel.res #hintBox{display:none}
 @media (orientation:portrait){
   .stage{flex-direction:column}
-  #panel{width:100%;flex:none;max-height:44%}
+  #panel{width:100%;flex:none;max-height:none;overflow:visible}
   .rank{font-size:60px}
+}
+/* iPhoneなど狭い画面: パネルを小さくして盤面を大きく */
+@media (max-width:600px){
+  .seg button{padding:10px 12px;font-size:15px}
+  .mode{padding:14px 8px}
+  .mode .ic{font-size:34px}
+  #game{gap:6px}
+  .stage{gap:8px}
+  #panel{gap:6px}
+  .mission{padding:8px 12px;gap:10px}
+  .mission .txt{font-size:13px;line-height:1.3}
+  #sample{width:52px;height:52px}
+  .frac{font-size:28px}
+  .frac i:first-child{border-bottom-width:3px}
+  #hintBox{display:none}
+  .btn{padding:10px 8px}
+  #resultCard{padding:8px 12px}
+  #resultCard .rank{font-size:46px}
+  .match{font-size:20px}
+  .detail{font-size:13px;margin:2px 0 6px}
+  .msg{margin-bottom:6px;font-size:13px}
+  #final .rank{font-size:90px}
 }
 </style>
 </head>
@@ -170,6 +194,13 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 <script>
 (() => {
 'use strict';
+
+/* 古いiOS(15以前)向け: roundRect が無い場合の代替 */
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    r=Math.min(r,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);
+    this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath();};
+}
 
 /* ============ 定数 ============ */
 const G = 512;            // 面積計算用ラスタ解像度
@@ -413,6 +444,7 @@ function resize(){
   st.dirty=true;
 }
 window.addEventListener('resize',resize);
+if(window.ResizeObserver) new ResizeObserver(()=>{ if($('game').classList.contains('active')) resize(); }).observe($('boardWrap'));
 window.addEventListener('orientationchange',()=>setTimeout(resize,200));
 
 function strokePath(ctx,pts){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));}
@@ -523,7 +555,7 @@ function startRound(){
   $('modePill').textContent=st.mode==='easy'?'⬜ かんたん':'⭕ むずかしい';
   $('foodName').textContent=FOODS[st.foodNow].name;
   $('fracBox').innerHTML=fmtFrac(f);
-  $('resultCard').style.display='none';
+  $('resultCard').style.display='none'; $('panel').classList.remove('res');
   $('judge').style.display=''; $('undoBtn').disabled=$('clearBtn').disabled=false;
   $('hintBox').innerHTML = st.mode==='easy'
     ? '指やペンで<b>端から端まで</b>線を引いて切ろう。何本でもOK（最大6本）。線の端が縁や他の線に近いと自動でつながるよ。'
@@ -576,7 +608,7 @@ function judge(){
   st.results.push({frac:[n,d],match,rank:rk.r});
   // UI
   const diff=(best.frac-target)*100;
-  $('judge').style.display='none';
+  $('judge').style.display='none'; $('panel').classList.add('res');
   $('resultCard').style.display='block';
   $('rankLetter').textContent=rk.r; $('rankLetter').className='rank '+rk.r;
   $('matchText').textContent=match.toFixed(1)+'% 一致';
@@ -618,7 +650,7 @@ document.querySelectorAll('#foodSeg button').forEach(x=>x.classList.toggle('sel'
 $('startBtn').onclick=startGame;
 $('againBtn').onclick=startGame;
 $('toTitleBtn').onclick=()=>{show('title');renderBest();};
-$('homeBtn').onclick=()=>{ if(st.results.length===0||confirm('ゲームを中断してタイトルに戻りますか？')){show('title');renderBest();} };
+$('homeBtn').onclick=()=>{show('title');renderBest();};
 $('undoBtn').onclick=()=>{st.strokes.pop();updateUI();st.dirty=true;};
 $('clearBtn').onclick=()=>{st.strokes=[];updateUI();st.dirty=true;};
 $('judge').onclick=judge;
