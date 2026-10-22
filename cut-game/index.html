@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="カットチャレンジ">
+<title>ピザ・ケーキ カットチャレンジ</title>
+<style>
+:root{
+  --bg1:#fff3dc; --bg2:#ffd9a8; --ink:#4a2c1a; --accent:#e4572e; --accent2:#f4a259;
+  --card:#fffaf0; --line:#e8cfa6;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:-apple-system,"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",sans-serif;
+  color:var(--ink);
+  background:radial-gradient(circle at 20% 10%,var(--bg1),var(--bg2));
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;
+  padding:max(14px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.screen.active{display:flex}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+.btn{background:#fff;border:2px solid var(--line);border-radius:16px;padding:14px 18px;font-weight:700;font-size:18px;box-shadow:0 3px 0 var(--line)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
+.btn.primary{background:var(--accent);border-color:#b83c1c;color:#fff;box-shadow:0 4px 0 #b83c1c}
+.btn.primary:active{box-shadow:0 2px 0 #b83c1c}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+/* title */
+#title{align-items:center;justify-content:center;text-align:center;gap:18px;overflow:auto}
+#title h1{margin:0;font-size:clamp(30px,6vw,56px);line-height:1.15;letter-spacing:.02em}
+#title h1 small{display:block;font-size:.4em;color:var(--accent);letter-spacing:.2em}
+#title p.lead{margin:0;font-size:clamp(15px,2.2vw,20px);max-width:620px;line-height:1.6}
+.row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.mode{width:min(260px,42vw);padding:18px 12px;border-radius:22px;background:var(--card);border:4px solid var(--line);text-align:center;transition:.15s}
+.mode.sel{border-color:var(--accent);background:#fff;transform:scale(1.04);box-shadow:0 8px 20px rgba(228,87,46,.25)}
+.mode .ic{font-size:44px;line-height:1.1}
+.mode b{display:block;font-size:22px;margin-top:4px}
+.mode span{font-size:14px;opacity:.75}
+.seg{display:flex;background:var(--card);border:3px solid var(--line);border-radius:999px;padding:4px}
+.seg button{background:transparent;padding:10px 20px;border-radius:999px;font-weight:700;font-size:17px}
+.seg button.sel{background:var(--accent);color:#fff}
+.best{font-size:14px;opacity:.8}
+
+/* game */
+#game{gap:10px}
+.top{display:flex;align-items:center;gap:12px}
+.top .grow{flex:1}
+.pill{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:6px 14px;font-weight:700}
+.stage{flex:1;min-height:0;display:flex;gap:14px}
+#boardWrap{flex:1;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center}
+#board{touch-action:none;border-radius:26px;display:block;
+  background:
+   repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 2px,transparent 2px 22px),
+   linear-gradient(135deg,#c98e55,#a96d3a);
+  box-shadow:inset 0 0 0 6px #8a5528,inset 0 0 40px rgba(0,0,0,.25),0 10px 24px rgba(74,44,26,.3)}
+#panel{width:min(340px,34vw);display:flex;flex-direction:column;gap:10px;min-height:0;overflow:auto}
+.card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:12px 14px}
+.mission{display:flex;align-items:center;gap:12px}
+.mission .txt{flex:1;font-size:15px;line-height:1.4}
+.mission .txt small{display:block;opacity:.7;margin-top:4px}
+.frac{display:inline-flex;flex-direction:column;align-items:center;font-weight:900;font-size:44px;line-height:1;color:var(--accent);vertical-align:middle}
+.frac i{font-style:normal;padding:0 8px}
+.frac i:first-child{border-bottom:5px solid var(--accent);padding-bottom:3px}
+.frac i:last-child{padding-top:3px}
+#sample{width:84px;height:84px;flex:none}
+.hint{font-size:13px;line-height:1.5;opacity:.85}
+.btns{display:flex;gap:8px}
+.btns .btn{flex:1;font-size:15px;padding:12px 6px}
+#judge{width:100%}
+#resultCard{display:none;text-align:center;animation:pop .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.rank{font-size:84px;font-weight:900;line-height:1;margin:0}
+.rank.S{background:linear-gradient(135deg,#ffd700,#ff8c00,#ffe680);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 #b8860b)}
+.rank.A{color:#e63946}.rank.B{color:#2a7de1}.rank.C{color:#2a9d57}.rank.D{color:#888}
+.match{font-size:26px;font-weight:800}
+.detail{font-size:14px;line-height:1.6;margin:6px 0 10px}
+.msg{font-size:15px;font-weight:700;margin-bottom:8px}
+
+#toast{position:fixed;left:50%;top:14%;transform:translateX(-50%);background:rgba(40,25,15,.92);color:#fff;padding:12px 20px;border-radius:14px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s;z-index:10;max-width:86vw;text-align:center}
+#toast.show{opacity:1}
+
+/* final */
+#final{align-items:center;justify-content:center;text-align:center;gap:12px;overflow:auto}
+#final h2{margin:0;font-size:28px}
+#final .rank{font-size:130px}
+#list{width:min(520px,92vw);display:flex;flex-direction:column;gap:6px}
+#list div{display:flex;align-items:center;gap:10px;background:var(--card);border:2px solid var(--line);border-radius:12px;padding:6px 12px;font-weight:700}
+#list .f{width:60px;text-align:left}
+#list .p{flex:1;text-align:right}
+#list .r{width:30px;font-size:22px}
+
+@media (orientation:portrait){
+  .stage{flex-direction:column}
+  #panel{width:100%;flex:none;max-height:44%}
+  .rank{font-size:60px}
+}
+</style>
+</head>
+<body>
+
+<!-- タイトル -->
+<section id="title" class="screen active">
+  <h1><small>FREEHAND CUT CHALLENGE</small>🍕 ピザ・ケーキ 🍰<br>カットチャレンジ</h1>
+  <p class="lead">指でスッと線を引いて、お題の分量にぴったり切り分けよう！<br>面積を自動で計算して <b>S〜D</b> のランクと <b>一致率</b> を判定します。</p>
+  <div class="row" id="modeRow">
+    <button class="mode sel" data-mode="easy"><div class="ic">⬜</div><b>かんたん</b><span>四角い形 / 1/2〜1/6</span></button>
+    <button class="mode" data-mode="hard"><div class="ic">⭕</div><b>むずかしい</b><span>丸い形 / 1/8 や 3/8 も！</span></button>
+  </div>
+  <div class="seg" id="foodSeg">
+    <button data-food="pizza" class="sel">🍕 ピザ</button>
+    <button data-food="cake">🍰 ケーキ</button>
+    <button data-food="random">🎲 おまかせ</button>
+  </div>
+  <button class="btn primary" id="startBtn" style="font-size:24px;padding:16px 56px">スタート！</button>
+  <div class="best" id="bestText"></div>
+</section>
+
+<!-- ゲーム -->
+<section id="game" class="screen">
+  <div class="top">
+    <button class="btn" id="homeBtn" style="padding:8px 14px;font-size:15px">← もどる</button>
+    <div class="grow"></div>
+    <div class="pill" id="roundPill">1 / 5</div>
+    <div class="pill" id="modePill">かんたん</div>
+  </div>
+  <div class="stage">
+    <div id="boardWrap"><canvas id="board"></canvas></div>
+    <div id="panel">
+      <div class="card mission">
+        <canvas id="sample" width="168" height="168"></canvas>
+        <div class="txt"><span id="foodName">ピザ</span>を<br><span class="frac" id="fracBox"><i>1</i><i>2</i></span><br>のピースに！
+          <small>線は <span id="strokeCount">0</span> / 6 本</small></div>
+      </div>
+      <div class="card hint" id="hintBox"></div>
+      <div class="btns">
+        <button class="btn" id="undoBtn">↩ ひとつ戻す</button>
+        <button class="btn" id="clearBtn">🗑 やり直し</button>
+      </div>
+      <button class="btn primary" id="judge" disabled>✂ 切り分け完了！判定</button>
+      <div class="card" id="resultCard">
+        <p class="rank" id="rankLetter">S</p>
+        <div class="match" id="matchText">98.5% 一致</div>
+        <div class="detail" id="detailText"></div>
+        <div class="msg" id="msgText"></div>
+        <button class="btn primary" id="nextBtn" style="width:100%">次へ ▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 最終結果 -->
+<section id="final" class="screen">
+  <h2>けっか発表！</h2>
+  <p class="rank" id="finalRank">A</p>
+  <div class="match" id="finalMatch"></div>
+  <div class="best" id="finalBest"></div>
+  <div id="list"></div>
+  <div class="row">
+    <button class="btn primary" id="againBtn">もう一度あそぶ</button>
+    <button class="btn" id="toTitleBtn">タイトルへ</button>
+  </div>
+</section>
+
+<div id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ============ 定数 ============ */
+const G = 512;            // 面積計算用ラスタ解像度
+const FOOD_RES = 1024;    // 食べ物キャンバス解像度
+const M = 0.1;            // 盤面の余白(正規化座標)
+const ROUNDS = 5;
+const MAX_STROKES = 6;
+const SNAP = 0.04;        // 線の端が境界/他の線に自動接続される距離
+const FRACS = {
+  easy: [[1,2],[1,3],[1,4],[1,5],[1,6]],
+  hard: [[1,2],[1,3],[1,4],[1,5],[1,6],[1,8],[3,8],[2,5]],
+};
+const RANKS = [
+  {r:'S', min:97, msg:'パーフェクト！ プロの職人技！'},
+  {r:'A', min:92, msg:'すばらしい！ ほぼ完璧！'},
+  {r:'B', min:85, msg:'いい感じ！ もう一歩！'},
+  {r:'C', min:75, msg:'まずまず。目分量を鍛えよう'},
+  {r:'D', min:-1, msg:'ざんねん…次はもっと慎重に！'},
+];
+const rankOf = p => RANKS.find(x => p >= x.min);
+const FOODS = {pizza:{name:'ピザ', img:'assets/pizza.png'}, cake:{name:'ケーキ', img:'assets/cake.png'}};
+
+/* ============ DOM ============ */
+const $ = id => document.getElementById(id);
+const screens = {title:$('title'), game:$('game'), final:$('final')};
+const board = $('board'), bctx = board.getContext('2d');
+const show = n => Object.entries(screens).forEach(([k,e]) => e.classList.toggle('active', k===n));
+let toastTimer;
+function toast(t){ const e=$('toast'); e.textContent=t; e.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>e.classList.remove('show'),2600); }
+
+/* ============ 状態 ============ */
+const st = {
+  mode:'easy', food:'pizza', round:0, fracs:[], results:[],
+  foodNow:'pizza', phase:'draw', strokes:[], cur:null, pid:null,
+  foodCanvas:null, anim:null, S:600, dpr:1, dirty:true,
+};
+try { const s=JSON.parse(localStorage.getItem('cutgame_sel')||'{}'); if(s.mode) st.mode=s.mode; if(s.food) st.food=s.food; } catch(e){}
+
+/* ============ 画像読み込み ============ */
+const imgs = {};
+Object.entries(FOODS).forEach(([k,v]) => {
+  const im = new Image(); im.onload = () => { imgs[k]=im; }; im.onerror = () => {}; im.src = v.img;
+});
+
+/* ============ 図形ジオメトリ ============ */
+function shapeOf(mode){
+  return mode==='easy' ? {type:'square',x0:M,y0:M,x1:1-M,y1:1-M} : {type:'circle',cx:.5,cy:.5,r:.5-M};
+}
+function insideShape(sh,p){
+  if(sh.type==='square') return p.x>=sh.x0&&p.x<=sh.x1&&p.y>=sh.y0&&p.y<=sh.y1;
+  return Math.hypot(p.x-sh.cx,p.y-sh.cy)<=sh.r;
+}
+function nearestBoundary(sh,p){
+  if(sh.type==='circle'){
+    const dx=p.x-sh.cx, dy=p.y-sh.cy, d=Math.hypot(dx,dy)||1e-9;
+    return {pt:{x:sh.cx+dx/d*sh.r,y:sh.cy+dy/d*sh.r}, dist:Math.abs(d-sh.r)};
+  }
+  const c=[[p.x-sh.x0,{x:sh.x0,y:p.y}],[sh.x1-p.x,{x:sh.x1,y:p.y}],[p.y-sh.y0,{x:p.x,y:sh.y0}],[sh.y1-p.y,{x:p.x,y:sh.y1}]];
+  c.sort((a,b)=>a[0]-b[0]);
+  return {pt:c[0][1], dist:Math.abs(c[0][0])};
+}
+function shapePath(ctx,sh,scale){
+  ctx.beginPath();
+  if(sh.type==='square') ctx.rect(sh.x0*scale,sh.y0*scale,(sh.x1-sh.x0)*scale,(sh.y1-sh.y0)*scale);
+  else ctx.arc(sh.cx*scale,sh.cy*scale,sh.r*scale,0,Math.PI*2);
+}
+// 外周を内側にオフセットした点列(クラスト/クリーム装飾用)
+function perimeterPoints(sh,n,inset){
+  const out=[];
+  if(sh.type==='circle'){
+    for(let i=0;i<n;i++){const a=i/n*Math.PI*2;out.push({x:sh.cx+Math.cos(a)*(sh.r-inset),y:sh.cy+Math.sin(a)*(sh.r-inset),a});}
+  } else {
+    const x0=sh.x0+inset,y0=sh.y0+inset,x1=sh.x1-inset,y1=sh.y1-inset,w=x1-x0,h=y1-y0,per=2*(w+h);
+    for(let i=0;i<n;i++){
+      let d=i/n*per,x,y;
+      if(d<w){x=x0+d;y=y0;} else if((d-=w)<h){x=x1;y=y0+d;} else if((d-=h)<w){x=x1-d;y=y1;} else {d-=w;x=x0;y=y1-d;}
+      out.push({x,y});
+    }
+  }
+  return out;
+}
+
+/* ============ 食べ物キャンバス生成 ============ */
+function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+function drawProceduralTexture(ctx,food,rnd){
+  const x0=M*FOOD_RES, w=(1-2*M)*FOOD_RES;
+  const R=(a,b)=>a+rnd()*(b-a);
+  ctx.save(); ctx.translate(x0,x0);
+  if(food==='pizza'){
+    const g=ctx.createRadialGradient(w/2,w/2,w*.1,w/2,w/2,w*.75); g.addColorStop(0,'#f6c453'); g.addColorStop(1,'#e8a031');
+    ctx.fillStyle=g; ctx.fillRect(0,0,w,w);
+    for(let i=0;i<60;i++){ctx.fillStyle=`rgba(${rnd()<.5?'200,60,30':'255,230,150'},${R(.15,.35)})`;ctx.beginPath();ctx.ellipse(R(0,w),R(0,w),R(15,50),R(10,35),R(0,6),0,7);ctx.fill();}
+    for(let i=0;i<16;i++){const x=R(.05,.95)*w,y=R(.05,.95)*w,r=R(.05,.07)*w;
+      ctx.fillStyle='#a92b1f';ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+      ctx.fillStyle='#c93a2a';ctx.beginPath();ctx.arc(x,y,r*.85,0,7);ctx.fill();
+      ctx.fillStyle='rgba(120,20,10,.5)';for(let k=0;k<5;k++){ctx.beginPath();ctx.arc(x+R(-r,r)*.6,y+R(-r,r)*.6,r*.1,0,7);ctx.fill();}}
+    ctx.strokeStyle='#5fb03a';ctx.lineWidth=w*.014;
+    for(let i=0;i<10;i++){ctx.beginPath();ctx.arc(R(.1,.9)*w,R(.1,.9)*w,R(.025,.04)*w,R(0,3),R(3.5,6));ctx.stroke();}
+    ctx.fillStyle='#2f8f3a';for(let i=0;i<9;i++){ctx.save();ctx.translate(R(.08,.92)*w,R(.08,.92)*w);ctx.rotate(R(0,6));ctx.beginPath();ctx.ellipse(0,0,w*.03,w*.017,0,0,7);ctx.fill();ctx.restore();}
+  } else {
+    const g=ctx.createRadialGradient(w/2,w/2,w*.05,w/2,w/2,w*.75); g.addColorStop(0,'#fffaf3'); g.addColorStop(1,'#ffe6ee');
+    ctx.fillStyle=g; ctx.fillRect(0,0,w,w);
+    ctx.strokeStyle='#5a3220';ctx.lineWidth=w*.012;ctx.lineCap='round';
+    for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(R(0,w),R(0,w));ctx.bezierCurveTo(R(0,w),R(0,w),R(0,w),R(0,w),R(0,w),R(0,w));ctx.stroke();}
+    const pts=[[.5,.5],[.25,.25],[.75,.25],[.25,.75],[.75,.75],[.5,.2],[.5,.8],[.2,.5],[.8,.5]];
+    pts.forEach(([a,b],i)=>{const x=a*w,y=b*w,r=w*(i?.07:.09);
+      ctx.fillStyle=i?'#e3262f':'#ff4350';ctx.beginPath();ctx.moveTo(x,y+r);ctx.bezierCurveTo(x-r*1.6,y-r*.2,x-r*.8,y-r*1.3,x,y-r*.5);ctx.bezierCurveTo(x+r*.8,y-r*1.3,x+r*1.6,y-r*.2,x,y+r);ctx.fill();
+      ctx.fillStyle='#fff3c0';for(let k=0;k<6;k++){ctx.beginPath();ctx.arc(x+R(-r,r)*.6,y+R(-r*.4,r)*.6,r*.05,0,7);ctx.fill();}
+      ctx.fillStyle='#3a9a3a';ctx.beginPath();ctx.ellipse(x,y-r*.7,r*.4,r*.18,0,0,7);ctx.fill();});
+    for(let i=0;i<40;i++){ctx.fillStyle=['#ff9ec1','#ffe27a','#9ad8ff'][i%3];ctx.fillRect(R(0,w),R(0,w),w*.012,w*.006);}
+  }
+  ctx.restore();
+}
+
+function buildFood(food,mode){
+  const c=document.createElement('canvas'); c.width=c.height=FOOD_RES; const ctx=c.getContext('2d');
+  const sh=shapeOf(mode), rnd=mulberry((Math.random()*1e9)|0);
+  ctx.save(); shapePath(ctx,sh,FOOD_RES); ctx.clip();
+  const x0=M*FOOD_RES, w=(1-2*M)*FOOD_RES, im=imgs[food];
+  if(im){
+    ctx.imageSmoothingQuality='high';
+    // ランダムに回転・反転して毎回少し違う見た目に
+    ctx.translate(FOOD_RES/2,FOOD_RES/2); ctx.rotate(Math.floor(rnd()*4)*Math.PI/2); if(rnd()<.5)ctx.scale(-1,1);
+    ctx.translate(-FOOD_RES/2,-FOOD_RES/2);
+    const ex=w*0.04; ctx.drawImage(im,x0-ex,x0-ex,w+ex*2,w+ex*2);
+  } else drawProceduralTexture(ctx,food,rnd);
+
+  // ふちの装飾
+  const crust=0.045*FOOD_RES, cw=crust;
+  const rim=(lw,col)=>{ctx.lineWidth=lw;ctx.strokeStyle=col;shapePath(ctx,sh,FOOD_RES);ctx.stroke();};
+  if(food==='pizza'){
+    rim(cw*2,'#a8641f'); rim(cw*1.55,'#d3913f'); rim(cw*.9,'#efbc6a');
+    perimeterPoints(sh,80,crust*.5).forEach(p=>{
+      ctx.fillStyle=`rgba(140,70,20,${.12+rnd()*.2})`;ctx.beginPath();ctx.arc(p.x*FOOD_RES,p.y*FOOD_RES,crust*(.12+rnd()*.18),0,7);ctx.fill();
+    });
+  } else {
+    rim(cw*2,'#ffffff'); rim(cw*1.2,'#fff1f6');
+    perimeterPoints(sh,sh.type==='circle'?44:48,crust*.55).forEach(p=>{
+      const x=p.x*FOOD_RES,y=p.y*FOOD_RES,r=crust*.42;
+      const g=ctx.createRadialGradient(x-r*.3,y-r*.3,r*.1,x,y,r);g.addColorStop(0,'#fff');g.addColorStop(1,'#ffd3e2');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+      ctx.strokeStyle='rgba(220,140,170,.55)';ctx.lineWidth=2;ctx.stroke();
+    });
+  }
+  ctx.restore();
+  // うっすら縁取り
+  ctx.save();ctx.lineWidth=3;ctx.strokeStyle='rgba(90,50,20,.35)';shapePath(ctx,sh,FOOD_RES);ctx.stroke();ctx.restore();
+  return c;
+}
+
+/* ============ 面積解析 ============ */
+function analyze(strokes,mode){
+  const sh=shapeOf(mode);
+  // 1) 形のマスク
+  const mc=document.createElement('canvas'); mc.width=mc.height=G; const mx=mc.getContext('2d',{willReadFrequently:true});
+  mx.fillStyle='#fff'; shapePath(mx,sh,G); mx.fill();
+  const md=mx.getImageData(0,0,G,G).data;
+  const N=G*G, state=new Uint8Array(N); // 0 外 / 1 内 / 2 内(境界線)
+  for(let i=0;i<N;i++) if(md[i*4+3]>=128) state[i]=1;
+
+  // 2) 線 + スナップ線をバリアとして描画
+  const polys=[];
+  strokes.forEach((s,si)=>{
+    polys.push(s);
+    [0,1].forEach(end=>{
+      const e = end===0 ? s[0] : s[s.length-1];
+      if(!insideShape(sh,e)) return;
+      let best=nearestBoundary(sh,e), tgt=best.pt, bd=best.dist;
+      strokes.forEach((o,oi)=>{
+        o.forEach((q,qi)=>{
+          if(oi===si){ // 自分自身: 端から遠い点だけ(輪を閉じる用)
+            const far = end===0 ? qi>25 : qi<s.length-26;
+            if(!far) return;
+          }
+          const d=Math.hypot(q.x-e.x,q.y-e.y);
+          if(d<bd){bd=d;tgt=q;}
+        });
+      });
+      if(bd<=SNAP) polys.push([e,tgt]);
+    });
+  });
+  const bc=document.createElement('canvas'); bc.width=bc.height=G; const bx=bc.getContext('2d',{willReadFrequently:true});
+  bx.strokeStyle='#000'; bx.lineWidth=2.8; bx.lineCap='round'; bx.lineJoin='round';
+  polys.forEach(p=>{bx.beginPath();p.forEach((q,i)=>i?bx.lineTo(q.x*G,q.y*G):bx.moveTo(q.x*G,q.y*G));
+    if(p.length===1){bx.lineTo(p[0].x*G+.1,p[0].y*G);} bx.stroke();});
+  const bd2=bx.getImageData(0,0,G,G).data;
+  const barrier=[];
+  for(let i=0;i<N;i++) if(state[i]===1 && bd2[i*4+3]>20){state[i]=2;barrier.push(i);}
+
+  // 3) 連結成分ラベリング(4近傍)
+  const lab=new Int32Array(N), stack=new Int32Array(N);
+  let nl=0; const area=[0], sx=[0], sy=[0];
+  for(let s0=0;s0<N;s0++){
+    if(state[s0]!==1||lab[s0]) continue;
+    nl++; area.push(0);sx.push(0);sy.push(0);
+    let sp=0; stack[sp++]=s0; lab[s0]=nl;
+    while(sp){
+      const i=stack[--sp], x=i%G, y=(i/G)|0;
+      area[nl]++; sx[nl]+=x; sy[nl]+=y;
+      if(x>0   &&state[i-1]===1&&!lab[i-1]){lab[i-1]=nl;stack[sp++]=i-1;}
+      if(x<G-1 &&state[i+1]===1&&!lab[i+1]){lab[i+1]=nl;stack[sp++]=i+1;}
+      if(y>0   &&state[i-G]===1&&!lab[i-G]){lab[i-G]=nl;stack[sp++]=i-G;}
+      if(y<G-1 &&state[i+G]===1&&!lab[i+G]){lab[i+G]=nl;stack[sp++]=i+G;}
+    }
+  }
+  // 4) バリア画素を隣接ピースへ割り当て(切り口を左右に半分ずつ)
+  let pending=barrier;
+  for(let pass=0;pass<8&&pending.length;pass++){
+    const assign=[], rest=[];
+    for(const i of pending){
+      const x=i%G,y=(i/G)|0; let l=0;
+      if(x>0&&lab[i-1])l=lab[i-1]; else if(x<G-1&&lab[i+1])l=lab[i+1]; else if(y>0&&lab[i-G])l=lab[i-G]; else if(y<G-1&&lab[i+G])l=lab[i+G];
+      if(l)assign.push(i,l); else rest.push(i);
+    }
+    for(let k=0;k<assign.length;k+=2){const i=assign[k],l=assign[k+1];lab[i]=l;area[l]++;sx[l]+=i%G;sy[l]+=(i/G)|0;}
+    pending=rest;
+  }
+  let total=0; for(let l=1;l<=nl;l++) total+=area[l];
+  const pieces=[];
+  for(let l=1;l<=nl;l++) pieces.push({id:l,frac:area[l]/total,cx:(sx[l]/area[l]+.5)/G,cy:(sy[l]/area[l]+.5)/G});
+  return {lab,pieces:pieces.sort((a,b)=>b.frac-a.frac),total};
+}
+
+function pieceCanvas(food,lab,id){
+  const m=document.createElement('canvas'); m.width=m.height=G; const mx=m.getContext('2d');
+  const im=mx.createImageData(G,G);
+  for(let i=0;i<G*G;i++) if(lab[i]===id) im.data[i*4+3]=255;
+  mx.putImageData(im,0,0);
+  const c=document.createElement('canvas'); c.width=c.height=FOOD_RES; const cx=c.getContext('2d');
+  cx.drawImage(food,0,0); cx.globalCompositeOperation='destination-in'; cx.imageSmoothingEnabled=true; cx.drawImage(m,0,0,FOOD_RES,FOOD_RES);
+  return c;
+}
+
+/* ============ 描画 ============ */
+function resize(){
+  const wrap=$('boardWrap'); const S=Math.max(200,Math.floor(Math.min(wrap.clientWidth,wrap.clientHeight)));
+  st.S=S; st.dpr=Math.min(window.devicePixelRatio||1,3);
+  board.style.width=board.style.height=S+'px';
+  board.width=board.height=Math.round(S*st.dpr);
+  st.dirty=true;
+}
+window.addEventListener('resize',resize);
+window.addEventListener('orientationchange',()=>setTimeout(resize,200));
+
+function strokePath(ctx,pts){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));}
+function drawStroke(ctx,pts,px){
+  strokePath(ctx,pts);
+  ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=7*px;ctx.stroke();
+  ctx.strokeStyle='#2b1a10';ctx.lineWidth=3*px;ctx.stroke();
+}
+function chip(ctx,x,y,text,px,hi){
+  ctx.font=`800 ${(hi?17:13)*px}px -apple-system,sans-serif`;
+  const w=ctx.measureText(text).width+16*px, h=(hi?30:22)*px;
+  ctx.fillStyle=hi?'#ffd23f':'rgba(255,255,255,.92)';ctx.strokeStyle=hi?'#b8860b':'rgba(0,0,0,.25)';ctx.lineWidth=2*px;
+  ctx.beginPath();ctx.roundRect(x-w/2,y-h/2,w,h,h/2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#3a2414';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,x,y+px);
+}
+const ease=t=>{const c=1.4;return 1+(c+1)*Math.pow(t-1,3)+c*Math.pow(t-1,2);};
+
+function render(now){
+  requestAnimationFrame(render);
+  const a=st.anim;
+  if(!st.dirty && !(a&&!a.done)) return;
+  st.dirty=false;
+  const ctx=bctx, S=st.S, px=1/(S);
+  ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,board.width,board.height);
+  ctx.setTransform(board.width,0,0,board.width,0,0);
+  if(!st.foodCanvas) return;
+  if(st.phase==='draw'||!a){
+    ctx.save();ctx.shadowColor='rgba(0,0,0,.4)';
+    // shadowBlur/Offset は変換の影響を受けないため実ピクセルで指定
+    ctx.shadowBlur=18*st.dpr; ctx.shadowOffsetY=6*st.dpr;
+    ctx.drawImage(st.foodCanvas,0,0,1,1);ctx.restore();
+    st.strokes.forEach(s=>drawStroke(ctx,s,px));
+    if(st.cur&&st.cur.length>1) drawStroke(ctx,st.cur,px);
+    return;
+  }
+  // 結果アニメ
+  const t=Math.min(1,(performance.now()-a.t0)/800); if(t>=1) a.done=true;
+  const e=ease(t);
+  const ordered=[...a.pieces].sort((p,q)=>(p.chosen?1:0)-(q.chosen?1:0));
+  ordered.forEach(p=>{
+    ctx.save();
+    ctx.shadowColor=p.chosen?'rgba(255,210,63,1)':'rgba(0,0,0,.4)';
+    ctx.shadowBlur=(p.chosen?26:14)*st.dpr; ctx.shadowOffsetY=(p.chosen?0:4)*st.dpr;
+    ctx.drawImage(p.canvas,p.ox*e,p.oy*e,1,1);
+    ctx.restore();
+  });
+  if(t>.6){
+    ctx.globalAlpha=Math.min(1,(t-.6)/.4);
+    ordered.forEach(p=>{ if(p.frac<.02)return;
+      chip(ctx,p.cx+p.ox*e,p.cy+p.oy*e,(p.chosen?'★ ':'')+(p.frac*100).toFixed(1)+'%',px,p.chosen);});
+    ctx.globalAlpha=1;
+  }
+}
+
+/* ============ 入力 ============ */
+function toNorm(e){const r=board.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height};}
+function addPt(p){
+  const c=st.cur,l=c[c.length-1];
+  if(Math.hypot(p.x-l.x,p.y-l.y)>=0.004) c.push(p);
+}
+board.addEventListener('pointerdown',e=>{
+  if(st.phase!=='draw'||st.pid!==null) return;
+  e.preventDefault();
+  if(st.strokes.length>=MAX_STROKES){toast('線は最大6本まで。「ひとつ戻す」で調整してね');return;}
+  st.pid=e.pointerId; board.setPointerCapture(e.pointerId);
+  st.cur=[toNorm(e)]; st.dirty=true;
+});
+board.addEventListener('pointermove',e=>{
+  if(e.pointerId!==st.pid||!st.cur) return;
+  e.preventDefault();
+  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+  (evs.length?evs:[e]).forEach(ev=>addPt(toNorm(ev)));
+  st.dirty=true;
+});
+function endStroke(e){
+  if(e.pointerId!==st.pid) return;
+  st.pid=null;
+  const c=st.cur;
+  if(c){
+    addPt(toNorm(e)); st.cur=null;
+    let len=0; for(let i=1;i<c.length;i++) len+=Math.hypot(c[i].x-c[i-1].x,c[i].y-c[i-1].y);
+    if(c.length>=2&&len>0.06) st.strokes.push(c); else toast('もう少し長く、スッと線を引いてね');
+  }
+  updateUI(); st.dirty=true;
+}
+board.addEventListener('pointerup',endStroke);
+board.addEventListener('pointercancel',endStroke);
+['gesturestart','gesturechange','dblclick','contextmenu'].forEach(ev=>document.addEventListener(ev,e=>e.preventDefault()));
+document.addEventListener('touchmove',e=>{if(e.target===board)e.preventDefault();},{passive:false});
+
+/* ============ ゲーム進行 ============ */
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;};
+const fmtFrac=([n,d])=>`<i>${n}</i><i>${d}</i>`;
+
+function startGame(){
+  st.round=0; st.results=[];
+  st.fracs=shuffle(FRACS[st.mode]).slice(0,ROUNDS);
+  startRound();
+  show('game'); requestAnimationFrame(resize);
+}
+function startRound(){
+  const f=st.fracs[st.round];
+  st.foodNow = st.food==='random' ? (Math.random()<.5?'pizza':'cake') : st.food;
+  st.phase='draw'; st.strokes=[]; st.cur=null; st.pid=null; st.anim=null;
+  st.foodCanvas=buildFood(st.foodNow,st.mode);
+  $('roundPill').textContent=`${st.round+1} / ${ROUNDS}`;
+  $('modePill').textContent=st.mode==='easy'?'⬜ かんたん':'⭕ むずかしい';
+  $('foodName').textContent=FOODS[st.foodNow].name;
+  $('fracBox').innerHTML=fmtFrac(f);
+  $('resultCard').style.display='none';
+  $('judge').style.display=''; $('undoBtn').disabled=$('clearBtn').disabled=false;
+  $('hintBox').innerHTML = st.mode==='easy'
+    ? '指やペンで<b>端から端まで</b>線を引いて切ろう。何本でもOK（最大6本）。線の端が縁や他の線に近いと自動でつながるよ。'
+    : '丸いときは<b>中心から2本</b>線を引くとピザ形の<b>扇形</b>が作れるよ。1本でスッと切ってもOK！';
+  drawSample(f); updateUI(); resize(); st.dirty=true;
+}
+function updateUI(){
+  $('strokeCount').textContent=st.strokes.length;
+  $('judge').disabled=st.phase!=='draw'||st.strokes.length===0;
+  $('undoBtn').disabled=$('clearBtn').disabled=st.phase!=='draw'||st.strokes.length===0;
+}
+function drawSample([n,d]){
+  const c=$('sample'),x=c.getContext('2d'),W=c.width,t=n/d;
+  x.clearRect(0,0,W,W); x.lineWidth=6;
+  const sh=shapeOf(st.mode);
+  x.save(); x.scale(1,1); x.translate(W*.04,W*.04); const s=W*.92;
+  x.beginPath();
+  if(sh.type==='circle'){
+    x.arc(s/2,s/2,s/2,0,7); x.fillStyle='#ffe3b8'; x.fill();
+    x.beginPath(); x.moveTo(s/2,s/2); x.arc(s/2,s/2,s/2,-Math.PI/2,-Math.PI/2+t*Math.PI*2); x.closePath();
+  } else {
+    x.rect(0,0,s,s); x.fillStyle='#ffe3b8'; x.fill();
+    x.beginPath(); x.rect(0,0,s*t,s);
+  }
+  x.fillStyle='#e4572e'; x.fill();
+  x.beginPath(); if(sh.type==='circle')x.arc(s/2,s/2,s/2,0,7); else x.rect(0,0,s,s);
+  x.strokeStyle='#8a5528'; x.stroke(); x.restore();
+}
+
+function judge(){
+  if(st.phase!=='draw'||!st.strokes.length) return;
+  const [n,d]=st.fracs[st.round], target=n/d;
+  const res=analyze(st.strokes,st.mode);
+  const cands=res.pieces.filter(p=>p.frac>=0.01);
+  if(cands.length<2){
+    toast('まだ切り離せてないよ！線を縁まで届かせるか、線同士をつなげてね');
+    return;
+  }
+  let best=cands[0]; cands.forEach(p=>{if(Math.abs(p.frac-target)<Math.abs(best.frac-target))best=p;});
+  const match=Math.max(0,1-Math.abs(best.frac-target)/target)*100;
+  const rk=rankOf(match);
+  // アニメ用ピース
+  const shown=res.pieces.filter(p=>p.frac>=0.005).slice(0,14);
+  const pieces=shown.map(p=>{
+    const dx=p.cx-.5,dy=p.cy-.5,dist=Math.hypot(dx,dy);
+    const k=dist>1e-3?.03/dist:0;
+    return {...p,chosen:p.id===best.id,canvas:pieceCanvas(st.foodCanvas,res.lab,p.id),ox:dx*(.12)+dx*k,oy:dy*(.12)+dy*k};
+  });
+  st.phase='result'; st.anim={t0:performance.now(),pieces,done:false}; st.dirty=true;
+  st.results.push({frac:[n,d],match,rank:rk.r});
+  // UI
+  const diff=(best.frac-target)*100;
+  $('judge').style.display='none';
+  $('resultCard').style.display='block';
+  $('rankLetter').textContent=rk.r; $('rankLetter').className='rank '+rk.r;
+  $('matchText').textContent=match.toFixed(1)+'% 一致';
+  $('detailText').innerHTML=`目標 <b>${(target*100).toFixed(1)}%</b> ／ あなた <b>${(best.frac*100).toFixed(1)}%</b><br>差 ${diff>=0?'+':''}${diff.toFixed(1)}%（${diff>0?'大きすぎ':diff<0?'小さすぎ':'ぴったり'}）`;
+  $('msgText').textContent=rk.msg;
+  $('nextBtn').textContent=st.round+1<ROUNDS?'次のお題へ ▶':'最終結果を見る ▶';
+  updateUI();
+}
+
+function finish(){
+  const avg=st.results.reduce((s,r)=>s+r.match,0)/st.results.length, rk=rankOf(avg);
+  $('finalRank').textContent=rk.r; $('finalRank').className='rank '+rk.r;
+  $('finalMatch').textContent=`平均 ${avg.toFixed(1)}% 一致 ― ${rk.msg}`;
+  $('list').innerHTML=st.results.map((r,i)=>`<div><span>${i+1}.</span><span class="f"><span style="font-weight:900">${r.frac[0]}/${r.frac[1]}</span></span><span class="p">${r.match.toFixed(1)}%</span><span class="r rank ${r.rank}" style="font-size:22px;margin:0">${r.rank}</span></div>`).join('');
+  let msg='';
+  try{
+    const key='cutgame_best_'+st.mode, prev=parseFloat(localStorage.getItem(key)||'0');
+    if(avg>prev){localStorage.setItem(key,avg.toFixed(2));msg=prev>0?`🎉 ベスト更新！（前回 ${prev.toFixed(1)}%）`:'🎉 初ベスト記録！';}
+    else msg=`ベスト ${prev.toFixed(1)}%`;
+  }catch(e){}
+  $('finalBest').textContent=msg;
+  show('final'); renderBest();
+}
+function renderBest(){
+  try{
+    const e=parseFloat(localStorage.getItem('cutgame_best_easy')||'0'),h=parseFloat(localStorage.getItem('cutgame_best_hard')||'0');
+    $('bestText').textContent=(e||h)?`ベスト平均一致率　かんたん: ${e?e.toFixed(1)+'%':'-'} ／ むずかしい: ${h?h.toFixed(1)+'%':'-'}`:'';
+  }catch(e){}
+}
+
+/* ============ ボタン ============ */
+function saveSel(){try{localStorage.setItem('cutgame_sel',JSON.stringify({mode:st.mode,food:st.food}));}catch(e){}}
+document.querySelectorAll('#modeRow .mode').forEach(b=>b.onclick=()=>{
+  st.mode=b.dataset.mode; document.querySelectorAll('#modeRow .mode').forEach(x=>x.classList.toggle('sel',x===b)); saveSel();});
+document.querySelectorAll('#foodSeg button').forEach(b=>b.onclick=()=>{
+  st.food=b.dataset.food; document.querySelectorAll('#foodSeg button').forEach(x=>x.classList.toggle('sel',x===b)); saveSel();});
+document.querySelectorAll('#modeRow .mode').forEach(x=>x.classList.toggle('sel',x.dataset.mode===st.mode));
+document.querySelectorAll('#foodSeg button').forEach(x=>x.classList.toggle('sel',x.dataset.food===st.food));
+$('startBtn').onclick=startGame;
+$('againBtn').onclick=startGame;
+$('toTitleBtn').onclick=()=>{show('title');renderBest();};
+$('homeBtn').onclick=()=>{ if(st.results.length===0||confirm('ゲームを中断してタイトルに戻りますか？')){show('title');renderBest();} };
+$('undoBtn').onclick=()=>{st.strokes.pop();updateUI();st.dirty=true;};
+$('clearBtn').onclick=()=>{st.strokes=[];updateUI();st.dirty=true;};
+$('judge').onclick=judge;
+$('nextBtn').onclick=()=>{ if(st.round+1<ROUNDS){st.round++;startRound();} else finish(); };
+
+renderBest();
+requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
