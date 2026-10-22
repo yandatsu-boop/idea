@@ -2,7 +2,7 @@
 import base64, re, pathlib
 here = pathlib.Path(__file__).parent
 html = (here / "index.html").read_text(encoding="utf-8")
-for name in ("pizza", "cake"):
+for name in ("pizza", "cake", "okonomiyaki"):
     data = base64.b64encode((here / f"assets/{name}.png").read_bytes()).decode()
     html = html.replace(f"assets/{name}.png", f"data:image/png;base64,{data}")
 (here / "standalone.html").write_text(html, encoding="utf-8")

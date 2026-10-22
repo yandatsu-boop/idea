@@ -40,7 +40,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 .mode .ic{font-size:44px;line-height:1.1}
 .mode b{display:block;font-size:22px;margin-top:4px}
 .mode span{font-size:14px;opacity:.75}
-.seg{display:flex;background:var(--card);border:3px solid var(--line);border-radius:999px;padding:4px}
+.seg{display:flex;flex-wrap:wrap;justify-content:center;background:var(--card);border:3px solid var(--line);border-radius:28px;padding:4px}
 .seg button{background:transparent;padding:10px 20px;border-radius:999px;font-weight:700;font-size:17px}
 .seg button.sel{background:var(--accent);color:#fff}
 .best{font-size:14px;opacity:.8}
@@ -128,7 +128,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 
 <!-- タイトル -->
 <section id="title" class="screen active">
-  <h1><small>FREEHAND CUT CHALLENGE</small>🍕 ピザ・ケーキ 🍰<br>カットチャレンジ</h1>
+  <h1><small>FREEHAND CUT CHALLENGE</small>🍕 ピザ・ケーキ・お好み焼き 🥞<br>カットチャレンジ</h1>
   <p class="lead">指でスッと線を引いて、お題の分量にぴったり切り分けよう！<br>面積を自動で計算して <b>S〜D</b> のランクと <b>一致率</b> を判定します。</p>
   <div class="row" id="modeRow">
     <button class="mode sel" data-mode="easy"><div class="ic">⬜</div><b>かんたん</b><span>四角い形 / 1/2 → 1/6</span></button>
@@ -137,6 +137,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
   <div class="seg" id="foodSeg">
     <button data-food="pizza" class="sel">🍕 ピザ</button>
     <button data-food="cake">🍰 ケーキ</button>
+    <button data-food="okonomiyaki">🥞 お好み焼き</button>
     <button data-food="random">🎲 おまかせ</button>
   </div>
   <button class="btn primary" id="startBtn" style="font-size:24px;padding:16px 56px">スタート！</button>
@@ -222,7 +223,7 @@ const RANKS = [
   {r:'D', min:-1, msg:'ざんねん…次はもっと慎重に！'},
 ];
 const rankOf = p => RANKS.find(x => p >= x.min);
-const FOODS = {pizza:{name:'ピザ', img:'assets/pizza.png'}, cake:{name:'ケーキ', img:'assets/cake.png'}};
+const FOODS = {pizza:{name:'ピザ', img:'assets/pizza.png'}, cake:{name:'ケーキ', img:'assets/cake.png'}, okonomiyaki:{name:'お好み焼き', img:'assets/okonomiyaki.png'}};
 
 /* ============ DOM ============ */
 const $ = id => document.getElementById(id);
@@ -302,6 +303,13 @@ function drawProceduralTexture(ctx,food,rnd){
     ctx.strokeStyle='#5fb03a';ctx.lineWidth=w*.014;
     for(let i=0;i<10;i++){ctx.beginPath();ctx.arc(R(.1,.9)*w,R(.1,.9)*w,R(.025,.04)*w,R(0,3),R(3.5,6));ctx.stroke();}
     ctx.fillStyle='#2f8f3a';for(let i=0;i<9;i++){ctx.save();ctx.translate(R(.08,.92)*w,R(.08,.92)*w);ctx.rotate(R(0,6));ctx.beginPath();ctx.ellipse(0,0,w*.03,w*.017,0,0,7);ctx.fill();ctx.restore();}
+  } else if(food==='okonomiyaki'){
+    const g=ctx.createRadialGradient(w/2,w/2,w*.1,w/2,w/2,w*.75); g.addColorStop(0,'#8a4a22'); g.addColorStop(1,'#5a2c12');
+    ctx.fillStyle=g; ctx.fillRect(0,0,w,w);
+    ctx.strokeStyle='#fff6e0';ctx.lineWidth=w*.014;ctx.lineCap='round';ctx.lineJoin='round';
+    for(let i=0;i<9;i++){ctx.beginPath();const y=w*(.1+i*.1);ctx.moveTo(0,y);for(let k=1;k<=14;k++)ctx.lineTo(w*k/14,y+(k%2?-1:1)*w*.035);ctx.stroke();}
+    ctx.fillStyle='#4aa23a';for(let i=0;i<220;i++){ctx.fillRect(R(0,w),R(0,w),w*.008,w*.004);}
+    ctx.strokeStyle='#e8b86a';ctx.lineWidth=w*.006;for(let i=0;i<40;i++){const x=R(0,w),y=R(0,w);ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+R(-30,30),y+R(-40,0),x+R(-20,20),y+R(-60,-20));ctx.stroke();}
   } else {
     const g=ctx.createRadialGradient(w/2,w/2,w*.05,w/2,w/2,w*.75); g.addColorStop(0,'#fffaf3'); g.addColorStop(1,'#ffe6ee');
     ctx.fillStyle=g; ctx.fillRect(0,0,w,w);
@@ -337,6 +345,11 @@ function buildFood(food,mode){
     rim(cw*2,'#a8641f'); rim(cw*1.55,'#d3913f'); rim(cw*.9,'#efbc6a');
     perimeterPoints(sh,80,crust*.5).forEach(p=>{
       ctx.fillStyle=`rgba(140,70,20,${.12+rnd()*.2})`;ctx.beginPath();ctx.arc(p.x*FOOD_RES,p.y*FOOD_RES,crust*(.12+rnd()*.18),0,7);ctx.fill();
+    });
+  } else if(food==='okonomiyaki'){
+    rim(cw*1.6,'#6b3a18'); rim(cw*1.1,'#a8692f'); rim(cw*.55,'#d9a05a');
+    perimeterPoints(sh,90,crust*.4).forEach(p=>{
+      ctx.fillStyle=`rgba(60,28,10,${.15+rnd()*.25})`;ctx.beginPath();ctx.arc(p.x*FOOD_RES,p.y*FOOD_RES,crust*(.08+rnd()*.14),0,7);ctx.fill();
     });
   } else {
     rim(cw*2,'#ffffff'); rim(cw*1.2,'#fff1f6');
@@ -549,7 +562,7 @@ function startGame(){
 }
 function startRound(){
   const f=st.fracs[st.round];
-  st.foodNow = st.food==='random' ? (Math.random()<.5?'pizza':'cake') : st.food;
+  st.foodNow = st.food==='random' ? Object.keys(FOODS)[(Math.random()*Object.keys(FOODS).length)|0] : st.food;
   st.phase='draw'; st.strokes=[]; st.cur=null; st.pid=null; st.anim=null;
   st.foodCanvas=buildFood(st.foodNow,st.mode);
   $('roundPill').textContent=`${st.round+1} / ${ROUNDS}`;
@@ -613,7 +626,7 @@ function judge(){
   $('resultCard').style.display='block';
   $('rankLetter').textContent=rk.r; $('rankLetter').className='rank '+rk.r;
   $('matchText').textContent=match.toFixed(1)+'% 一致';
-  $('detailText').innerHTML=`目標 <b>${(target*100).toFixed(1)}%</b> ／ あなた <b>${(best.frac*100).toFixed(1)}%</b><br>差 ${diff>=0?'+':''}${diff.toFixed(1)}%（${diff>0?'大きすぎ':diff<0?'小さすぎ':'ぴったり'}）`;
+  $('detailText').innerHTML=`目標 <b>${(target*100).toFixed(1)}%</b> ／ あなた <b>${(best.frac*100).toFixed(1)}%</b><br>差 ${diff>=0?'+':''}${diff.toFixed(1)}%（${Math.abs(diff)<0.05?'ぴったり':diff>0?'大きすぎ':'小さすぎ'}）`;
   $('msgText').textContent=rk.msg;
   $('nextBtn').textContent=st.round+1<ROUNDS?'次のお題へ ▶':'最終結果を見る ▶';
   updateUI();
