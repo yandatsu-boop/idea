@@ -1,0 +1,98 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>こたえ</title><style>
+@page { size: A4; margin: 0 }
+* { box-sizing: border-box }
+body { margin: 0; font-family: 'IPAGothic','IPAPGothic',sans-serif; color: #111; background: #fff }
+.page { width: 210mm; height: 297mm; padding: 9mm 12mm 7mm; display: flex; flex-direction: column; gap: 2.4mm; page-break-after: always; overflow: hidden; position: relative }
+.head { display: flex; align-items: center; gap: 4mm; border-bottom: 1.4mm solid #111; padding-bottom: 1.8mm }
+.no { width: 13mm; height: 13mm; border-radius: 50%; background: #111; color: #fff; font-size: 8.5mm; font-weight: bold; display: flex; align-items: center; justify-content: center }
+.title { font-size: 8mm; font-weight: bold; letter-spacing: .3mm }
+.side { margin-left: auto; font-size: 4.2mm; border: .6mm solid #111; border-radius: 4mm; padding: .8mm 3.5mm }
+.who { display: flex; gap: 10mm; font-size: 4.6mm; align-items: flex-end }
+.who span { display: inline-block; border-bottom: .5mm solid #111; min-width: 55mm; height: 7mm }
+.who .d { min-width: 0; width: 38mm }
+.q { border: .7mm solid #111; border-radius: 3.5mm; padding: 2.6mm 3.8mm 2.8mm; display: flex; flex-direction: column; flex: 1 1 auto }
+.q > :not(.qh) { flex: 1 1 auto }
+.q > .cols { align-items: center }
+.q > .match, .q > .seq, .q > .checks { align-content: center; align-items: center }
+.qh { font-size: 5.8mm; font-weight: bold; display: flex; align-items: center; gap: 2.2mm; margin-bottom: 1.6mm }
+.qn { width: 7.6mm; height: 7.6mm; border-radius: 50%; background: #111; color: #fff; font-size: 5mm; display: flex; align-items: center; justify-content: center; flex: none }
+.qs { font-size: 3.8mm; font-weight: normal; color: #333 }
+.rows { display: flex; flex-direction: column; gap: 1.2mm; justify-content: space-evenly }
+.row { display: flex; align-items: center; gap: 4mm; min-height: 15mm }
+.row.line { border-bottom: .3mm dashed #999; padding-bottom: 1.2mm }
+.row.line:last-child { border-bottom: 0; padding-bottom: 0 }
+.grp { display: flex; flex-wrap: wrap; gap: .8mm; align-items: center; align-content: center }
+.grp img { height: 12.5mm; width: auto; display: block }
+.grp.sm img { height: 8.5mm }
+.grp.lg img { height: 14mm }
+.grp.tiny img { height: 6.5mm }
+.cell { flex: 1 1 0; min-width: 0 }
+.trace { font-size: 17mm; line-height: 1; font-weight: bold; color: transparent; -webkit-text-stroke: .38mm #666; width: 17mm; text-align: center }
+.trace.w { width: auto; letter-spacing: 2mm }
+.box { display: inline-flex; width: 15mm; height: 15mm; border: .7mm solid #111; border-radius: 2.2mm; align-items: center; justify-content: center; font-size: 8mm; vertical-align: middle; flex: none }
+.box.s { width: 11mm; height: 11mm; font-size: 6mm; border-radius: 1.8mm }
+.box.w { width: 21mm }
+.t { font-size: 7mm; font-weight: bold }
+.t.s { font-size: 5.6mm }
+.t.k { font-size: 4.8mm; font-weight: normal }
+.dot { display: inline-block; width: 8mm; height: 8mm; border: .6mm solid #111; border-radius: 50%; margin: 0 .6mm; vertical-align: middle }
+.dot.sm { width: 6.5mm; height: 6.5mm }
+.cols { display: flex; gap: 3mm }
+.cols > * { flex: 1 1 0; min-width: 0 }
+.pt { width: 3.4mm; height: 3.4mm; border-radius: 50%; border: .6mm solid #111; flex: none }
+.match { display: flex; justify-content: space-between; gap: 40mm; padding: 0 6mm }
+.match .col { display: flex; flex-direction: column; gap: 3mm; align-items: stretch }
+.match .it { display: flex; align-items: center; gap: 3mm; min-height: 15mm }
+.match .t { white-space: nowrap }
+.match .it.r { justify-content: flex-end }
+.x { position: relative; display: inline-block }
+.x::before, .x::after { content: ''; position: absolute; left: -6%; right: -6%; top: 50%; height: 0; border-top: .9mm solid #111 }
+.x::before { transform: rotate(32deg) } .x::after { transform: rotate(-32deg) }
+.xs img { opacity: .5 }
+.frame { display: inline-grid; grid-template-columns: repeat(5, 8.2mm); grid-auto-rows: 8.2mm; border: .6mm solid #111; background: #fff }
+.frame i { border: .3mm solid #666; display: flex; align-items: center; justify-content: center }
+.frame i b { width: 5.4mm; height: 5.4mm; border-radius: 50%; background: #111; display: block }
+.frame i b.o { background: transparent; border: .5mm solid #111 }
+.frame i b.xx { background: #fff; border: .5mm solid #111; position: relative }
+.frame i b.xx::after { content: '×'; position: absolute; inset: 0; font-size: 6mm; line-height: 5mm; text-align: center; font-weight: bold }
+.eq { display: flex; align-items: center; gap: 2.4mm; flex-wrap: wrap }
+.op { font-size: 9mm; font-weight: bold; width: 8mm; text-align: center }
+.seq { display: flex; gap: 1.4mm; align-items: center; flex-wrap: wrap }
+.seq .n { width: 12.6mm; height: 12.6mm; font-size: 7mm; border: .6mm solid #111; border-radius: 2mm; display: flex; align-items: center; justify-content: center }
+.seq .n.b { border-style: solid; background: #fff }
+.seq .n.g { border: .4mm dashed #888 }
+.hint { font-size: 3.6mm; color: #333 }
+.foot { margin-top: auto; display: flex; align-items: center; gap: 4mm; border-top: .5mm dashed #666; padding-top: 2mm; font-size: 4.4mm }
+.stars { font-size: 8mm; letter-spacing: 1.6mm }
+.stamp { width: 14mm; height: 14mm; border: .6mm dashed #666; border-radius: 50%; display: inline-block }
+.tag { display: inline-flex; align-items: center; gap: 1.2mm; border: .6mm solid #111; border-radius: 2mm; padding: .5mm 2mm; font-size: 5.6mm; font-weight: bold; background: #fff }
+.item { display: flex; flex-direction: column; align-items: center; gap: 1mm; text-align: center }
+.item img { height: 14mm; width: auto; max-width: 30mm; object-fit: contain }
+.item.lg img { height: 24mm; max-width: 30mm }
+.nm { font-size: 3.8mm }
+.coin { display: inline-block }
+.coins { display: flex; flex-wrap: wrap; gap: 1.2mm; align-items: center }
+.plate img { height: 10mm; width: auto; display: block }
+.plate { border: .6mm solid #111; border-radius: 50% / 45%; height: 21mm; flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 1mm; flex-wrap: wrap; padding: 1mm 4mm }
+.order { border: .6mm solid #111; border-radius: 2mm; padding: 1.2mm 3mm; display: flex; align-items: center; gap: 2.4mm; background: #fff; white-space: nowrap }
+.order img { height: 9mm; width: auto }
+.coin { filter: none }
+.stack { display: flex; flex-direction: column-reverse; align-items: center; justify-content: flex-start }
+.stack img { display: block; width: 32mm; height: auto; margin-top: -3.6mm }
+.stack img:first-child { margin-top: 0 }
+.note { font-size: 3.7mm; color: #333 }
+.big { font-size: 9mm; font-weight: bold }
+.blank { border-bottom: .5mm solid #111; display: inline-block; min-width: 18mm; height: 8mm; vertical-align: bottom }
+.checks { display: flex; flex-wrap: wrap; gap: 2mm 6mm; font-size: 4.6mm }
+.checks span::before { content: '□ '; font-size: 5.6mm }
+.clock { display: inline-block }
+
+.ans-page { width: 210mm; height: 297mm; padding: 10mm 13mm; page-break-after: always; overflow: hidden }
+.ans-page h1 { font-size: 7mm; margin: 0 0 3mm; border-bottom: 1.2mm solid #111; padding-bottom: 2mm }
+.sh { border: .5mm solid #111; border-radius: 2.5mm; padding: 2mm 3mm; margin-bottom: 3mm; break-inside: avoid }
+.sh h2 { margin: 0 0 1mm; font-size: 4.8mm } .sh .aim { font-size: 3.6mm; margin-bottom: 1mm }
+.sh ul { margin: 0 0 1.2mm; padding-left: 5mm; font-size: 3.4mm; line-height: 1.5 }
+.sh .a { font-size: 3.4mm; line-height: 1.6; color: #111; columns: 2; column-gap: 6mm }
+.sh .a div { break-inside: avoid }
+.sh .a b { display: inline-block; min-width: 24mm; margin-right: 1.5mm }
+</style></head><body><section class="ans-page"><h1>せんせいようの こたえと ポイント（1/4）</h1><div class="sh"><h2>1　かぞえてみよう ①（1〜5）</h2><div class="aim">ねらい：1〜5のものを、1つずつ指さしながら数え、数字と対応させる（数量の基礎・数唱）。</div><ul><li>指でさわりながら「いち、に、さん」と声に出して数える。</li><li>うすい数字は「なぞり書き」。書くことが難しい場合は、ボックスに数字カードを置いてもよい。</li><li>数え終わりに「ぜんぶで」と言葉を添えると、数のまとまりに気づきやすい。</li></ul><div class="a"><div><b>おもて①-1</b>1</div><div><b>おもて①-2</b>2</div><div><b>おもて①-3</b>3</div><div><b>おもて①-4</b>4</div><div><b>おもて①-5</b>5</div><div><b>おもて②-1</b>3こ</div><div><b>おもて②-2</b>1こ</div><div><b>おもて②-3</b>4こ</div><div><b>うら③</b>2→2、5→5、3→3 を むすぶ</div><div><b>うら④-1</b>○を 3こ ぬる</div><div><b>うら④-2</b>○を 1こ ぬる</div><div><b>うら④-3</b>○を 5こ ぬる</div><div><b>うら⑤-1</b>2りょう</div><div><b>うら⑤-2</b>4りょう</div><div><b>うら⑤-3</b>5りょう</div></div></div><div class="sh"><h2>2　かぞえてみよう ②（6〜10）</h2><div class="aim">ねらい：10までの数を数え、10のまとまり（十のわく）で数の大きさをとらえる。「あといくつで10」の素地。</div><ul><li>十のわく（2×5）に黒丸を置くと、5と5のまとまりが見えやすい。</li><li>「あと いくつで 10？」は、空いているマスを指さして数える。</li><li>なぞり書きが難しい児童は、数字カードを置いて対応させる。</li></ul><div class="a"><div><b>おもて①-1</b>6</div><div><b>おもて①-2</b>7</div><div><b>おもて①-3</b>8</div><div><b>おもて①-4</b>9</div><div><b>おもて①-5</b>10</div><div><b>おもて②-1</b>3</div><div><b>おもて②-2</b>2</div><div><b>おもて②-3</b>1</div><div><b>おもて②-4</b>4</div><div><b>うら③-1</b>3、6、9</div><div><b>うら③-2</b>2、4、7、9</div><div><b>うら④-1</b>8こ の ほう</div><div><b>うら④-2</b>10こ の ほう</div><div><b>うら④-3</b>7こ の ほう</div></div></div><div class="sh"><h2>3　「〜こ ください」</h2><div class="aim">ねらい：注文の数だけものを取り出す（数の取り出し・基数）。買い物場面の「〜こください」と数をつなぐ。</div><ul><li>最初は実物（ミニチュアやブロック）で取り分け、プリントでは○で表す。</li><li>「3こ」と声に出して言いながら○をかく。</li><li>「あと いくつ」は、足りない分を数える加法的な考え方につながる。</li></ul><div class="a"><div><b>おもて①-1</b>3こ ○をかく</div><div><b>おもて①-2</b>2こ ○をかく</div><div><b>おもて①-3</b>4こ ○をかく</div><div><b>おもて②-1</b>3こ に ×をつける（のこり 2こ）</div><div><b>おもて②-2</b>3こ に ×をつける（のこり 3こ）</div><div><b>おもて②-3</b>3こ に ×をつける（のこり 1こ）</div><div><b>うら③-1</b>○を 3こ ぬる</div><div><b>うら③-2</b>○を 5こ ぬる</div><div><b>うら③-3</b>○を 2こ ぬる</div><div><b>うら③-4</b>○を 4こ ぬる</div><div><b>うら④-1</b>2こ</div><div><b>うら④-2</b>2こ</div><div><b>うら④-3</b>2こ</div></div></div></section><section class="ans-page"><h1>せんせいようの こたえと ポイント（2/4）</h1><div class="sh"><h2>4　くらべよう</h2><div class="aim">ねらい：数・長さ・高さを比べ、「多い／少ない」「長い／短い」「高い／低い」を判断する。数字の大小の比較へ進む。</div><ul><li>最初は絵（具体物）で、ひとつずつ線で結んで比べる方法を教える。</li><li>実際に電車のおもちゃや積み木を並べて、長さや高さを比べる活動と組み合わせる。</li><li>数が同じときは「おなじ」と答えることも教える。</li></ul><div class="a"><div><b>おもて①-1</b>みぎ（7こ）</div><div><b>おもて①-2</b>ひだり（6こ）</div><div><b>おもて①-3</b>みぎ（8こ）</div><div><b>おもて②-1</b>ひだり（2こ）</div><div><b>おもて②-2</b>みぎ（4こ）</div><div><b>おもて②-3</b>ひだり（3こ）</div><div><b>おもて③-1</b>5</div><div><b>おもて③-2</b>8</div><div><b>おもて③-3</b>9</div><div><b>おもて③-4</b>7</div><div><b>おもて③-5</b>10</div><div><b>うら④-1</b>みぎ（5りょう）</div><div><b>うら④-2</b>ひだり（4りょう）</div><div><b>うら④-3</b>みぎ（6りょう）</div><div><b>うら⑤</b>2ばんめ（7だん）</div><div><b>うら⑥</b>（かいたものを みて ○）</div></div></div><div class="sh"><h2>5　ふえるよ（たしざん 10まで）</h2><div class="aim">ねらい：「ふえる」「あわせる」場面を絵で理解し、10までのたし算を式で表す。</div><ul><li>絵 → 十のわく → 式の順に、抽象度を上げていく。</li><li>「2こに 1こ ふえて 3こ」と、お話の言葉で言いながら式を読む。</li><li>わく（■）は左から詰めて置く。</li></ul><div class="a"><div><b>おもて①-1</b>2＋1＝3</div><div><b>おもて①-2</b>3＋2＝5</div><div><b>おもて①-3</b>1＋4＝5</div><div><b>おもて①-4</b>3＋3＝6</div><div><b>おもて②-1</b>4＋3＝7</div><div><b>おもて②-2</b>5＋2＝7</div><div><b>おもて②-3</b>6＋3＝9</div><div><b>うら③-1</b>1＋1＝2</div><div><b>うら③-2</b>2＋3＝5</div><div><b>うら③-3</b>4＋2＝6</div><div><b>うら③-4</b>5＋4＝9</div><div><b>うら③-5</b>3＋6＝9</div><div><b>うら③-6</b>7＋2＝9</div><div><b>うら③-7</b>6＋3＝9</div><div><b>うら③-8</b>5＋5＝10</div><div><b>うら④-1</b>3＋2＝5</div><div><b>うら④-2</b>4＋5＝9</div></div></div><div class="sh"><h2>6　へるよ（ひきざん 10まで）</h2><div class="aim">ねらい：「へる」「のこり」の場面を絵で理解し、10までのひき算を式で表す。</div><ul><li>「食べた分に×」を指でなぞってから、のこりを数える。</li><li>0（ぜんぶ なくなる）の場面も扱う。</li><li>たし算との違いを「ふえる／へる」の言葉で確かめる。</li></ul><div class="a"><div><b>おもて①-1</b>5－2＝3</div><div><b>おもて①-2</b>4－1＝3</div><div><b>おもて①-3</b>6－3＝3</div><div><b>おもて①-4</b>7－2＝5</div><div><b>おもて②-1</b>8－3＝5</div><div><b>おもて②-2</b>9－4＝5</div><div><b>おもて②-3</b>7－5＝2</div><div><b>うら③-1</b>5－1＝4</div><div><b>うら③-2</b>6－2＝4</div><div><b>うら③-3</b>8－3＝5</div><div><b>うら③-4</b>9－4＝5</div><div><b>うら③-5</b>7－5＝2</div><div><b>うら③-6</b>10－3＝7</div><div><b>うら③-7</b>8－8＝0</div><div><b>うら③-8</b>10－6＝4</div><div><b>うら④-1</b>6－2＝4</div><div><b>うら④-2</b>8－3＝5</div></div></div></section><section class="ans-page"><h1>せんせいようの こたえと ポイント（3/4）</h1><div class="sh"><h2>7　おかねを しろう</h2><div class="aim">ねらい：硬貨の種類と金額を知り、同じ硬貨・異なる硬貨の合計を数える（貨幣の理解・十進位取りの素地）。</div><ul><li>本物の硬貨（または模型）を並べて、1円玉から順に触れる。</li><li>10円玉は「10、20、30…」と10ずつ数える。</li><li>10円玉と1円玉の混合は、「10円玉が何こ」と「1円玉が何こ」を分けて考える。</li></ul><div class="a"><div><b>おもて②-1</b>3えん</div><div><b>おもて②-2</b>6えん</div><div><b>おもて②-3</b>20えん</div><div><b>おもて②-4</b>40えん</div><div><b>おもて②-5</b>50えん</div><div><b>うら③-1</b>23えん</div><div><b>うら③-2</b>16えん</div><div><b>うら③-3</b>34えん</div><div><b>うら③-4</b>40えん</div><div><b>うら③-5</b>52えん</div><div><b>うら④-1</b>70えん</div><div><b>うら④-2</b>50えん</div><div><b>うら④-3</b>100えん</div><div><b>うら④-4</b>80えん</div></div></div><div class="sh"><h2>8　おかいもの</h2><div class="aim">ねらい：値段を読み、予算内で買えるか判断する。2つの値段の合計と、おつりを求める（買い物の計算）。</div><ul><li>実際の値札・チラシと組み合わせると、生活とつながる。</li><li>100円単位・10円単位の数に絞って始める。</li><li>おつりは「出したお金 − 値段」を、お金の絵（硬貨）を引いて確かめる。</li></ul><div class="a"><div><b>おもて②-1</b>おちゃ、おすし に ○</div><div><b>おもて②-2</b>ジュース、ハンバーガー に ○</div><div><b>おもて③-1</b>100えんだま 1こ、10えんだま 2こ</div><div><b>おもて③-2</b>100えんだま 1こ、50えんだま 1こ</div><div><b>うら④-1</b>220えん</div><div><b>うら④-2</b>450えん</div><div><b>うら④-3</b>130えん</div><div><b>うら④-4</b>330えん</div><div><b>うら⑤-1</b>30えん</div><div><b>うら⑤-2</b>200えん</div><div><b>うら⑤-3</b>40えん</div><div><b>うら⑤-4</b>200えん</div><div><b>うら⑤-5</b>50えん</div></div></div><div class="sh"><h2>9　とけいを よもう</h2><div class="aim">ねらい：時計の長い針・短い針を区別し、「〜時」「〜時半」を読み、生活の場面と時刻を結びつける。</div><ul><li>最初は「短い針が数字を指しているときは、長い針は12」とセットで確認する。</li><li>1日の流れ（起きる・給食・帰る・寝る）に時刻を貼り付けると、生活リズムが見える。</li><li>時計は実物（アナログ時計）を一緒に動かしながら取り組む。</li></ul><div class="a"><div><b>おもて①-1</b>3じ</div><div><b>おもて①-2</b>7じ</div><div><b>おもて①-3</b>12じ</div><div><b>おもて①-4</b>9じ</div><div><b>おもて②</b>おきる→7じ、きゅうしょく→12じ、かえる→3じ、ねる→9じ</div><div><b>うら③-1</b>みじかい はりを 4、ながい はりを 12 に かく</div><div><b>うら③-2</b>みじかい はりを 10、ながい はりを 12 に かく</div><div><b>うら③-3</b>みじかい はりを 1、ながい はりを 12 に かく</div><div><b>うら③-4</b>みじかい はりを 6、ながい はりを 12 に かく</div><div><b>うら④-1</b>2じはん</div><div><b>うら④-2</b>5じはん</div><div><b>うら④-3</b>8じはん</div></div></div></section><section class="ans-page"><h1>せんせいようの こたえと ポイント（4/4）</h1><div class="sh"><h2>10　パーティーの じゅんび</h2><div class="aim">ねらい：「1人に○こずつ」の同数のまとまりを数え、同数加（かけ算の素地）と人数分の準備を行う。</div><ul><li>お皿に置いた同じ数を、「2、4、6」と数え足す活動につなげる。</li><li>「ひとり 2こ × 3にん」は、まだ式（×）にせず、お話と絵で理解する。</li><li>実際のパーティー（学習発表会の準備・お楽しみ会）で使う数を決めると、学習が生活とつながる。</li></ul><div class="a"><div><b>おもて①-1</b>6こ</div><div><b>おもて①-2</b>8こ</div><div><b>おもて①-3</b>9こ</div><div><b>おもて②-1</b>6</div><div><b>おもて②-2</b>9</div><div><b>おもて②-3</b>8</div><div><b>おもて②-4</b>10</div><div><b>うら③-1</b>5まい</div><div><b>うら③-2</b>5こ</div><div><b>うら③-3</b>5まい</div><div><b>うら④-1</b>300えん</div><div><b>うら④-2</b>200えん</div><div><b>うら④-3</b>50えん</div></div></div></section></body></html>

@@ -1,0 +1,1446 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>けいさんアプリ</title>
+<script src="vendor/html2canvas.min.js"></script>
+<style>
+:root{--bg:#f1f2f6;--card:#fff;--ink:#1d1f2a;--mute:#6b7280;--accent:#4f5dff;--ok:#4f9a64;--ng:#d6455d;--line:#dfe2ea;--key:#f3f4f6}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:1040px;margin:0 auto;padding:16px}
+.card{background:var(--card);border-radius:20px;box-shadow:0 1px 3px rgba(20,24,40,.08);padding:20px}
+button{font:inherit;cursor:pointer;color:inherit}
+button:disabled{cursor:default}
+
+/* header */
+.top{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.btn-rec{border:2px solid var(--accent);color:var(--accent);background:#fff;border-radius:10px;padding:12px 16px;font-weight:700;font-size:14px}
+.btn-rec:active{background:#eef0ff}
+.stats{display:flex;gap:18px;flex:1;flex-wrap:wrap;align-items:center}
+.stat small{display:block;font-size:11px;color:var(--mute);margin-bottom:2px}
+.stat b{font-size:20px}
+.sep{width:1px;align-self:stretch;background:var(--line)}
+.rank{text-align:center}
+.rank small{display:block;font-size:11px;color:var(--mute);margin-bottom:2px}
+.rank i{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;background:#c4c8d4;color:#fff;font-style:normal;font-weight:800;font-size:20px}
+.rank i.S{background:#f2a900}.rank i.A{background:var(--accent)}.rank i.B{background:var(--ok)}.rank i.C{background:#e58a2f}.rank i.D{background:#9a8f97}
+.progress{height:6px;border-radius:3px;background:#d9dbe3;margin:14px 0;overflow:hidden}
+.progress div{height:100%;background:var(--accent);width:0;transition:width .3s}
+
+/* question card */
+.qcard{padding:44px 24px 36px;text-align:center}
+.qno{color:var(--mute);font-size:13px;margin-bottom:14px}
+.qtext{font-size:23px;font-weight:700;line-height:1.7;max-width:640px;margin:0 auto 26px}
+.ask{font-size:13px;color:var(--mute);margin-bottom:12px}
+.opgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:380px;margin:0 auto}
+.op{background:var(--key);border:2px solid var(--line);border-radius:14px;padding:16px 8px;font-weight:700;font-size:18px}
+.op:active{transform:scale(.98)}
+.op.ok{border-color:var(--ok);color:var(--ok);background:#eef7f0}
+.op.ng{border-color:var(--ng);color:var(--ng);background:#fdeff2}
+.msg{min-height:26px;margin-top:18px;font-weight:700;font-size:15px}
+.msg.ok{color:var(--ok)}.msg.ng{color:var(--ng)}
+.foot{text-align:center;font-size:12px;color:var(--mute);margin:18px 0 6px}
+.foot a{color:var(--accent);cursor:pointer;margin:0 8px}
+
+/* answer layout */
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.panel-l{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:380px}
+.expr{font-size:44px;font-weight:800;letter-spacing:.02em;margin:10px 0 18px}
+.expr.small{font-size:16px;font-weight:700;line-height:1.7;margin:8px 0 14px}
+.receipt{width:100%;max-width:260px;font-size:14px;text-align:left;margin:6px 0 12px;border-top:1px dashed var(--line)}
+.receipt div{display:flex;justify-content:space-between;padding:5px 2px;border-bottom:1px dashed var(--line)}
+.ansbox{min-width:170px;min-height:52px;border:2px solid var(--line);border-radius:12px;background:var(--key);padding:6px 16px;font-size:28px;font-weight:800;color:#9aa0ae;display:inline-block}
+.ansbox.has{color:var(--accent);background:#fff;border-color:var(--accent)}
+.ansbox.ok{color:var(--ok);border-color:var(--ok);background:#eef7f0}
+.ansbox.ng{color:var(--ng);border-color:var(--ng);background:#fdeff2}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-content:start}
+.pad button{height:62px;border:0;border-radius:12px;background:var(--key);font-size:24px;font-weight:700}
+.pad button:active{background:#e4e6ec}
+.pad .clr{color:var(--ng);font-size:16px}
+.pad .submit{grid-column:1/-1;height:62px;background:var(--accent);color:#fff;font-size:18px}
+.pad .submit:disabled{background:#c4c8d4}
+.calc{background:#23252f;border-radius:16px;padding:14px;color:#fff}
+.calc .cap{font-size:11px;color:#a8adbd}
+.calc .disp{text-align:right;font-size:34px;font-weight:700;min-height:62px;padding:10px 6px 6px;overflow:hidden}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.keys button{height:48px;border:0;border-radius:10px;background:#363946;color:#fff;font-size:19px;font-weight:700}
+.keys button.f{background:#555968}
+.keys button.o{background:#5865f2}
+.keys button.z{grid-column:span 2}
+.keys button:active{filter:brightness(1.25)}
+
+/* menu */
+.hero{text-align:center;padding:30px 10px 10px}
+.hero h1{font-size:28px;margin:0 0 6px}
+.hero p{margin:0;color:var(--mute);font-size:14px}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px}
+.mcard{border:2px solid transparent;text-align:center;padding:36px 20px;background:#fff;border-radius:22px;box-shadow:0 1px 3px rgba(20,24,40,.08);transition:.15s}
+.mcard:hover{border-color:var(--accent);transform:translateY(-2px)}
+.mcard .em{font-size:64px;line-height:1.1}
+.mcard h2{font-size:21px;margin:14px 0 8px}
+.mcard p{margin:0;font-size:13px;color:var(--mute);line-height:1.7}
+
+/* theme / shop */
+.seg{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.seg button{border:2px solid var(--accent);border-radius:12px;background:#fff;color:var(--accent);padding:10px 20px;font-weight:700;font-size:16px}
+.seg button.on{background:var(--accent);color:#fff}
+.themes{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:20px}
+.themes>*{grid-column:span 2}
+.themes>:nth-child(3n+1):nth-last-child(2){grid-column:2/span 2}
+.themes>:nth-child(3n+2):last-child{grid-column:4/span 2}
+.shop{display:grid;grid-template-columns:1fr 300px;gap:14px;align-items:start}
+.money{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.money b{font-size:22px}
+.money .left b{color:var(--accent)}
+.bar{height:10px;border-radius:5px;background:#e6e8ef;overflow:hidden;margin-top:10px}
+.bar div{height:100%;background:var(--accent);transition:width .2s}
+.bar div.warn{background:#e58a2f}
+.cat{margin-top:16px}
+.cat h3{font-size:15px;margin:0 0 8px;display:flex;gap:8px;align-items:center}
+.tag{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;background:#ffe9e9;color:var(--ng)}
+.tag.done{background:#e8f5ec;color:var(--ok)}
+.tag.opt{background:#eef0f6;color:var(--mute)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.item{border:2px solid var(--line);border-radius:14px;padding:10px;text-align:center;background:#fff}
+.item.sel{border-color:var(--accent);background:#f3f4ff}
+.item .e{font-size:34px;line-height:1.2}
+.item .n{font-weight:700;font-size:14px}
+.item .p{font-size:13px;color:var(--mute);margin-bottom:6px}
+.qty{display:flex;justify-content:center;align-items:center;gap:10px}
+.qty button{width:34px;height:34px;border-radius:50%;border:0;background:var(--key);font-size:20px;font-weight:700;line-height:1}
+.qty button.plus{background:var(--accent);color:#fff}
+.qty button:disabled{opacity:.35}
+.qty span{min-width:20px;font-weight:800;font-size:17px}
+.basket{position:sticky;top:12px}
+.basket h3{margin:0 0 8px;font-size:15px}
+.livepv{border-radius:12px;overflow:hidden;margin-bottom:10px;border:1px solid var(--line)}
+.livepv svg{display:block;width:100%;height:auto}
+.bl{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.req{font-size:12px;margin:10px 0;line-height:1.9}
+.req .okc{color:var(--ok)}.req .ngc{color:var(--ng)}
+.go{width:100%;border:0;background:var(--accent);color:#fff;border-radius:12px;padding:14px;font-weight:800;font-size:16px;margin-top:8px}
+.go:disabled{background:#c4c8d4}
+.warnmsg{color:var(--ng);font-size:12px;min-height:18px;margin-top:6px}
+
+/* result */
+.result{text-align:center;padding:26px 20px}
+.result h2{margin:0 0 4px;font-size:22px}
+.illust{max-width:520px;margin:10px auto;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.illust svg{display:block;width:100%;height:auto}
+.score{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin:14px 0}
+.score div{font-size:12px;color:var(--mute)}
+.score b{display:block;font-size:24px;color:var(--ink)}
+.rbtn{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.rbtn button{border:0;border-radius:12px;padding:13px 22px;font-weight:700;font-size:15px;background:var(--accent);color:#fff}
+.rbtn button.sub{background:#fff;color:var(--accent);border:2px solid var(--accent)}
+.rlist{max-width:420px;margin:8px auto;text-align:left;font-size:13px}
+
+/* modal / toast */
+.modal{position:fixed;inset:0;background:rgba(20,24,40,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal .box{background:#fff;border-radius:18px;max-width:760px;width:100%;max-height:86vh;overflow:auto;padding:20px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.gal figure{margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:12px}
+.gal img{width:100%;display:block}
+.gal figcaption{padding:8px}
+.gal button{margin-top:6px;border:1px solid var(--accent);background:#fff;color:var(--accent);border-radius:8px;padding:4px 10px;font-weight:700}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#23252f;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;z-index:20}
+
+@media(max-width:860px){
+ .three{grid-template-columns:1fr}
+ .panel-l{min-height:0;padding:12px 0}
+ .shop{grid-template-columns:1fr}
+ .basket{position:static}
+ .themes,.menu{grid-template-columns:1fr}
+ .themes>*{grid-column:auto!important}
+ .expr{font-size:36px}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="root">
+  <div id="hdr"></div>
+  <div id="main"></div>
+  <div class="foot" id="foot"></div>
+</div>
+<div id="overlay"></div>
+
+<script>
+/* ---------- utils ---------- */
+const $ = s => document.querySelector(s);
+const fmt = n => Number(n).toLocaleString('ja-JP');
+const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const OPS = [['+', '足し算（+）'], ['−', '引き算（−）'], ['×', '掛け算（×）'], ['÷', '割り算（÷）']];
+const SYM = {'+': '+', '−': '-', '×': '×', '÷': '÷'};
+
+/* ---------- global state ---------- */
+let app = null;               // 'calc' | 'pocket' | null
+let stats = freshStats();
+let quiz = null;
+let shop = null;
+let uid = 0;
+function freshStats() { return {asked: 0, correct: 0, fastest: null, opTry: 0, opOk: 0}; }
+
+/* ---------- calculator widget ---------- */
+const calc = {cur: '0', prev: null, op: null, fresh: true};
+function calcReset() { calc.cur = '0'; calc.prev = null; calc.op = null; calc.fresh = true; }
+function calcCompute(a, op, b) {
+  let r = op === '+' ? a + b : op === '−' ? a - b : op === '×' ? a * b : (b === 0 ? NaN : a / b);
+  return Number.isFinite(r) ? String(parseFloat(r.toPrecision(10))) : 'エラー';
+}
+function calcKey(k) {
+  if (calc.cur === 'エラー' && k !== 'C') calcReset();
+  if (/^[0-9]$/.test(k)) {
+    if (calc.fresh) { calc.cur = k; calc.fresh = false; }
+    else if (calc.cur.replace(/[-.]/g, '').length < 12) calc.cur = calc.cur === '0' ? k : calc.cur + k;
+  } else if (k === '.') {
+    if (calc.fresh) { calc.cur = '0.'; calc.fresh = false; }
+    else if (!calc.cur.includes('.')) calc.cur += '.';
+  } else if (k === 'C') calcReset();
+  else if (k === '⌫') {
+    if (!calc.fresh) calc.cur = calc.cur.length > 1 && calc.cur !== '-0' ? calc.cur.slice(0, -1) : '0';
+    if (calc.cur === '-' ) calc.cur = '0';
+  } else if (k === '±') {
+    if (calc.cur !== '0') calc.cur = calc.cur.startsWith('-') ? calc.cur.slice(1) : '-' + calc.cur;
+  } else if (k === '=') {
+    if (calc.op !== null && calc.prev !== null) {
+      calc.cur = calcCompute(calc.prev, calc.op, parseFloat(calc.cur));
+      calc.prev = null; calc.op = null; calc.fresh = true;
+    }
+  } else { // operator
+    if (calc.op !== null && calc.prev !== null && !calc.fresh) {
+      calc.cur = calcCompute(calc.prev, calc.op, parseFloat(calc.cur));
+    }
+    calc.prev = parseFloat(calc.cur); calc.op = k; calc.fresh = true;
+    if (calc.cur === 'エラー') calcReset();
+  }
+  const d = $('#cdisp');
+  if (d) d.textContent = calc.cur.length > 14 ? parseFloat(calc.cur).toExponential(4) : (isNaN(calc.cur) ? calc.cur : calc.cur);
+}
+function calcHTML() {
+  const K = (k, c = '', t = k) => `<button class="${c}" data-a="ckey" data-k="${k}">${t}</button>`;
+  return `<div class="calc"><div class="cap">電卓（けいさん用）</div><div class="disp" id="cdisp">${calc.cur}</div>
+  <div class="keys">${K('C','f')}${K('⌫','f')}${K('±','f')}${K('÷','o')}
+  ${K('7')}${K('8')}${K('9')}${K('×','o')}${K('4')}${K('5')}${K('6')}${K('−','o')}
+  ${K('1')}${K('2')}${K('3')}${K('+','o')}${K('0','z')}${K('.')}${K('=','o')}</div></div>`;
+}
+
+/* ---------- header ---------- */
+function rankOf() {
+  if (!stats.asked) return '—';
+  const r = stats.correct / stats.asked;
+  if (r >= 1 && stats.asked >= 5 && stats.fastest != null && stats.fastest <= 6) return 'S';
+  if (r >= .8) return 'A'; if (r >= .6) return 'B'; if (r >= .4) return 'C'; return 'D';
+}
+function renderHeader(progress = 0) {
+  const h = $('#hdr');
+  if (!app) { h.innerHTML = ''; return; }
+  const s = stats, rk = rankOf();
+  h.innerHTML = `<div class="card top">
+    <button class="btn-rec" data-a="rec">画面を記録する</button>
+    <div class="stats">
+      <div class="stat"><small>出題数</small><b>${s.asked}</b></div>
+      <div class="stat"><small>正解数</small><b>${s.correct}</b></div>
+      <div class="stat"><small>最速正解</small><b>${s.fastest == null ? '—' : s.fastest.toFixed(1) + '秒'}</b></div>
+      <div class="stat"><small>正解率</small><b>${s.asked ? Math.round(s.correct / s.asked * 100) + '%' : '—'}</b></div>
+      <div class="sep"></div>
+      <div class="stat"><small>計算方法 正解数</small><b>${s.opOk}</b></div>
+      <div class="stat"><small>計算方法 正解率</small><b>${s.opTry ? Math.round(s.opOk / s.opTry * 100) + '%' : '—'}</b></div>
+    </div>
+    <div class="rank"><small>ランク</small><i class="${rk}">${rk}</i></div>
+  </div><div class="progress"><div style="width:${Math.round(progress * 100)}%"></div></div>`;
+}
+function setFoot(t) {
+  $('#foot').innerHTML = (t ? t + '<br><br>' : '') +
+    (app ? '<a data-a="home">← はじめの画面へ</a>' : '') + '<a data-a="gallery">きろくを見る</a>';
+}
+
+/* ---------- menu ---------- */
+function showMenu() {
+  app = null; quiz = null; shop = null;
+  renderHeader();
+  $('#main').innerHTML = `<div class="hero"><h1>けいさんアプリ</h1><p>あそびたいアプリをえらんでね</p></div>
+  <div class="menu">
+    <button class="mcard" data-a="start1"><div class="em">🧮</div><h2>計算方法を選ぶアプリを使用する</h2>
+      <p>文章題を読んで、足し算・引き算・掛け算・割り算から<br>正しい計算方法を選び、けいさんして答えます。</p></button>
+    <button class="mcard" data-a="start2"><div class="em">🛍️</div><h2>お小遣いで好きなものを作ろう</h2>
+      <p>お小遣いの中で材料を選んで、カレー・パフェ・<br>プラレールの駅を作ろう。お会計のけいさんもあるよ。</p></button>
+  </div>`;
+  setFoot('');
+}
+
+/* =========================================================
+   Quiz engine (shared by both apps)
+   question: {text, op, ans, disp(html), unit}
+   ========================================================= */
+function startQuiz(questions, opts) {
+  quiz = {qs: questions, i: 0, phase: 'op', t0: performance.now(), input: '', locked: false, wrong: new Set(),
+          opts: opts || {}, fb: null};
+  renderQuiz();
+}
+function renderQuiz() {
+  const q = quiz.qs[quiz.i], n = quiz.qs.length;
+  renderHeader((quiz.i + (quiz.phase === 'ans' ? .5 : 0)) / n);
+  if (quiz.phase === 'op') {
+    $('#main').innerHTML = `<div class="card qcard">
+      <div class="qno">${quiz.i + 1}問目 / ${n}問</div>
+      <div class="qtext">${q.text}</div>
+      <div class="ask">どのけいさんを使いますか？</div>
+      <div class="opgrid">${OPS.map(([o, l]) => `<button class="op" data-a="op" data-op="${o}">${l}</button>`).join('')}</div>
+      <div class="msg" id="msg"></div></div>`;
+    setFoot(quiz.opts.foot || '文章題を読んで、使うけいさんの方法（足し算・引き算・掛け算・割り算）を選びましょう。正しく選べたら、実際にけいさんして答えを入力します。');
+  } else {
+    const fb = quiz.fb;
+    const boxCls = 'ansbox' + (fb ? (fb.ok ? ' ok' : ' ng') : (quiz.input ? ' has' : ''));
+    $('#main').innerHTML = `<div class="three">
+      <div class="card panel-l">
+        <div class="qno">${quiz.i + 1}問目 / ${n}問</div>
+        ${q.disp}
+        <div class="${boxCls}" id="ansbox">${quiz.input ? fmt(quiz.input) + (q.unit || '') : 'こたえ'}</div>
+        <div class="msg ${fb ? (fb.ok ? 'ok' : 'ng') : ''}" id="msg">${fb ? fb.text : ''}</div>
+      </div>
+      <div class="card"><div class="pad">
+        ${[7,8,9,4,5,6,1,2,3].map(d => `<button data-a="num" data-d="${d}">${d}</button>`).join('')}
+        <button class="clr" data-a="clr">クリア</button><button data-a="num" data-d="0">0</button><button data-a="bs">⌫</button>
+        <button class="submit" id="submit" data-a="submit" ${quiz.input && !fb ? '' : 'disabled'}>こたえる</button>
+      </div></div>
+      ${calcHTML()}
+    </div>`;
+    setFoot(quiz.opts.foot2 || '文章題を読んで、使うけいさんの方法を選びましょう。正しく選べたら、実際にけいさんして答えを入力します。');
+  }
+}
+function quizOp(op) {
+  if (quiz.phase !== 'op' || quiz.locked) return;
+  const q = quiz.qs[quiz.i];
+  const btn = document.querySelector(`.op[data-op="${op}"]`);
+  stats.opTry++;
+  if (op === q.op) {
+    stats.opOk++; quiz.locked = true;
+    btn.classList.add('ok');
+    $('#msg').className = 'msg ok'; $('#msg').textContent = 'せいかい！では、けいさんしてみよう。';
+    renderHeader(quiz.i / quiz.qs.length);
+    setTimeout(() => { quiz.phase = 'ans'; quiz.locked = false; calcReset(); renderQuiz(); window.scrollTo({top: 0}); }, 850);
+  } else {
+    btn.classList.add('ng'); btn.disabled = true;
+    $('#msg').className = 'msg ng'; $('#msg').textContent = 'ちがうよ。もういちど考えてみよう。';
+    renderHeader(quiz.i / quiz.qs.length);
+  }
+}
+function quizInput(fn) {
+  if (!quiz || quiz.phase !== 'ans' || quiz.fb) return;
+  fn();
+  const q = quiz.qs[quiz.i];
+  const b = $('#ansbox'); b.textContent = quiz.input ? fmt(quiz.input) + (q.unit || '') : 'こたえ';
+  b.className = 'ansbox' + (quiz.input ? ' has' : '');
+  $('#submit').disabled = !quiz.input;
+}
+function quizSubmit() {
+  if (!quiz || quiz.phase !== 'ans' || quiz.fb || !quiz.input) return;
+  const q = quiz.qs[quiz.i];
+  const secs = (performance.now() - quiz.t0) / 1000;
+  const ok = Number(quiz.input) === q.ans;
+  stats.asked++;
+  if (ok) { stats.correct++; stats.fastest = stats.fastest == null ? secs : Math.min(stats.fastest, secs); }
+  quiz.results = quiz.results || [];
+  quiz.results.push({ok, secs});
+  quiz.fb = {ok, text: ok ? 'せいかい！' : `ざんねん… こたえは ${fmt(q.ans)}${q.unit || ''}`};
+  renderQuiz();
+  setTimeout(() => {
+    if (!quiz) return;
+    quiz.i++;
+    if (quiz.i >= quiz.qs.length) { renderHeader(1); quiz.opts.onDone(quiz.results); }
+    else { quiz.phase = 'op'; quiz.fb = null; quiz.input = ''; quiz.t0 = performance.now(); renderQuiz(); }
+  }, 1500);
+}
+
+/* =========================================================
+   App 1 : 計算方法を選ぶ
+   ========================================================= */
+const TEMPLATES = {
+  '+': [
+    (a, b) => `公園に${a}人の子どもがいました。あとから${b}人来ました。ぜんぶで何人ですか。`,
+    (a, b) => `かごにりんごが${a}こ、みかんが${b}こ入っています。くだものはぜんぶで何こですか。`,
+    (a, b) => `${a}円のノートと${b}円のえんぴつを買いました。合計はいくらですか。`,
+    (a, b) => `きのうは${a}ページ、今日は${b}ページ本を読みました。あわせて何ページですか。`
+  ],
+  '−': [
+    (a, b) => `広場に${a}人いました。${b}人帰りました。残っているのは何人ですか。`,
+    (a, b) => `${a}ページの本があります。今日までに${b}ページ読みました。残りは何ページですか。`,
+    (a, b) => `${a}円持っていました。${b}円のおかしを買いました。のこりは何円ですか。`,
+    (a, b) => `赤いシールが${a}まい、青いシールが${b}まいあります。赤いシールは青いシールより何まい多いですか。`
+  ],
+  '×': [
+    (a, b) => `1つ${a}円のあめを${b}こ買います。代金はいくらですか。`,
+    (a, b) => `1箱に${a}こ入ったクッキーが${b}箱あります。クッキーはぜんぶで何こですか。`,
+    (a, b) => `1人に${a}まいずつ、${b}人にシールを配ります。シールは何まいいりますか。`,
+    (a, b) => `1日に${a}ページずつ、${b}日間本を読みます。ぜんぶで何ページ読みますか。`
+  ],
+  '÷': [
+    (a, b) => `${a}このあめを${b}人で同じ数ずつ分けます。1人分は何こですか。`,
+    (a, b) => `${a}cmのリボンを${b}cmずつ切ります。何本できますか。`,
+    (a, b) => `${a}人を${b}人ずつのグループに分けます。何グループできますか。`,
+    (a, b) => `${a}円を${b}人で同じ金額ずつ出し合います。1人いくらですか。`
+  ]
+};
+function makeCalcQuestions(n) {
+  const ops = [];
+  while (ops.length < n) ops.push(...['+', '−', '×', '÷'].sort(() => Math.random() - .5));
+  ops.length = n;
+  ops.sort(() => Math.random() - .5);
+  const lastT = {};
+  return ops.map(op => {
+    let a, b, ans;
+    if (op === '+') { a = rnd(120, 899); b = rnd(100, 899); ans = a + b; }
+    else if (op === '−') { a = rnd(300, 999); b = rnd(100, a - 50); ans = a - b; }
+    else if (op === '×') { a = rnd(3, 30); b = rnd(2, 9); ans = a * b; }
+    else { b = rnd(2, 9); ans = rnd(3, 25); a = b * ans; }
+    let ti; do { ti = rnd(0, 3); } while (ti === lastT[op]);
+    lastT[op] = ti;
+    return {op, ans, text: TEMPLATES[op][ti](a, b), disp: `<div class="expr">${a} ${SYM[op]} ${b}</div>`};
+  });
+}
+function startApp1() {
+  app = 'calc'; stats = freshStats();
+  startQuiz(makeCalcQuestions(10), {onDone: finishApp1});
+}
+function finishApp1(results) {
+  const ok = results.filter(r => r.ok).length;
+  const rk = rankOf();
+  $('#main').innerHTML = `<div class="card result">
+    <h2>10問おわり！</h2>
+    <div class="score"><div>せいかい<b>${ok} / ${results.length}</b></div><div>最速正解<b>${stats.fastest == null ? '—' : stats.fastest.toFixed(1) + '秒'}</b></div>
+    <div>計算方法 正解率<b>${stats.opTry ? Math.round(stats.opOk / stats.opTry * 100) : 0}%</b></div><div>ランク<b>${rk}</b></div></div>
+    <p style="color:var(--mute);font-size:14px">「画面を記録する」でこの結果を保存できます。</p>
+    <div class="rbtn"><button data-a="start1">もういちど</button><button class="sub" data-a="home">はじめの画面へ</button></div></div>`;
+  setFoot('');
+}
+
+/* =========================================================
+   App 2 : お小遣いで好きなものを作ろう
+   ========================================================= */
+const THEMES = {
+  curry: {
+    name: 'カレー', title: 'カレーを作ろう', emoji: '🍛', desc: 'お肉・野菜・ルウ・ごはんをそろえよう',
+    cats: [
+      {id: 'meat', name: 'おにく', min: 1, hint: '1こ以上', items: [
+        {id: 'chicken', name: 'とりにく', price: 250, e: '🍗'}, {id: 'beef', name: 'ぎゅうにく', price: 400, e: '🥩'}, {id: 'pork', name: 'ぶたにく', price: 300, e: '🥓'}]},
+      {id: 'veg', name: 'やさい', min: 2, hint: 'あわせて2こ以上', items: [
+        {id: 'carrot', name: 'にんじん', price: 80, e: '🥕'}, {id: 'potato', name: 'じゃがいも', price: 100, e: '🥔'}, {id: 'onion', name: 'たまねぎ', price: 90, e: '🧅'},
+        {id: 'pepper', name: 'ピーマン', price: 70, e: '🫑'}, {id: 'eggplant', name: 'なす', price: 120, e: '🍆'}, {id: 'pumpkin', name: 'かぼちゃ', price: 150, e: '🎃'}]},
+      {id: 'roux', name: 'ルウ', min: 1, hint: '1こ以上', items: [
+        {id: 'sweet', name: 'あまくちルウ', price: 200, e: '🍲'}, {id: 'hot', name: 'からくちルウ', price: 220, e: '🌶️'}]},
+      {id: 'rice', name: 'ごはん', min: 1, hint: '1こ以上', items: [
+        {id: 'rice', name: 'ごはん', price: 150, e: '🍚'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'egg', name: 'ゆでたまご', price: 60, e: '🥚'}, {id: 'cheese', name: 'チーズ', price: 120, e: '🧀'}, {id: 'fuku', name: 'ふくじんづけ', price: 90, e: '🥬'}]}
+    ]
+  },
+  parfait: {
+    name: 'パフェ', title: 'パフェを作ろう', emoji: '🍨', desc: 'グラスにアイスとフルーツをもりつけよう',
+    cats: [
+      {id: 'glass', name: 'うつわ', min: 1, hint: '1こ', items: [
+        {id: 'glass', name: 'グラス', price: 150, e: '🥃'}, {id: 'jumbo', name: 'ジャンボグラス', price: 250, e: '🏺'}]},
+      {id: 'base', name: 'した（ベース）', min: 1, hint: '1こ以上', items: [
+        {id: 'corn', name: 'コーンフレーク', price: 100, e: '🌽'}, {id: 'granola', name: 'グラノーラ', price: 120, e: '🥣'}, {id: 'pudding', name: 'プリン', price: 150, e: '🍮'}]},
+      {id: 'ice', name: 'アイス', min: 1, hint: '1こ以上', items: [
+        {id: 'vanilla', name: 'バニラ', price: 130, e: '🍦'}, {id: 'choco', name: 'チョコ', price: 130, e: '🍫'}, {id: 'berry', name: 'いちごアイス', price: 140, e: '🍧'}, {id: 'matcha', name: 'まっちゃ', price: 150, e: '🍵'}]},
+      {id: 'fruit', name: 'フルーツ', min: 1, hint: '1こ以上', items: [
+        {id: 'strawberry', name: 'いちご', price: 200, e: '🍓'}, {id: 'banana', name: 'バナナ', price: 100, e: '🍌'}, {id: 'mikan', name: 'みかん', price: 90, e: '🍊'},
+        {id: 'cherry', name: 'さくらんぼ', price: 150, e: '🍒'}, {id: 'kiwi', name: 'キウイ', price: 130, e: '🥝'}]},
+      {id: 'cream', name: 'クリーム', min: 1, hint: '1こ以上', items: [
+        {id: 'whip', name: 'ホイップ', price: 120, e: '☁️'}, {id: 'custard', name: 'カスタード', price: 100, e: '🍯'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'sauce', name: 'チョコソース', price: 60, e: '🟤'}, {id: 'wafer', name: 'ウエハース', price: 80, e: '🧇'}, {id: 'stick', name: 'スティックチョコ', price: 90, e: '🥢'}, {id: 'sprinkle', name: 'スプリンクル', price: 50, e: '✨'}]}
+    ]
+  },
+  plarail: {
+    name: 'プラレールの駅', title: 'プラレールで駅を作ろう', emoji: '🚉', desc: 'レールと駅と電車をそろえてジオラマに',
+    cats: [
+      {id: 'rail', name: 'レール', min: 2, hint: 'あわせて2こ以上', items: [
+        {id: 'straight', name: 'まっすぐレール', price: 80, e: '➖'}, {id: 'curve', name: 'カーブレール', price: 100, e: '⤴️'}]},
+      {id: 'station', name: 'えき', min: 1, hint: '1こ以上', items: [
+        {id: 'building', name: 'えきしゃ', price: 300, e: '🚉'}, {id: 'platform', name: 'ホーム', price: 200, e: '🚏'}]},
+      {id: 'train', name: 'でんしゃ', min: 1, hint: '1こ以上', items: [
+        {id: 'shinkansen', name: 'しんかんせん', price: 400, e: '🚄'}, {id: 'train', name: 'でんしゃ', price: 300, e: '🚃'}, {id: 'sl', name: 'きかんしゃ', price: 350, e: '🚂'},
+        {id: 'keihan', name: '京阪電車', price: 350, e: '🚆'}, {id: 'kintetsu', name: '近鉄電車', price: 350, e: '🚆'}]},
+      {id: 'extra', name: 'そえもの', min: 0, hint: 'おこのみで', items: [
+        {id: 'crossing', name: 'ふみきり', price: 150, e: '🚧'}, {id: 'tunnel', name: 'トンネル', price: 250, e: '⛰️'}, {id: 'tree', name: '木', price: 40, e: '🌳'},
+        {id: 'signal', name: 'しんごう', price: 80, e: '🚦'}, {id: 'bridge', name: 'はし', price: 200, e: '🌉'}]}
+    ]
+  },
+  car: {
+    name: 'カスタムカー', title: 'カスタムカーを作ろう', emoji: '🏎️', desc: 'ボディ・色・タイヤ・パーツで自分だけの車に',
+    cats: [
+      {id: 'body', name: 'ボディ', min: 1, hint: '1こ', items: [
+        {id: 'sports', name: 'スポーツカー', price: 350, e: '🏎️'}, {id: 'kei', name: 'けいカー', price: 250, e: '🚗'}, {id: 'truck', name: 'トラック', price: 300, e: '🛻'}]},
+      {id: 'paint', name: 'いろ（ペンキ）', min: 1, hint: '1こ以上', items: [
+        {id: 'red', name: 'あかいペンキ', price: 50, e: '🟥'}, {id: 'blue', name: 'あおいペンキ', price: 50, e: '🟦'}, {id: 'yellow', name: 'きいろのペンキ', price: 50, e: '🟨'}, {id: 'black', name: 'くろいペンキ', price: 60, e: '⬛'}]},
+      {id: 'wheel', name: 'タイヤ', min: 1, hint: '1こ以上', items: [
+        {id: 'tire', name: 'ふつうのタイヤ', price: 80, e: '⚫'}, {id: 'alloy', name: 'ピカピカホイール', price: 150, e: '⚙️'}]},
+      {id: 'parts', name: 'カスタムパーツ', min: 0, hint: 'おこのみで', items: [
+        {id: 'wing', name: 'ウイング', price: 120, e: '🪽'}, {id: 'light', name: 'ライト', price: 80, e: '💡'}, {id: 'sticker', name: 'ステッカー', price: 40, e: '⭐'},
+        {id: 'muffler', name: 'マフラー', price: 100, e: '💨'}, {id: 'neon', name: 'ネオン', price: 130, e: '✨'}]}
+    ]
+  },
+  pancake: {
+    name: 'パンケーキ', title: 'パンケーキを作ろう', emoji: '🥞', desc: 'ふわふわのパンケーキにソースとフルーツをのせよう',
+    cats: [
+      {id: 'cake', name: 'パンケーキ', min: 1, hint: '1こ以上', items: [
+        {id: 'plain', name: 'ふつうのパンケーキ', price: 200, e: '🥞'}, {id: 'souffle', name: 'スフレパンケーキ', price: 300, e: '🍮'}, {id: 'mini', name: 'ミニパンケーキ', price: 150, e: '🧁'}]},
+      {id: 'sauce', name: 'ソース', min: 1, hint: '1こ以上', items: [
+        {id: 'maple', name: 'メープル', price: 80, e: '🍁'}, {id: 'honey', name: 'はちみつ', price: 90, e: '🍯'}, {id: 'chocosauce', name: 'チョコソース', price: 60, e: '🍫'}]},
+      {id: 'fruit', name: 'フルーツ', min: 1, hint: '1こ以上', items: [
+        {id: 'strawberry', name: 'いちご', price: 200, e: '🍓'}, {id: 'banana', name: 'バナナ', price: 100, e: '🍌'}, {id: 'blueberry', name: 'ブルーベリー', price: 180, e: '🫐'}, {id: 'mikan', name: 'みかん', price: 90, e: '🍊'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'butter', name: 'バター', price: 50, e: '🧈'}, {id: 'whip', name: 'ホイップ', price: 120, e: '☁️'}, {id: 'icecream', name: 'アイス', price: 130, e: '🍦'}, {id: 'sugar', name: 'こなざとう', price: 30, e: '❄️'}]}
+    ]
+  },
+  robot: {
+    name: 'ロボット', title: 'ロボットを作ろう', emoji: '🤖', desc: 'ボディ・色・でんげん・パーツで自分だけのロボに',
+    cats: [
+      {id: 'body', name: 'ボディ', min: 1, hint: '1こ', items: [
+        {id: 'biped', name: 'あるくロボ', price: 350, e: '🚶'}, {id: 'wheel', name: 'はしるロボ', price: 250, e: '🛞'}, {id: 'fly', name: 'とぶロボ', price: 400, e: '🚀'}]},
+      {id: 'paint', name: 'いろ（ペンキ）', min: 1, hint: '1こ以上', items: [
+        {id: 'red', name: 'あかいペンキ', price: 50, e: '🟥'}, {id: 'blue', name: 'あおいペンキ', price: 50, e: '🟦'}, {id: 'yellow', name: 'きいろのペンキ', price: 50, e: '🟨'}, {id: 'silver', name: 'ぎんいろのペンキ', price: 70, e: '⬜'}]},
+      {id: 'power', name: 'でんげん', min: 1, hint: '1こ以上', items: [
+        {id: 'battery', name: 'でんち', price: 100, e: '🔋'}, {id: 'solar', name: 'ソーラーパネル', price: 180, e: '☀️'}]},
+      {id: 'parts', name: 'ロボットパーツ', min: 0, hint: 'おこのみで', items: [
+        {id: 'arm', name: 'ロケットパンチ', price: 150, e: '👊'}, {id: 'eye', name: 'ビームアイ', price: 90, e: '👁️'}, {id: 'antenna', name: 'アンテナ', price: 40, e: '📡'},
+        {id: 'jet', name: 'ジェット', price: 130, e: '🔥'}, {id: 'shield', name: 'シールド', price: 120, e: '🛡️'}]}
+    ]
+  },
+  pizza: {
+    name: 'ピザ', title: 'ピザを作ろう', emoji: '🍕', desc: 'きじ・ソース・チーズ・ぐをのせて焼こう',
+    cats: [
+      {id: 'crust', name: 'きじ', min: 1, hint: '1こ', items: [
+        {id: 'thin', name: 'うすやき', price: 200, e: '🫓'}, {id: 'thick', name: 'あつやき', price: 250, e: '🍞'}, {id: 'cheesecrust', name: 'チーズのふち', price: 350, e: '🧀'}]},
+      {id: 'sauce', name: 'ソース', min: 1, hint: '1こ以上', items: [
+        {id: 'tomato', name: 'トマトソース', price: 80, e: '🍅'}, {id: 'white', name: 'ホワイトソース', price: 100, e: '🥛'}]},
+      {id: 'cheese', name: 'チーズ', min: 1, hint: '1こ以上', items: [
+        {id: 'mozza', name: 'モッツァレラ', price: 150, e: '🧀'}, {id: 'cheddar', name: 'チェダー', price: 120, e: '🟨'}]},
+      {id: 'top', name: 'ぐ（トッピング）', min: 0, hint: 'おこのみで', items: [
+        {id: 'salami', name: 'サラミ', price: 120, e: '🍖'}, {id: 'shrimp', name: 'えび', price: 180, e: '🦐'}, {id: 'corn', name: 'コーン', price: 60, e: '🌽'},
+        {id: 'mushroom', name: 'マッシュルーム', price: 80, e: '🍄'}, {id: 'pineapple', name: 'パイナップル', price: 90, e: '🍍'}, {id: 'pepper', name: 'ピーマン', price: 50, e: '🫑'}]}
+    ]
+  },
+  sushi: {
+    name: 'お寿司', title: 'お寿司を作ろう', emoji: '🍣', desc: 'シャリにネタをのせて、おすしやさんごっこ',
+    cats: [
+      {id: 'style', name: 'かたち', min: 1, hint: '1こ以上', items: [
+        {id: 'nigiri', name: 'にぎりずし', price: 100, e: '🍙'}, {id: 'maki', name: 'まきずし', price: 150, e: '🍥'}]},
+      {id: 'neta', name: 'ネタ', min: 1, hint: '1こ以上', items: [
+        {id: 'tuna', name: 'まぐろ', price: 200, e: '🐟'}, {id: 'salmon', name: 'サーモン', price: 150, e: '🍣'}, {id: 'egg', name: 'たまご', price: 80, e: '🥚'},
+        {id: 'shrimp', name: 'えび', price: 120, e: '🦐'}, {id: 'squid', name: 'いか', price: 100, e: '🦑'}, {id: 'ikura', name: 'いくら', price: 250, e: '🔴'}, {id: 'eel', name: 'うなぎ', price: 300, e: '🐍'}]},
+      {id: 'side', name: 'おとも', min: 0, hint: 'おこのみで', items: [
+        {id: 'wasabi', name: 'わさび', price: 30, e: '🟩'}, {id: 'shoyu', name: 'おしょうゆ', price: 20, e: '🫙'}, {id: 'gari', name: 'ガリ', price: 40, e: '🌸'},
+        {id: 'tea', name: 'おちゃ', price: 60, e: '🍵'}, {id: 'miso', name: 'みそしる', price: 100, e: '🥣'}]}
+    ]
+  },
+  icecream: {
+    name: 'アイスクリーム', title: 'アイスクリームを作ろう', emoji: '🍦', desc: 'コーンやカップにアイスをのせて、トッピングでかざろう',
+    cats: [
+      {id: 'holder', name: 'いれもの', min: 1, hint: '1こ以上', items: [
+        {id: 'cone', name: 'コーン', price: 150, e: '🍦'}, {id: 'waffle', name: 'ワッフルコーン', price: 200, e: '🧇'}, {id: 'cup', name: 'カップ', price: 120, e: '🥣'}]},
+      {id: 'flavor', name: 'アイス', min: 1, hint: '1こ以上', items: [
+        {id: 'vanilla', name: 'バニラ', price: 130, e: '🍦'}, {id: 'choco', name: 'チョコ', price: 130, e: '🍫'}, {id: 'strawberry', name: 'いちご', price: 140, e: '🍓'},
+        {id: 'matcha', name: 'まっちゃ', price: 150, e: '🍵'}, {id: 'mint', name: 'ミント', price: 140, e: '🌿'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'sauce', name: 'チョコソース', price: 60, e: '🟤'}, {id: 'sprinkle', name: 'スプリンクル', price: 50, e: '✨'}, {id: 'cherry', name: 'さくらんぼ', price: 150, e: '🍒'},
+        {id: 'wafer', name: 'ウエハース', price: 80, e: '🧇'}, {id: 'whip', name: 'ホイップ', price: 120, e: '☁️'}]}
+    ]
+  },
+  gyudon: {
+    name: '牛丼', title: '牛丼を作ろう', emoji: '🍲', desc: 'ごはんにお肉をのせて、トッピングとセットをえらぼう',
+    cats: [
+      {id: 'size', name: 'サイズ', min: 1, hint: '1こ以上', items: [
+        {id: 'regular', name: 'なみもり', price: 400, e: '🍚'}, {id: 'large', name: 'おおもり', price: 500, e: '🍚'}, {id: 'xl', name: 'とくもり', price: 600, e: '🍚'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'egg', name: 'たまご', price: 70, e: '🥚'}, {id: 'cheese', name: 'チーズ', price: 120, e: '🧀'}, {id: 'negi', name: 'ねぎ', price: 60, e: '🌱'},
+        {id: 'shoga', name: 'べにしょうが', price: 40, e: '🔴'}, {id: 'kimchi', name: 'キムチ', price: 100, e: '🌶️'}]},
+      {id: 'set', name: 'セット', min: 0, hint: 'おこのみで', items: [
+        {id: 'miso', name: 'みそしる', price: 100, e: '🥣'}, {id: 'salad', name: 'サラダ', price: 150, e: '🥗'}, {id: 'shinko', name: 'おしんこ', price: 80, e: '🥒'}, {id: 'tea', name: 'おちゃ', price: 60, e: '🍵'}]}
+    ]
+  },
+  burger: {
+    name: 'ハンバーガー', title: 'ハンバーガーを作ろう', emoji: '🍔', desc: 'バンズにパティとやさいをはさもう',
+    cats: [
+      {id: 'bun', name: 'バンズ', min: 1, hint: '1こ', items: [
+        {id: 'plain', name: 'ふつうのバンズ', price: 80, e: '🍞'}, {id: 'sesame', name: 'ごまバンズ', price: 100, e: '🥯'}]},
+      {id: 'patty', name: 'パティ', min: 1, hint: '1こ以上', items: [
+        {id: 'beef', name: 'ぎゅうにく', price: 250, e: '🥩'}, {id: 'chicken', name: 'チキン', price: 200, e: '🍗'}, {id: 'fish', name: 'フィッシュ', price: 180, e: '🐟'}, {id: 'veggie', name: 'やさいパティ', price: 150, e: '🥕'}]},
+      {id: 'veg', name: 'やさい', min: 1, hint: 'あわせて1こ以上', items: [
+        {id: 'lettuce', name: 'レタス', price: 50, e: '🥬'}, {id: 'tomato', name: 'トマト', price: 60, e: '🍅'}, {id: 'onion', name: 'たまねぎ', price: 40, e: '🧅'}, {id: 'pickle', name: 'ピクルス', price: 40, e: '🥒'}]},
+      {id: 'extra', name: 'プラス', min: 0, hint: 'おこのみで', items: [
+        {id: 'cheese', name: 'チーズ', price: 70, e: '🧀'}, {id: 'bacon', name: 'ベーコン', price: 100, e: '🥓'}, {id: 'egg', name: 'めだまやき', price: 70, e: '🍳'}]},
+      {id: 'sauce', name: 'ソース', min: 1, hint: '1こ以上', items: [
+        {id: 'ketchup', name: 'ケチャップ', price: 20, e: '🍅'}, {id: 'mustard', name: 'マスタード', price: 20, e: '🟡'}, {id: 'bbq', name: 'バーベキュー', price: 30, e: '🔥'}]},
+      {id: 'set', name: 'セット', min: 0, hint: 'おこのみで', items: [
+        {id: 'fries', name: 'ポテト', price: 120, e: '🍟'}, {id: 'drink', name: 'ドリンク', price: 100, e: '🥤'}]}
+    ]
+  }
+};
+const BUDGETS = [1000, 2000, 3000, 4000];
+const maxQ = () => ({1000: 4, 2000: 4, 3000: 6, 4000: 7}[shop.budget] || 4);   // おこづかいが多いほど、たくさん買える
+
+function startApp2() {
+  app = 'pocket'; stats = freshStats(); quiz = null;
+  shop = {step: 'theme', budget: 1000, theme: null, qty: {}};
+  renderTheme();
+}
+function renderTheme() {
+  renderHeader();
+  $('#main').innerHTML = `<div class="card" style="text-align:center;padding:30px 20px">
+    <div class="ask">まず、お小遣いの金額をえらぼう</div>
+    <div class="seg">${BUDGETS.map(b => `<button data-a="budget" data-b="${b}" class="${shop.budget === b ? 'on' : ''}">${fmt(b)}円</button>`).join('')}</div>
+    <div class="ask" style="margin-top:22px">なにを作る？</div>
+    <div class="themes">${Object.entries(THEMES).map(([k, t]) => `<button class="mcard" data-a="theme" data-t="${k}" style="padding:26px 12px">
+      <div class="em" style="font-size:52px">${t.emoji}</div><h2 style="font-size:18px">${t.title}</h2><p>${t.desc}</p></button>`).join('')}</div>
+  </div>`;
+  setFoot('お小遣いの中で材料を選んで、お会計のけいさんをしよう。');
+}
+function shopLines() {
+  const T = THEMES[shop.theme], out = [];
+  T.cats.forEach(c => c.items.forEach(it => { const q = shop.qty[it.id] || 0; if (q > 0) out.push({...it, q, cat: c.id}); }));
+  return out;
+}
+const shopTotal = () => shopLines().reduce((s, l) => s + l.price * l.q, 0);
+function catCount(c) { return c.items.reduce((s, it) => s + (shop.qty[it.id] || 0), 0); }
+function shopReady() { return THEMES[shop.theme].cats.every(c => catCount(c) >= c.min); }
+
+function renderShop(warn) {
+  const y = window.scrollY;
+  const T = THEMES[shop.theme];
+  renderHeader();
+  const catsHTML = T.cats.map(c => {
+    const have = catCount(c);
+    const tag = c.min === 0 ? `<span class="tag opt">${c.hint}</span>` : (have >= c.min ? `<span class="tag done">そろった ✓</span>` : `<span class="tag">${c.hint}</span>`);
+    return `<div class="cat"><h3>${c.name} ${tag}</h3><div class="items">${c.items.map(it => {
+      const q = shop.qty[it.id] || 0;
+      return `<div class="item ${q ? 'sel' : ''}"><div class="e">${it.e}</div><div class="n">${it.name}</div><div class="p">${fmt(it.price)}円</div>
+        <div class="qty"><button data-a="dec" data-id="${it.id}" ${q ? '' : 'disabled'}>−</button><span>${q}</span>
+        <button class="plus" data-a="inc" data-id="${it.id}" ${q >= maxQ() ? 'disabled' : ''}>+</button></div></div>`;
+    }).join('')}</div></div>`;
+  }).join('');
+  const lines = shopLines();
+  const req = T.cats.filter(c => c.min > 0).map(c => {
+    const ok = catCount(c) >= c.min;
+    return `<div class="${ok ? 'okc' : 'ngc'}">${ok ? '✓' : '□'} ${c.name}（${c.hint}）</div>`;
+  }).join('');
+  $('#main').innerHTML = `<div class="shop"><div>
+    <div class="card">
+      <div style="font-weight:800;margin-bottom:10px">${T.emoji} ${T.title}</div>
+      <div class="money"><div>お小遣い<br><b>${fmt(shop.budget)}円</b></div></div>
+    </div>
+    <div class="card" style="margin-top:14px">${catsHTML}</div></div>
+    <div class="basket"><div class="card"><h3>🧺 かご</h3>
+      ${LIVE_DRAW[shop.theme] ? `<div class="livepv">${LIVE_DRAW[shop.theme](shop.qty)}</div>` : ''}
+      ${lines.length ? lines.map(l => `<div class="bl"><span>${l.e} ${l.name} ×${l.q}</span><span>${fmt(l.price)}円</span></div>`).join('') : '<div class="bl" style="color:var(--mute)">まだ何も入っていません</div>'}
+      <div class="req">${req}</div>
+      <button class="go" data-a="checkout" ${shopReady() ? '' : 'disabled'}>おかいけいへ</button>
+      <div class="warnmsg" style="font-size:14px;font-weight:700;line-height:1.6">${warn || ''}</div>
+    </div><div style="margin-top:14px">${calcHTML()}</div></div></div>`;
+  setFoot('材料をえらんで、お小遣いをこえないように自分でけいさんしよう。電卓を使ってもOK。');
+  window.scrollTo({top: y});
+}
+function shopChange(id, d) {
+  const T = THEMES[shop.theme];
+  const it = T.cats.flatMap(c => c.items).find(i => i.id === id);
+  const q = shop.qty[id] || 0;
+  if (d > 0) {
+    if (q >= maxQ()) return;
+    shop.qty[id] = q + 1;
+  } else if (q > 0) shop.qty[id] = q - 1;
+  renderShop('');
+}
+function checkout() {
+  if (!shopReady()) return;
+  const lines = shopLines(), total = shopTotal(), budget = shop.budget;
+  if (total > budget) { renderShop('お小遣いをこえているみたい！自分でけいさんして、材料をへらしてみよう。'); toast('お小遣いをこえているみたい！材料をへらしてみよう'); return; }
+  const unitOf = l => 'こ';
+  const multi = lines.filter(l => l.q >= 2).sort((a, b) => b.price * b.q - a.price * a.q)[0];
+  const byPrice = [...lines].sort((a, b) => b.price - a.price);
+  let q1;
+  if (multi) {
+    q1 = {op: '×', ans: multi.price * multi.q,
+      text: `${multi.name}は1${unitOf(multi)}${fmt(multi.price)}円です。${multi.q}${unitOf(multi)}買うと、いくらですか。`,
+      disp: `<div class="expr">${multi.price} × ${multi.q}</div>`, unit: '円'};
+  } else {
+    const a = byPrice[0], b = byPrice[1];
+    q1 = {op: '+', ans: a.price + b.price,
+      text: `${a.name}（${fmt(a.price)}円）と${b.name}（${fmt(b.price)}円）をあわせると、いくらですか。`,
+      disp: `<div class="expr">${a.price} + ${b.price}</div>`, unit: '円'};
+  }
+  const q2 = {op: '+', ans: total, unit: '円', text: 'かごの中のものは、ぜんぶでいくらですか。',
+    disp: `<div class="expr small">かごの中のもの</div><div class="receipt">${lines.map(l => `<div><span>${l.name} ${fmt(l.price)}円</span><span>×${l.q}</span></div>`).join('')}</div>`};
+  const q3 = {op: '−', ans: budget - total, unit: '円',
+    text: `お小遣いは${fmt(budget)}円です。お会計は${fmt(total)}円でした。おつりはいくらですか。`,
+    disp: `<div class="expr">${budget} - ${total}</div>`};
+  shop.step = 'quiz';
+  startQuiz([q1, q2, q3], {onDone: finishApp2, foot: 'お会計の文章を読んで、使うけいさんの方法を選びましょう。', foot2: '電卓を使って、けいさんして答えを入力しよう。'});
+  window.scrollTo({top: 0});
+}
+function finishApp2(results) {
+  const T = THEMES[shop.theme], lines = shopLines(), total = shopTotal(), change = shop.budget - total;
+  const calcPts = results.filter(r => r.ok).length * 20;
+  const matPts = 20;
+  const usePts = change <= shop.budget * .1 ? 20 : change <= shop.budget * .25 ? 10 : 5;
+  const pts = calcPts + matPts + usePts;
+  const rk = pts >= 90 ? 'S' : pts >= 75 ? 'A' : pts >= 60 ? 'B' : 'C';
+  const q = shop.qty, has = id => (q[id] || 0) > 0;
+  const nm = ids => T.cats.flatMap(c => c.items).filter(i => ids.includes(i.id) && has(i.id)).map(i => i.name);
+  let dish = '';
+  if (shop.theme === 'curry') dish = (nm(['chicken', 'beef', 'pork']).map(s => s.replace('にく', '')).join('と') || '') + 'カレー';
+  if (shop.theme === 'parfait') dish = (nm(['vanilla', 'choco', 'berry', 'matcha'])[0] || '') + 'と' + (nm(['strawberry', 'banana', 'mikan', 'cherry', 'kiwi'])[0] || '') + 'のパフェ';
+  if (shop.theme === 'plarail') dish = (nm(['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'])[0] || 'でんしゃ') + 'がとまる駅';
+  if (shop.theme === 'car') dish = ({red: 'あかい', blue: 'あおい', yellow: 'きいろい', black: 'くろい'}[['red', 'blue', 'yellow', 'black'].find(has)] || '') + 'カスタム' + (nm(['sports', 'kei', 'truck'])[0] || 'くるま');
+  if (shop.theme === 'pancake') dish = (nm(['strawberry', 'banana', 'blueberry', 'mikan'])[0] || '') + 'の' + (nm(['plain', 'souffle', 'mini'])[0] || 'パンケーキ').replace('ふつうの', '');
+  if (shop.theme === 'robot') dish = ({red: 'あかい', blue: 'あおい', yellow: 'きいろい', silver: 'ぎんいろの'}[['red', 'blue', 'yellow', 'silver'].find(has)] || '') + (nm(['biped', 'wheel', 'fly'])[0] || 'ロボ');
+  if (shop.theme === 'pizza') { const t = nm(['salami', 'shrimp', 'corn', 'mushroom', 'pineapple', 'pepper'])[0]; dish = (t ? t + 'の' : 'チーズ') + (has('white') && !has('tomato') ? 'ホワイト' : '') + 'ピザ'; }
+  if (shop.theme === 'sushi') { const ns = nm(['tuna', 'salmon', 'egg', 'shrimp', 'squid', 'ikura', 'eel']); dish = ns.length >= 3 ? 'おすしもりあわせ' : ns.join('と') + 'の' + (has('maki') && !has('nigiri') ? 'まきずし' : 'にぎり'); }
+  if (shop.theme === 'burger') { const p = {beef: 'ぎゅうにく', chicken: 'チキン', fish: 'フィッシュ', veggie: 'やさい'}[['beef', 'chicken', 'fish', 'veggie'].find(has)] || ''; const pc = ['beef', 'chicken', 'fish', 'veggie'].reduce((a, id) => a + (q[id] || 0), 0), N = burgerStack(q).length; dish = (pc >= 5 ? 'ジャイアント' : pc >= 3 ? 'トリプル' : pc === 2 ? 'ダブル' : '') + (has('cheese') ? 'チーズ' : '') + p + 'バーガー' + (has('fries') && has('drink') ? 'セット' : '') + `（${N}だん）`; }
+  if (shop.theme === 'icecream') {
+    const fl = nm(['vanilla', 'choco', 'strawberry', 'matcha', 'mint']), nS = ['vanilla', 'choco', 'strawberry', 'matcha', 'mint'].reduce((a, id) => a + (q[id] || 0), 0);
+    const hd = has('cone') ? 'コーン' : has('waffle') ? 'ワッフルコーン' : 'カップ';
+    dish = (fl.length >= 3 ? 'カラフル' : fl.slice(0, 2).join('と') + 'の') + hd + 'アイス' + (has('cherry') ? '・さくらんぼのせ' : '') + `（${nS}だま）`;
+  }
+  if (shop.theme === 'gyudon') {
+    const sz = {regular: 'なみもり', large: 'おおもり', xl: 'とくもり'}[['xl', 'large', 'regular'].find(has)] || 'なみもり', tp = nm(['egg', 'cheese', 'negi', 'shoga', 'kimchi'])[0];
+    dish = sz + (tp ? tp + 'のせ' : '') + '牛丼' + (nm(['miso', 'salad', 'shinko', 'tea']).length ? 'セット' : '');
+  }
+  const draw = {icecream: svgIcecream, gyudon: svgGyudon, curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot, pizza: svgPizza, sushi: svgSushi, burger: svgBurger}[shop.theme](q);
+  const svg = ['burger', 'pizza', 'sushi', 'plarail', 'icecream', 'gyudon'].includes(shop.theme) ? draw : pencilize(draw);
+  const imgKeys = illustKeys(shop.theme, q);
+  shop.last = {dish, pts, rk, total, change};
+  setTimeout(() => tryImage(imgKeys), 0);
+  $('#main').innerHTML = `<div class="card result">
+    <h2>できあがり！</h2><div style="font-size:18px;font-weight:800;color:var(--accent)">${dish}</div>
+    <div class="illust">${svg}</div>
+    <div class="score"><div>けいさんの点<b>${calcPts}</b></div><div>ざいりょうの点<b>${matPts}</b></div><div>つかいきりの点<b>${usePts}</b></div><div>ごうけい<b>${pts}点</b></div><div>ランク<b>${rk}</b></div></div>
+    <div class="rlist">${lines.map(l => `<div class="bl"><span>${l.e} ${l.name} ×${l.q}</span><span>${fmt(l.price * l.q)}円</span></div>`).join('')}
+      <div class="bl" style="font-weight:800"><span>ごうけい</span><span>${fmt(total)}円</span></div>
+      <div class="bl"><span>おつり</span><span>${fmt(change)}円</span></div></div>
+    <div class="rbtn"><button data-a="rec">画面を記録する</button><button class="sub" data-a="start2">もういちど作る</button><button class="sub" data-a="home">はじめの画面へ</button></div></div>`;
+  setFoot('');
+}
+
+/* =========================================================
+   Illustrations
+   ========================================================= */
+function seeded(seed) { let s = seed; return () => (s = (s * 9301 + 49297) % 233280) / 233280; }
+
+
+/* images/ に画像があれば、SVGの代わりに表示する（例: images/curry-chicken.png） */
+function showImage(src) {
+  const box = document.querySelector('.illust'); if (!box) return;
+  box.innerHTML = `<img src="${src}" alt="" style="display:block;width:100%;height:auto">`;
+}
+/* 選んだ組み合わせに合う画像のキーを、優先順に返す。
+   見つからなければ SVG のイラストのまま（色などを反映できる）。 */
+function illustKeys(theme, q) {
+  const has = id => (q[id] || 0) > 0, pick = ids => ids.find(has);
+  const main = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'],
+    plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'],
+    pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly'], pizza: [], sushi: [], burger: [], icecream: [], gyudon: []}[theme];
+  if (theme === 'pizza' || theme === 'sushi' || theme === 'plarail') return [];   // 選んだものをそのまま並べて描く（部品画像）
+  if (theme === 'burger' || theme === 'icecream' || theme === 'gyudon') return [];   // 選んだ材料をそのまま積み上げて描く（部品画像）
+  const m = pick(main) || main[0], base = `${theme}-${m}`;
+  if (theme === 'curry') return pick(['sweet', 'hot']) === 'hot' ? [`${base}-hot`, base] : [base];
+  if (theme === 'parfait') return has('jumbo') ? [`${base}-jumbo`, base] : [base];
+  if (theme === 'plarail') return has('bridge') ? [`${base}-bridge`, base] : [base];
+  if (theme === 'car') return [`${base}-${pick(['red', 'blue', 'yellow', 'black'])}`];
+  if (theme === 'robot') return [`${base}-${pick(['red', 'blue', 'yellow', 'silver'])}`];
+  if (theme === 'pancake') return [`${base}-${pick(['maple', 'honey', 'chocosauce'])}`];
+  return [base];
+}
+const EMBEDDED_IMAGES = {/*EMBED*/};
+function tryImage(keys) {
+  const exts = ['png', 'jpg', 'jpeg', 'webp'];
+  const key = keys.find(k => EMBEDDED_IMAGES[k]);
+  if (key) { showImage(EMBEDDED_IMAGES[key]); return; }
+  const tryKey = ki => {
+    if (ki >= keys.length) return;
+    const next = i => {
+      if (i >= exts.length) { tryKey(ki + 1); return; }
+      const im = new Image();
+      im.onload = () => showImage(im.src);
+      im.onerror = () => next(i + 1);
+      im.src = `images/${keys[ki]}.${exts[i]}`;
+    };
+    next(0);
+  };
+  tryKey(0);
+}
+
+/* 色鉛筆風: 線のゆらぎ + 紙のざらつき */
+function pencilize(svg) {
+  const defs = `<defs><filter id="pencil" x="-3%" y="-3%" width="106%" height="106%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="3" result="d"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="9" result="g"/>
+    <feColorMatrix in="g" type="matrix" values="0 0 0 0 1  0 0 0 0 .97  0 0 0 0 .9  0 0 0 -6 2.45" result="grain"/>
+    <feComposite in="grain" in2="d" operator="in" result="gr"/>
+    <feMerge><feMergeNode in="d"/><feMergeNode in="gr"/></feMerge></filter></defs>`;
+  return svg.replace(/(<svg[^>]*>)/, `$1${defs}<g filter="url(#pencil)">`).replace('</svg>', '</g></svg>');
+}
+
+function svgCurry(q) {
+  const has = id => (q[id] || 0) > 0;
+  const sauce = has('hot') && !has('sweet') ? '#7a2f10' : has('hot') ? '#9a4616' : '#c98a2c';
+  const chunks = [];
+  ['chicken', 'beef', 'pork', 'carrot', 'potato', 'onion', 'pepper', 'eggplant', 'pumpkin'].forEach(id => {
+    for (let i = 0; i < Math.min(q[id] || 0, 3); i++) chunks.push(id);
+  });
+  const slots = [[255, 170], [290, 190], [228, 205], [315, 165], [268, 215], [215, 172], [305, 210], [245, 150], [335, 190], [220, 222], [285, 158], [200, 198], [322, 222], [258, 188], [345, 168]];
+  const shape = {
+    chicken: (x, y) => `<rect x="${x - 13}" y="${y - 10}" width="26" height="20" rx="9" fill="#f3d9a8" stroke="#c9a36b" stroke-width="2"/>`,
+    beef: (x, y) => `<rect x="${x - 13}" y="${y - 10}" width="26" height="20" rx="7" fill="#7b4a2d" stroke="#53301a" stroke-width="2"/>`,
+    pork: (x, y) => `<rect x="${x - 13}" y="${y - 10}" width="26" height="20" rx="8" fill="#eaaba2" stroke="#c47f76" stroke-width="2"/>`,
+    carrot: (x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="#f28c28" stroke="#d0701a" stroke-width="2"/><circle cx="${x}" cy="${y}" r="4" fill="#f9b36a"/>`,
+    potato: (x, y) => `<rect x="${x - 11}" y="${y - 10}" width="22" height="20" rx="7" fill="#ecd08a" stroke="#c9a74e" stroke-width="2"/>`,
+    onion: (x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="#f7f1e2" stroke="#d9cfb4" stroke-width="2"/><path d="M${x - 6} ${y} Q${x} ${y - 7} ${x + 6} ${y}" stroke="#d9cfb4" fill="none" stroke-width="2"/>`,
+    pepper: (x, y) => `<rect x="${x - 11}" y="${y - 7}" width="22" height="14" rx="6" fill="#4caf50" stroke="#2f8a33" stroke-width="2"/>`,
+    eggplant: (x, y) => `<ellipse cx="${x}" cy="${y}" rx="13" ry="8" fill="#6f4a8e" stroke="#4a2f63" stroke-width="2"/>`,
+    pumpkin: (x, y) => `<rect x="${x - 11}" y="${y - 10}" width="22" height="20" rx="4" fill="#f2a31b" stroke="#c97f0a" stroke-width="2"/>`
+  };
+  const pieces = chunks.map((id, i) => shape[id](...slots[i % slots.length])).join('');
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbe9c8"/><rect y="230" width="400" height="70" fill="#e6c48f"/>
+  <ellipse cx="205" cy="228" rx="180" ry="52" fill="#000" opacity=".12"/>
+  <ellipse cx="200" cy="200" rx="180" ry="72" fill="#fff" stroke="#d8dce6" stroke-width="3"/>
+  <ellipse cx="200" cy="198" rx="140" ry="52" fill="#f1f3f8"/>
+  ${has('rice') ? `<path d="M62 190 Q70 120 140 128 Q205 138 210 190 Q205 236 135 238 Q65 238 62 190Z" fill="#fffdf5" stroke="#e4dfcc" stroke-width="2"/>
+     <g fill="#e9e3cf"><circle cx="100" cy="165" r="3"/><circle cx="130" cy="150" r="3"/><circle cx="160" cy="175" r="3"/><circle cx="115" cy="200" r="3"/><circle cx="150" cy="210" r="3"/><circle cx="90" cy="190" r="3"/></g>` : ''}
+  <path d="M175 160 Q235 128 330 140 Q372 168 352 208 Q322 246 240 244 Q182 238 165 198Z" fill="${sauce}"/>
+  <path d="M190 165 Q240 142 320 152" stroke="#fff" stroke-opacity=".25" stroke-width="4" fill="none" stroke-linecap="round"/>
+  ${pieces}
+  ${has('egg') ? `<ellipse cx="120" cy="140" rx="28" ry="19" fill="#fff" stroke="#e1e1e1" stroke-width="2"/><circle cx="120" cy="140" r="10" fill="#ffc933"/>` : ''}
+  ${has('cheese') ? `<path d="M250 168 L290 160 L282 178 L262 190 Z" fill="#ffd54a" stroke="#e0a800" stroke-width="2"/><circle cx="272" cy="172" r="3" fill="#e0a800"/>` : ''}
+  ${has('fuku') ? `<g fill="#7a2323"><rect x="338" y="236" width="10" height="6" rx="2"/><rect x="352" y="232" width="10" height="6" rx="2"/><rect x="345" y="246" width="10" height="6" rx="2"/></g>` : ''}
+  <g stroke="#fff" stroke-opacity=".8" stroke-width="5" fill="none" stroke-linecap="round"><path d="M250 120 Q238 100 252 82 Q266 64 254 46"/><path d="M290 125 Q278 105 292 88 Q306 70 294 54"/><path d="M130 100 Q120 82 132 66"/></g>
+  </svg>`;
+}
+
+function svgParfait(q) {
+  const has = id => (q[id] || 0) > 0, n = id => q[id] || 0;
+  const id = 'gc' + (++uid);
+  const jumbo = has('jumbo');
+  const rand = seeded(7);
+  // layers
+  let base = '';
+  if (has('pudding')) base += `<rect x="100" y="185" width="200" height="60" fill="#f6d46b"/><path d="M100 185 Q150 200 200 185 T300 185 V198 Q250 212 200 198 T100 198Z" fill="#a8641c"/>`;
+  else if (has('granola')) { base += `<rect x="100" y="190" width="200" height="60" fill="#b9772d"/>`; for (let i = 0; i < 26; i++) base += `<circle cx="${120 + rand() * 160}" cy="${198 + rand() * 40}" r="${3 + rand() * 3}" fill="${rand() > .5 ? '#8a5418' : '#d8a050'}"/>`; }
+  else if (has('corn')) { base += `<rect x="100" y="190" width="200" height="60" fill="#f2c866"/>`; for (let i = 0; i < 24; i++) base += `<rect x="${115 + rand() * 170}" y="${195 + rand() * 40}" width="12" height="7" rx="3" fill="#e0a73a" transform="rotate(${rand() * 90} 200 220)"/>`; }
+  const fcol = {strawberry: '#e83a4f', banana: '#ffe066', mikan: '#ff9f1c', cherry: '#b3142b', kiwi: '#8bc34a'};
+  let fruitBand = '', fk = ['strawberry', 'banana', 'mikan', 'cherry', 'kiwi'].filter(has);
+  if (fk.length) for (let i = 0; i < 14; i++) fruitBand += `<circle cx="${112 + i * 14}" cy="${170 + (i % 2) * 8}" r="9" fill="${fcol[fk[i % fk.length]]}"/>`;
+  const cream = has('custard') && !has('whip') ? '#f8e08a' : '#fffaf0';
+  const creamBand = `<path d="M100 120 H300 V150 Q275 165 250 150 T200 150 T150 150 T100 150Z" fill="${cream}"/>`;
+  // scoops
+  const scol = {vanilla: '#fff1bd', choco: '#7a4a2f', berry: '#ffb3c6', matcha: '#a5d46b'};
+  const sk = ['vanilla', 'choco', 'berry', 'matcha'].filter(has);
+  const scoopsList = []; sk.forEach(k => { for (let i = 0; i < Math.min(n(k), 2); i++) scoopsList.push(scol[k]); });
+  const pos = [[200, 96], [160, 100], [240, 100], [200, 66], [172, 72], [228, 72]];
+  const scoops = scoopsList.slice(0, 6).map((c, i) => `<circle cx="${pos[i][0]}" cy="${pos[i][1]}" r="30" fill="${c}" stroke="#00000018" stroke-width="2"/><ellipse cx="${pos[i][0] - 9}" cy="${pos[i][1] - 10}" rx="9" ry="5" fill="#fff" opacity=".35"/>`).join('');
+  const topY = scoopsList.length > 3 ? 36 : 66;
+  // toppings
+  let tops = '';
+  if (has('wafer')) tops += `<g transform="rotate(25 255 80)"><rect x="248" y="22" width="22" height="82" rx="3" fill="#e8c27a" stroke="#c49a4b" stroke-width="2"/><path d="M248 40h22M248 58h22M248 76h22" stroke="#c49a4b"/></g>`;
+  if (has('stick')) tops += `<g transform="rotate(-22 150 70)"><rect x="140" y="14" width="9" height="90" rx="3" fill="#5a3320"/></g><g transform="rotate(-8 130 70)"><rect x="122" y="22" width="9" height="86" rx="3" fill="#7a4a2f"/></g>`;
+  if (has('sauce')) tops += `<path d="M168 82 Q200 62 232 82 Q236 102 228 112 Q224 94 216 104 Q212 120 204 106 Q198 94 190 108 Q184 116 178 104 Q170 96 168 82Z" fill="#4a2616" opacity=".9"/>`;
+  if (has('sprinkle')) { const cs = ['#ff4d6d', '#3a86ff', '#ffbe0b', '#06d6a0']; for (let i = 0; i < 26; i++) tops += `<rect x="${150 + rand() * 100}" y="${topY + 12 + rand() * 70}" width="7" height="3" rx="1.5" fill="${cs[i % 4]}" transform="rotate(${rand() * 180} 200 90)"/>`; }
+  let topFruit = '';
+  fk.forEach((k, i) => { for (let j = 0; j < Math.min(n(k), 2); j++) {
+    const x = 126 + ((i * 2 + j) * 37) % 150, y = 112 + ((i + j) % 2) * 6;
+    topFruit += k === 'banana' ? `<path d="M${x - 14} ${y} Q${x} ${y - 14} ${x + 14} ${y}" stroke="#e8c200" stroke-width="10" fill="none" stroke-linecap="round"/>`
+      : k === 'cherry' ? `<path d="M${x} ${y - 8} Q${x + 8} ${y - 26} ${x + 18} ${y - 28}" stroke="#4a7a2a" stroke-width="2" fill="none"/><circle cx="${x}" cy="${y}" r="10" fill="${fcol[k]}"/>`
+      : `<circle cx="${x}" cy="${y}" r="${k === 'strawberry' ? 12 : 10}" fill="${fcol[k]}" stroke="#00000020" stroke-width="2"/>`;
+  } });
+  const whipTop = has('whip') ? `<path d="M172 118 Q200 90 228 118 Q216 108 200 108 Q184 108 172 118Z" fill="#fff" stroke="#e8e0cc" stroke-width="2"/>` : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#ffe8ef"/><rect y="252" width="400" height="48" fill="#f7cfdb"/>
+  <g transform="${jumbo ? 'translate(200 160) scale(1.12) translate(-200 -160)' : ''}">
+  <defs><clipPath id="${id}"><path d="M100 118 H300 L275 228 Q200 262 125 228Z"/></clipPath></defs>
+  <path d="M100 118 H300 L275 228 Q200 262 125 228Z" fill="#dff3ff" opacity=".6"/>
+  <g clip-path="url(#${id})">${base}${fruitBand}${creamBand}</g>
+  <path d="M100 118 H300 L275 228 Q200 262 125 228Z" fill="none" stroke="#8fb9d1" stroke-width="4"/>
+  <rect x="190" y="244" width="20" height="26" fill="#cfe6f2" stroke="#8fb9d1" stroke-width="3"/>
+  <ellipse cx="200" cy="274" rx="48" ry="9" fill="#cfe6f2" stroke="#8fb9d1" stroke-width="3"/>
+  <g transform="translate(0 ${topY === 36 ? 0 : 0})">${scoops}${whipTop}${tops}${topFruit}</g>
+  ${has('cherry') ? `<circle cx="200" cy="${topY - 14}" r="11" fill="#c1121f"/><path d="M200 ${topY - 25} Q210 ${topY - 44} 224 ${topY - 46}" stroke="#4a7a2a" stroke-width="3" fill="none"/>` : ''}
+  </g></svg>`;
+}
+
+/* プラレール: レールのこ数・でんしゃの両数・えき・そえものを、買った数だけ並べる（Canvaで描いた部品） */
+const PL_PART = {   // 部品名: 縦/横の比
+  'pl-car-shinkansen': .28, 'pl-car-train': .442, 'pl-car-sl': .504, 'pl-car-keihan': .454, 'pl-car-kintetsu': .308,
+  'pl-station': .833, 'pl-platform': .274, 'pl-crossing': .78, 'pl-tunnel': .645, 'pl-tree': 1.32, 'pl-signal': 2.7, 'pl-bridge': .277
+};
+function svgPlarail(q) {
+  partsBegin();
+  const n = id => q[id] || 0;
+  const img = (name, cx, bottom, w) => { const h = w * PL_PART[name]; return partUse(name, cx - w / 2, bottom - h, w, h); };
+  const rails = n('straight') + n('curve'), loop = n('curve') > 0;
+  // レール（青い線路）。1この区切りごとに白い継ぎ目を入れる
+  const CX = 200, CY = 196, RX = 172, RY = 46;
+  let track = '', joints = '';
+  if (loop) {
+    const pts = Array.from({length: Math.max(rails, 1)}, (_, i) => { const a = Math.PI / 2 + (i / Math.max(rails, 1)) * Math.PI * 2; return [CX + RX * Math.cos(a), CY + RY * Math.sin(a), a]; });
+    track = `<ellipse cx="${CX}" cy="${CY}" rx="${RX}" ry="${RY}" fill="none" stroke="#b08a5a" stroke-width="9" stroke-dasharray="2.5 5.5"/><ellipse cx="${CX}" cy="${CY}" rx="${RX + 4}" ry="${RY + 3}" fill="none" stroke="#2f6fd0" stroke-width="3.5"/><ellipse cx="${CX}" cy="${CY}" rx="${RX - 4}" ry="${RY - 3}" fill="none" stroke="#2f6fd0" stroke-width="3.5"/>`;
+    joints = pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.2" fill="#fff" stroke="#1d4b9e" stroke-width="1.2"/>`).join('');
+  } else {
+    const len = 300, y = CY + RY + 6, m = Math.max(rails, 1);
+    track = `<line x1="${200 - len / 2}" y1="${y}" x2="${200 + len / 2}" y2="${y}" stroke="#b08a5a" stroke-width="9" stroke-dasharray="2.5 5.5"/><line x1="${200 - len / 2}" y1="${y - 3.5}" x2="${200 + len / 2}" y2="${y - 3.5}" stroke="#2f6fd0" stroke-width="3.5"/><line x1="${200 - len / 2}" y1="${y + 3.5}" x2="${200 + len / 2}" y2="${y + 3.5}" stroke="#2f6fd0" stroke-width="3.5"/>`;
+    joints = Array.from({length: m + 1}, (_, i) => `<circle cx="${200 - len / 2 + i * len / m}" cy="${y}" r="3.2" fill="#fff" stroke="#1d4b9e" stroke-width="1.2"/>`).join('');
+  }
+  const trackY = loop ? CY + RY : CY + RY + 6;           // 手前の線路の高さ
+  // でんしゃ: 買った両数ぶん、右むきに連結する
+  const cars = [];
+  ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'].forEach(id => { for (let i = 0; i < n(id); i++) cars.push(id); });
+  const cw = Math.min(96, 350 / Math.max(1, cars.length));
+  const total = cars.length * cw;
+  const trainSvg = cars.map((id, i) => partUse('pl-car-' + id, 200 - total / 2 + i * cw, trackY + 8 - cw * .52, cw, cw * .52, 'xMidYMax')).join('');
+  const extras = [
+    n('tunnel') ? img('pl-tunnel', 58, trackY - 4, 100) : '',
+    n('bridge') ? `<rect x="256" y="${trackY - 2}" width="132" height="22" fill="#6fb8ee" stroke="#4d93c7" stroke-width="2"/>` + img('pl-bridge', 322, trackY + 9, 132) : '',
+    n('crossing') ? img('pl-crossing', 118, trackY + 14, 64) : '',
+    n('signal') ? img('pl-signal', 352, trackY - 18, 26) : '',
+  ].join('');
+  const treeSpots = [[34, 160, 40], [366, 168, 40], [84, 120, 34], [330, 118, 34], [24, 270, 36], [376, 272, 36]];
+  const trees = Array.from({length: Math.min(n('tree'), 6)}, (_, i) => img('pl-tree', treeSpots[i][0], treeSpots[i][1] + 40, treeSpots[i][2])).join('');
+  const station = (n('building') ? img('pl-station', 200, 170, 124) : '') + (n('platform') ? img('pl-platform', 200, trackY - 4, n('building') ? 216 : 250) : '');
+  const nc = cars.length;
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
+  <rect width="400" height="300" fill="#d8efff"/><circle cx="352" cy="38" r="22" fill="#ffe27a"/><ellipse cx="86" cy="42" rx="40" ry="14" fill="#fff"/><ellipse cx="116" cy="34" rx="28" ry="12" fill="#fff"/>
+  <rect x="8" y="104" width="384" height="188" rx="18" fill="#8ccf7a" stroke="#5da24d" stroke-width="3"/>
+  ${track}${joints}${station}${extras}${trees}${trainSvg}
+  <g><rect x="12" y="12" width="${nc >= 10 ? 102 : 90}" height="34" rx="17" fill="#fff" stroke="#e0a458" stroke-width="3"/><text x="${nc >= 10 ? 63 : 57}" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a5692a" font-family="sans-serif">${nc}りょう！</text></g>
+  </svg>`;
+}
+
+function svgCar(q) {
+  const has = id => (q[id] || 0) > 0;
+  const col = {red: '#d6455d', blue: '#3d7be0', yellow: '#f2c230', black: '#33363f'}[['red', 'blue', 'yellow', 'black'].find(has)] || '#9aa3b5';
+  const dark = {red: '#a52f44', blue: '#2a58a8', yellow: '#c79a14', black: '#1c1e25'}[['red', 'blue', 'yellow', 'black'].find(has)] || '#6b7280';
+  const kind = has('truck') ? 'truck' : has('kei') ? 'kei' : 'sports';
+  const alloy = has('alloy');
+  const wheel = x => `<g><circle cx="${x}" cy="214" r="24" fill="#2b2d36"/><circle cx="${x}" cy="214" r="${alloy ? 15 : 10}" fill="${alloy ? '#e6e8ee' : '#8a8f9c'}" stroke="#555" stroke-width="2"/>${alloy ? `<path d="M${x} 199V229M${x - 15} 214H${x + 15}M${x - 11} 203L${x + 11} 225M${x + 11} 203L${x - 11} 225" stroke="#9aa0ae" stroke-width="2"/>` : ''}</g>`;
+  let body = '';
+  if (kind === 'sports') body = `<path d="M60 200 Q62 172 110 168 L160 140 Q200 128 250 140 L292 166 Q344 170 348 200 Z" fill="${col}" stroke="${dark}" stroke-width="3"/>
+    <path d="M168 146 Q200 136 238 146 L270 166 L156 166 Z" fill="#cfe9ff" stroke="${dark}" stroke-width="2"/><path d="M60 188H348" stroke="#fff" stroke-width="3" opacity=".7"/>`;
+  else if (kind === 'kei') body = `<path d="M70 204 V158 Q70 138 92 136 L130 112 H266 L310 136 Q336 140 336 164 V204 Z" fill="${col}" stroke="${dark}" stroke-width="3"/>
+    <path d="M140 120 H214 V158 H128 Z M222 120 H262 L292 158 H222 Z" fill="#cfe9ff" stroke="${dark}" stroke-width="2"/>`;
+  else body = `<path d="M48 204 V170 Q48 160 62 160 H196 V120 Q196 112 208 112 H262 L300 150 Q338 154 344 180 V204 Z" fill="${col}" stroke="${dark}" stroke-width="3"/>
+    <path d="M206 122 H258 L288 152 H206 Z" fill="#cfe9ff" stroke="${dark}" stroke-width="2"/><rect x="62" y="150" width="124" height="10" fill="${dark}"/>`;
+  const wing = has('wing') ? `<g fill="${dark}" stroke="#222" stroke-width="2"><rect x="${kind === 'truck' ? 46 : 62}" y="${kind === 'kei' ? 112 : 142}" width="6" height="30"/><rect x="${kind === 'truck' ? 36 : 50}" y="${kind === 'kei' ? 106 : 136}" width="44" height="9" rx="3"/></g>` : '';
+  const light = has('light') ? `<g><rect x="326" y="172" width="20" height="12" rx="5" fill="#fff6b0" stroke="#c79a14" stroke-width="2"/><path d="M346 178 L392 168 V190 Z" fill="#fff6b0" opacity=".5"/></g>` : '';
+  const sticker = has('sticker') ? `<g fill="#fff" stroke="${dark}" stroke-width="2"><circle cx="190" cy="186" r="13" fill="#fff"/><path d="M190 176 L193 183 L201 184 L195 189 L197 197 L190 193 L183 197 L185 189 L179 184 L187 183 Z" fill="#f2c230" stroke="#c79a14" stroke-width="1"/></g>` : '';
+  const muffler = has('muffler') ? `<g><rect x="30" y="202" width="40" height="9" rx="4" fill="#c9ccd6" stroke="#555" stroke-width="2"/><circle cx="22" cy="196" r="6" fill="#dfe2ea" opacity=".8"/><circle cx="10" cy="186" r="8" fill="#eceef3" opacity=".7"/></g>` : '';
+  const neon = has('neon') ? `<ellipse cx="200" cy="238" rx="150" ry="9" fill="#5ad6ff" opacity=".65"/><ellipse cx="200" cy="238" rx="110" ry="5" fill="#b4f0ff" opacity=".85"/>` : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="0" y="232" width="400" height="68" fill="#cfd3dc"/><rect x="0" y="228" width="400" height="6" fill="#b4b9c6"/>
+  <g stroke="#fff" stroke-width="4" stroke-dasharray="26 18"><path d="M0 268H400"/></g>
+  <rect x="232" y="64" width="140" height="110" fill="#e8d3a8" stroke="#caa86a" stroke-width="2"/><polygon points="224,64 302,30 380,64" fill="#d6455d" stroke="#a52f44" stroke-width="2"/><rect x="262" y="104" width="80" height="70" fill="#8a8f9c" stroke="#555" stroke-width="2"/><path d="M262 120H342M262 136H342M262 152H342" stroke="#6b707c" stroke-width="2"/>
+  <circle cx="60" cy="52" r="22" fill="#ffe27a"/><ellipse cx="150" cy="50" rx="38" ry="12" fill="#fff"/>
+  ${neon}${muffler}${body}${wing}${sticker}${wheel(115)}${wheel(290)}${light}
+  </svg>`;
+}
+
+function svgPancake(q) {
+  const has = id => (q[id] || 0) > 0;
+  const mini = has('mini') && !has('plain') && !has('souffle');
+  const tall = has('souffle');
+  const n = mini ? 6 : tall ? 3 : Math.min(3 + (has('plain') ? 1 : 0), 4);
+  const w = mini ? 90 : 190, h = mini ? 16 : tall ? 34 : 22;
+  const base = 224;
+  let stack = '';
+  for (let i = 0; i < n; i++) {
+    const y = base - (i + 1) * (h - 4), cx = 200 + (mini ? ((i % 2) ? 14 : -14) : 0);
+    stack += `<g><ellipse cx="${cx}" cy="${y + h - 6}" rx="${w / 2}" ry="${h / 2 + 3}" fill="#c98a3c" stroke="#a5692a" stroke-width="2"/><rect x="${cx - w / 2}" y="${y}" width="${w}" height="${h - 6}" fill="#e8b25e" stroke="#a5692a" stroke-width="2"/><ellipse cx="${cx}" cy="${y}" rx="${w / 2}" ry="${h / 2 + 3}" fill="#f2c476" stroke="#a5692a" stroke-width="2"/></g>`;
+  }
+  const topY = base - n * (h - 4) - 2;
+  const syrup = has('maple') ? '#b5651d' : has('honey') ? '#f2b705' : has('chocosauce') ? '#5a3320' : null;
+  const sauce = syrup ? `<g fill="${syrup}"><ellipse cx="200" cy="${topY + 4}" rx="${w / 2 - 14}" ry="9" opacity=".9"/><path d="M${200 - w / 2 + 14} ${topY + 6} q6 30 12 0 M${200 + w / 2 - 34} ${topY + 6} q6 40 12 0"/></g>` : '';
+  const pieces = [];
+  if (has('strawberry')) pieces.push(`<g><path d="M0 -10 Q12 -10 11 2 Q9 12 0 14 Q-9 12 -11 2 Q-12 -10 0 -10Z" fill="#e0384f"/><path d="M-6 -11 L0 -17 L6 -11Z" fill="#3f9d4a"/></g>`);
+  if (has('banana')) pieces.push(`<g><circle r="10" fill="#fbe07a" stroke="#d6b341" stroke-width="2"/><circle r="3" fill="#f3cf5a"/></g>`);
+  if (has('blueberry')) pieces.push(`<g><circle r="8" fill="#4c5bb3"/><circle cy="-6" r="2" fill="#2b3478"/></g>`);
+  if (has('mikan')) pieces.push(`<g><path d="M-11 0 A11 11 0 0 1 11 0 Z" fill="#ff9f1c" stroke="#d17a00" stroke-width="2"/></g>`);
+  const fruitSvg = pieces.length ? [-52, -20, 14, 48].map((dx, i) => `<g transform="translate(${200 + dx} ${topY - 4 - (i % 2) * 4})">${pieces[i % pieces.length]}</g>`).join('') : '';
+  const butter = has('butter') ? `<rect x="188" y="${topY - 14}" width="26" height="14" rx="2" fill="#ffe98a" stroke="#d6b341" stroke-width="2"/>` : '';
+  const whip = has('whip') ? `<g fill="#fff" stroke="#d9dce4" stroke-width="2"><circle cx="150" cy="${topY - 4}" r="14"/><circle cx="168" cy="${topY - 16}" r="14"/><circle cx="244" cy="${topY - 6}" r="12"/></g>` : '';
+  const ice = has('icecream') ? `<g><circle cx="262" cy="${topY - 14}" r="18" fill="#fff3d6" stroke="#e0c98e" stroke-width="2"/></g>` : '';
+  const sugar = has('sugar') ? `<g fill="#fff">${Array.from({length: 14}, (_, i) => `<circle cx="${150 + (i * 37) % 100}" cy="${topY - 10 + (i * 11) % 18}" r="1.6"/>`).join('')}</g>` : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="0" y="236" width="400" height="64" fill="#e2c08a"/>
+  <ellipse cx="200" cy="238" rx="150" ry="30" fill="#fff" stroke="#cfd3dc" stroke-width="3"/><ellipse cx="200" cy="234" rx="112" ry="20" fill="#f4f5f8" stroke="#dfe2ea" stroke-width="2"/>
+  ${stack}${sauce}${butter}${whip}${ice}${fruitSvg}${sugar}
+  <g><rect x="336" y="150" width="30" height="40" rx="6" fill="#d6455d" stroke="#a52f44" stroke-width="2"/></g>
+  </svg>`;
+}
+
+function svgRobot(q) {
+  const has = id => (q[id] || 0) > 0;
+  const k = ['red', 'blue', 'yellow', 'silver'].find(has);
+  const col = {red: '#d6455d', blue: '#3d7be0', yellow: '#f2c230', silver: '#aeb4c2'}[k] || '#9aa3b5';
+  const dark = {red: '#a52f44', blue: '#2a58a8', yellow: '#c79a14', silver: '#7d8494'}[k] || '#6b7280';
+  const kind = has('fly') ? 'fly' : has('wheel') ? 'wheel' : 'biped';
+  const oy = kind === 'fly' ? -22 : 0;
+  const eyeFill = has('eye') ? '#ff5a5a' : '#fff';
+  const beam = has('eye') ? `<path d="M182 ${96 + oy} L40 ${120 + oy} L40 ${86 + oy} Z M218 ${96 + oy} L360 ${120 + oy} L360 ${86 + oy} Z" fill="#ff5a5a" opacity=".35"/>` : '';
+  let lower = '';
+  if (kind === 'biped') lower = `<g fill="${dark}" stroke="#2b2d36" stroke-width="2"><rect x="160" y="196" width="30" height="46" rx="5"/><rect x="210" y="196" width="30" height="46" rx="5"/><rect x="152" y="236" width="46" height="16" rx="6" fill="#555a68"/><rect x="202" y="236" width="46" height="16" rx="6" fill="#555a68"/></g>`;
+  else if (kind === 'wheel') lower = `<rect x="130" y="196" width="140" height="18" rx="6" fill="${dark}" stroke="#2b2d36" stroke-width="2"/><g fill="#2b2d36"><circle cx="160" cy="232" r="22"/><circle cx="240" cy="232" r="22"/></g><g fill="#c9ccd6" stroke="#555" stroke-width="2"><circle cx="160" cy="232" r="9"/><circle cx="240" cy="232" r="9"/></g>`;
+  else lower = `<g fill="${dark}" stroke="#2b2d36" stroke-width="2"><rect x="166" y="${196 + oy}" width="24" height="18" rx="4"/><rect x="210" y="${196 + oy}" width="24" height="18" rx="4"/></g>
+    <g><path d="M166 ${214 + oy} L178 ${262 + oy} L190 ${214 + oy}Z M210 ${214 + oy} L222 ${262 + oy} L234 ${214 + oy}Z" fill="#ffb02e" stroke="#e0702a" stroke-width="2"/><path d="M172 ${214 + oy} L178 ${244 + oy} L184 ${214 + oy}Z M216 ${214 + oy} L222 ${244 + oy} L228 ${214 + oy}Z" fill="#fff3b0"/></g>
+    <g fill="#e6e8ee" opacity=".85"><circle cx="150" cy="276" r="12"/><circle cx="250" cy="280" r="14"/></g>
+    <path d="M110 ${150 + oy} L140 ${130 + oy} V${176 + oy} Z M290 ${150 + oy} L260 ${130 + oy} V${176 + oy} Z" fill="${dark}" stroke="#2b2d36" stroke-width="2"/>`;
+  const jetpack = has('jet') && kind !== 'fly' ? `<g><rect x="118" y="${138 + oy}" width="20" height="56" rx="8" fill="#c9ccd6" stroke="#555" stroke-width="2"/><rect x="262" y="${138 + oy}" width="20" height="56" rx="8" fill="#c9ccd6" stroke="#555" stroke-width="2"/><path d="M122 ${194 + oy} L128 ${222 + oy} L134 ${194 + oy}Z M266 ${194 + oy} L272 ${222 + oy} L278 ${194 + oy}Z" fill="#ffb02e"/></g>` : '';
+  const armR = has('arm') ? `<g><rect x="286" y="${146 + oy}" width="34" height="14" rx="6" fill="${dark}" stroke="#2b2d36" stroke-width="2"/><rect x="318" y="${136 + oy}" width="32" height="32" rx="12" fill="#e6e8ee" stroke="#2b2d36" stroke-width="2"/><path d="M350 ${152 + oy} h24 M350 ${144 + oy} h16 M350 ${160 + oy} h16" stroke="#ff9f1c" stroke-width="4" stroke-linecap="round"/></g>`
+    : `<rect x="282" y="${146 + oy}" width="44" height="14" rx="6" fill="${dark}" stroke="#2b2d36" stroke-width="2"/><circle cx="330" cy="${153 + oy}" r="9" fill="#c9ccd6" stroke="#2b2d36" stroke-width="2"/>`;
+  const shield = has('shield') ? `<path d="M52 ${132 + oy} H116 V${176 + oy} Q84 ${204 + oy} 52 ${176 + oy}Z" fill="#8fa4d6" stroke="#2b2d36" stroke-width="3"/><path d="M84 ${140 + oy} V${190 + oy} M60 ${156 + oy} H108" stroke="#fff" stroke-width="3" opacity=".8"/>` : '';
+  const antenna = has('antenna') ? `<g><line x1="200" y1="${46 + oy}" x2="200" y2="${24 + oy}" stroke="#555" stroke-width="4"/><circle cx="200" cy="${20 + oy}" r="8" fill="#ff5a5a" stroke="#a52f44" stroke-width="2"/></g>` : `<line x1="200" y1="${46 + oy}" x2="200" y2="${36 + oy}" stroke="#555" stroke-width="4"/><circle cx="200" cy="${34 + oy}" r="4" fill="#c9ccd6"/>`;
+  const power = has('solar') ? `<g transform="translate(268 ${48 + oy}) rotate(-14)"><rect width="52" height="30" fill="#2f4f9e" stroke="#c9ccd6" stroke-width="2"/><path d="M13 0V30M26 0V30M39 0V30M0 10H52M0 20H52" stroke="#8fb3ff" stroke-width="1.5"/></g>` : '';
+  const battery = has('battery') ? `<g><rect x="178" y="${132 + oy}" width="44" height="22" rx="4" fill="#fff" stroke="#2b2d36" stroke-width="2"/><rect x="222" y="${139 + oy}" width="5" height="8" fill="#2b2d36"/><rect x="182" y="${136 + oy}" width="24" height="14" fill="#4f9a64"/></g>` : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="0" y="262" width="400" height="38" fill="#e2c08a"/>
+  <ellipse cx="200" cy="268" rx="120" ry="10" fill="#c9a86a" opacity=".6"/>
+  <rect x="14" y="140" width="70" height="120" fill="#e8d3a8" stroke="#caa86a" stroke-width="2"/><polygon points="8,140 49,108 90,140" fill="#d6455d" stroke="#a52f44" stroke-width="2"/><rect x="34" y="190" width="30" height="70" fill="#a0693a"/>
+  ${beam}${power}${lower}${jetpack}
+  <rect x="140" y="${112 + oy}" width="120" height="88" rx="14" fill="${col}" stroke="${dark}" stroke-width="3"/>${battery}
+  <rect x="120" y="${146 + oy}" width="24" height="14" rx="6" fill="${dark}" stroke="#2b2d36" stroke-width="2"/>${armR}${shield}
+  <rect x="160" y="${46 + oy}" width="80" height="66" rx="18" fill="${col}" stroke="${dark}" stroke-width="3"/>${antenna}
+  <circle cx="182" cy="${80 + oy}" r="11" fill="${eyeFill}" stroke="#2b2d36" stroke-width="2"/><circle cx="218" cy="${80 + oy}" r="11" fill="${eyeFill}" stroke="#2b2d36" stroke-width="2"/><circle cx="182" cy="${80 + oy}" r="4" fill="#2b2d36"/><circle cx="218" cy="${80 + oy}" r="4" fill="#2b2d36"/>
+  <path d="M184 ${98 + oy} Q200 ${108 + oy} 216 ${98 + oy}" fill="none" stroke="#2b2d36" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#2b2d36" opacity=".55"><circle cx="196" cy="${168 + oy}" r="4"/><circle cx="208" cy="${168 + oy}" r="4"/></g>
+  </svg>`;
+}
+
+/* 部品画像の縦横比（縦/横）。images/part-*.png から作った固定値 */
+const PART_AR = {"ice-cone": 2.558, "ice-waffle": 2.515, "ice-cup": 0.881, "scoop-choco": 0.8975, "scoop-vanilla": 0.8375, "scoop-strawberry": 0.9175, "scoop-matcha": 0.8675, "scoop-mint": 0.77, "ice-cherry": 2.305, "ice-whip": 1.03, "ice-wafer": 0.844, "gy-bowl-regular": 0.875, "gy-bowl-large": 0.766, "gy-bowl-xl": 0.809, "gy-egg": 0.9, "gy-cheese": 1.008, "gy-negi": 1.017, "gy-shoga": 1.0, "gy-kimchi": 1.008, "gy-miso": 0.87, "gy-salad": 0.627, "gy-shinko": 0.713, "gy-tea": 1.617, "bacon": 0.3275, "bunB": 0.285, "bunT": 0.3425, "bunTplain": 0.4375, "cheese": 0.15, "egg": 0.2425, "lettuce": 0.2975, "maki-eel": 1.0727, "maki-egg": 1.0636, "maki-ikura": 1.1727, "maki-salmon": 1.0818, "maki-shrimp": 1.0818, "maki-squid": 1.0, "maki-tuna": 1.0364, "nigiri-eel": 0.6, "nigiri-egg": 0.68, "nigiri-ikura": 0.9267, "nigiri-salmon": 0.6333, "nigiri-shrimp": 0.6867, "nigiri-squid": 0.64, "nigiri-tuna": 0.6, "onion": 0.11, "patty-beef": 0.2525, "patty-chicken": 0.2125, "patty-fish": 0.2575, "patty-veggie": 0.2875, "pickle": 0.1925, "pizzabase-cheesecrust-tomato": 0.975, "pizzabase-cheesecrust-white": 0.9833, "pizzabase-thick-tomato": 1.0, "pizzabase-thick-white": 0.9611, "pizzabase-thin-tomato": 1.0, "pizzabase-thin-white": 0.9944, "pl-bridge": 0.2767, "pl-car-keihan": 0.4538, "pl-car-kintetsu": 0.3077, "pl-car-shinkansen": 0.2808, "pl-car-sl": 0.5038, "pl-car-train": 0.4423, "pl-crossing": 0.7812, "pl-platform": 0.2737, "pl-signal": 2.7, "pl-station": 0.8333, "pl-tree": 1.3167, "pl-tunnel": 0.6455, "side-ginger": 0.7364, "side-miso": 0.8917, "side-soy": 0.7417, "side-tea": 1.28, "side-wasabi": 0.95, "sushi-board": 0.4365, "tomato": 0.19, "topping-corn": 1.0, "topping-mushroom": 1.01, "topping-pepper": 0.99, "topping-pineapple": 0.94, "topping-salami": 1.0273, "topping-shrimp": 1.0273};
+/* 部品画像は <defs> に1度だけ入れて <use> で使い回す（同じ画像データを何度も埋め込まない）。
+   <symbol> は画面記録（html2canvas）で大きさが効かないので、単位正方形の <image> を拡大縮小して使う */
+let _pu = null, _puSeq = 0;
+function partsBegin() { _pu = {seq: ++_puSeq, used: new Map()}; }
+function partUse(name, x, y, w, h, align = 'xMidYMid', rot = 0) {
+  let id = _pu.used.get(name);
+  if (!id) { id = `p${_pu.seq}_${_pu.used.size}`; _pu.used.set(name, id); }
+  const ar = PART_AR[name] || h / w;                      // 縦/横
+  const iw = Math.min(w, h / ar), ih = iw * ar;           // 枠の中におさめる（meet）
+  const ix = x + (w - iw) / 2, iy = align === 'xMidYMax' ? y + h - ih : y + (h - ih) / 2;
+  const r = rot ? `rotate(${rot} ${x + w / 2} ${y + h / 2}) ` : '';
+  return `<use href="#${id}" transform="${r}translate(${+ix.toFixed(2)} ${+iy.toFixed(2)}) scale(${+iw.toFixed(2)} ${+ih.toFixed(2)})"/>`;
+}
+function partsDefs() {
+  return '<defs>' + [..._pu.used.entries()].map(([name, id]) => `<image id="${id}" width="1" height="1" preserveAspectRatio="none" href="${partHref(name)}"/>`).join('') + '</defs>';
+}
+const partHref = name => EMBEDDED_IMAGES['part-' + name] || `images/part-${name}.png`;
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+/* ピザ: きじの数だけピザを並べ、ぐは買った数だけ散らす（Canvaで描いた部品） */
+function svgPizza(q) {
+  partsBegin();
+  const n = id => q[id] || 0;
+  const crusts = [];
+  ['thin', 'thick', 'cheesecrust'].forEach(c => { for (let i = 0; i < n(c); i++) crusts.push(c); });
+  if (!crusts.length) crusts.push('thin');
+  const P = Math.min(4, crusts.length);
+  const sauce = n('white') > 0 && n('tomato') === 0 ? 'white' : 'tomato';
+  const cheddar = n('cheddar') > 0 && n('mozza') === 0;
+  const spots = {1: [[200, 150, 128]], 2: [[104, 150, 94], [296, 150, 94]], 3: [[200, 84, 68], [112, 208, 68], [288, 208, 68]], 4: [[112, 82, 62], [288, 82, 62], [112, 206, 62], [288, 206, 62]]}[P];
+  const tops = [['salami', 6, 1], ['shrimp', 5, 1], ['corn', 7, .75], ['mushroom', 6, 1], ['pineapple', 6, 1], ['pepper', 6, 1]];
+  let seed = 7, out = '';
+  spots.forEach(([cx, cy, R], pi) => {
+    const rand = rng(seed + pi * 101);
+    out += `<ellipse cx="${cx + 3}" cy="${cy + R * .92}" rx="${R * .95}" ry="${R * .16}" fill="#00000030"/>`;
+    out += partUse('pizzabase-' + crusts[pi] + '-' + sauce, cx - R, cy - R, 2 * R, 2 * R);
+    if (cheddar) out += `<circle cx="${cx}" cy="${cy}" r="${R * .8}" fill="#ffa21f" opacity=".3"/>`;
+    // 具: 1ふくろ分ずつ全ピザにわけて散らす
+    const pieces = [];
+    tops.forEach(([id, per, sz]) => { const total = Math.ceil(n(id) * per / P); for (let k = 0; k < total; k++) pieces.push([id, sz]); });
+    const total = pieces.length, area = Math.PI * (R * .78) ** 2;
+    const base = Math.min(R * .3, Math.sqrt(area / Math.max(1, total)) * 1.25);
+    const placed = [];
+    pieces.sort(() => rand() - .5).forEach(([id, sz]) => {
+      const sd = base * sz;
+      let best = null;
+      for (let t = 0; t < 24; t++) {
+        const a = rand() * Math.PI * 2, r = Math.sqrt(rand()) * (R * .78 - sd / 2);
+        const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+        const clear = placed.every(p => Math.hypot(p[0] - x, p[1] - y) > (p[2] + sd) * .5);
+        if (clear || t === 23) { best = [x, y]; if (clear) break; }
+      }
+      placed.push([best[0], best[1], sd]);
+      out += partUse('topping-' + id, best[0] - sd / 2, best[1] - sd / 2, sd, sd, 'xMidYMid', Math.round(rand() * 360));
+    });
+  });
+  const cnt = ['salami', 'shrimp', 'corn', 'mushroom', 'pineapple', 'pepper'].reduce((a, id) => a + n(id), 0);
+  const badge = P > 1 ? `<g><rect x="12" y="12" width="84" height="34" rx="17" fill="#fff" stroke="#e0a458" stroke-width="3"/><text x="54" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a5692a" font-family="sans-serif">${P}まい！</text></g>` : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="14" y="10" width="372" height="280" rx="20" fill="#c9965a" stroke="#a5732f" stroke-width="3"/><path d="M14 80H386M14 150H386M14 220H386" stroke="#a5732f" stroke-width="1" opacity=".25"/>
+  ${out}${badge}
+  </svg>`;
+}
+
+/* お寿司: 台の上に、えらんだネタを買った数だけ並べる（1こ注文 = 2かん） */
+function svgSushi(q) {
+  partsBegin();
+  const n = id => q[id] || 0;
+  const netas = ['tuna', 'salmon', 'egg', 'shrimp', 'squid', 'ikura', 'eel'];
+  const maki = n('maki') > 0 && n('nigiri') === 0, both = n('maki') > 0 && n('nigiri') > 0;
+  const list = [];
+  netas.forEach(id => { for (let i = 0; i < n(id) * 2; i++) list.push([id, maki || (both && i % 2 === 1) ? 'maki' : 'nigiri']); });
+  if (!list.length) list.push(['tuna', 'nigiri'], ['tuna', 'nigiri']);
+  const N = list.length;
+  // 台のうえに入るように、列の数をきめる
+  const BX = 62, BW = 276, BY = 128, BH = 100;
+  let best = {w: 0};
+  for (let cols = 1; cols <= 14; cols++) {
+    const rows = Math.ceil(N / cols), w = Math.min(72, BW / cols, BH / rows / .64);
+    if (w > best.w) best = {w, cols, rows};
+  }
+  const {w, cols, rows} = best, h = w * .64;
+  let pieces = '';
+  const rand = rng(11);
+  for (let r = 0; r < rows; r++) {
+    const inRow = Math.min(cols, N - r * cols), x0 = 200 - inRow * w / 2;
+    for (let c = 0; c < inRow; c++) {
+      const [id, kind] = list[r * cols + c];
+      const x = x0 + c * w, y = BY + (rows === 1 ? BH / 2 - h / 2 : r * (BH - h) / (rows - 1)) + (rand() - .5) * 3;
+      const sz = kind === 'maki' ? Math.min(w, h * 1.2) : w;
+      pieces += partUse(kind + '-' + id, x, y, w, kind === 'maki' ? Math.min(h * 1.25, w) : h, 'xMidYMax');
+    }
+  }
+  const sides = [['tea', 112, 30, 46], ['miso', 164, 28, 62], ['wasabi', 232, 38, 40], ['ginger', 276, 34, 54], ['soy', 336, 38, 56]]
+    .filter(([id]) => n(id) > 0).map(([id, x, y, sw]) => partUse('side-' + id, x, y, sw, sw)).join('');
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
+  <rect width="400" height="300" fill="#fbeed2"/><rect x="0" y="262" width="400" height="38" fill="#e2c08a"/>
+  ${partUse('sushi-board', 30, 108, 340, 148)}
+  ${pieces}${sides}
+  <g><rect x="12" y="12" width="${N >= 10 ? 96 : 84}" height="34" rx="17" fill="#fff" stroke="#e0a458" stroke-width="3"/><text x="${N >= 10 ? 60 : 54}" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a5692a" font-family="sans-serif">${N}かん！</text></g>
+  </svg>`;
+}
+
+/* ハンバーガー: 買った数だけ段を重ねる。バンズを増やすと間にもバンズがはさまる */
+function burgerStack(q) {
+  const n = id => q[id] || 0;
+  const buns = Math.max(1, n('plain') + n('sesame'));
+  const sections = Array.from({length: buns}, () => []);
+  // 材料を、下から順に決めた並びで1こずつ各セクションへ配る
+  const order = ['ketchup', 'mustard', 'bbq', 'lettuce', 'tomato', 'onion', 'pickle', 'beef', 'chicken', 'fish', 'veggie', 'cheese', 'bacon', 'egg'];
+  const perSection = sections.map(() => ({}));
+  order.forEach(id => { for (let k = 0; k < n(id); k++) { const sec = perSection[k % buns]; sec[id] = (sec[id] || 0) + 1; } });
+  const layers = [{t: 'bunB'}];
+  perSection.forEach((sec, si) => {
+    order.forEach(id => { for (let k = 0; k < (sec[id] || 0); k++) layers.push({t: id}); });
+    if (si < buns - 1) layers.push({t: 'bunM'});
+  });
+  layers.push({t: 'bunT'});
+  return layers;
+}
+/* Canva で描いた部品（images/part-*.png）を、買った数だけ積み上げる */
+const BURGER_PART = {   // 部品名: [縦/横の比, 次の段との重なり（高さに対する進み具合）]
+  bunB: [.285, .8], bunM: [.285, .75], bunT: [.343, .85], bunTplain: [.438, .85],
+  lettuce: [.297, .5], tomato: [.19, .6], onion: [.11, .55], pickle: [.193, .6],
+  'patty-beef': [.253, .62], 'patty-chicken': [.212, .62], 'patty-fish': [.258, .62], 'patty-veggie': [.287, .62],
+  cheese: [.15, .5], bacon: [.328, .5], egg: [.242, .55]
+};
+function svgBurger(q) {
+  partsBegin();
+  const n = id => q[id] || 0;
+  const layers = burgerStack(q);
+  const W = 220, sesame = n('sesame') > 0 && n('sesame') >= n('plain');
+  const sauce = {ketchup: '#d6452d', mustard: '#f2c230', bbq: '#7a3b1d'};
+  const partOf = t => ({bunB: 'bunB', bunM: 'bunB', bunT: sesame ? 'bunT' : 'bunTplain', beef: 'patty-beef', chicken: 'patty-chicken', fish: 'patty-fish', veggie: 'patty-veggie'}[t] || t);
+  let base = 0, top = 0;
+  const parts = layers.map(l => {
+    if (sauce[l.t]) { const h = 7; const r = `<rect x="${200 - W / 2 + 14}" y="${base - h - 2}" width="${W - 28}" height="${h}" rx="3.5" fill="${sauce[l.t]}"/>`; base -= 5; top = Math.min(top, base - h); return r; }
+    const name = partOf(l.t), [ar, step] = BURGER_PART[name], h = W * ar, y = base - h;
+    base -= h * step; top = Math.min(top, y);
+    return partUse(name, 200 - W / 2, y, W, h);
+  });
+  const sc = Math.min(1, 205 / -top);
+  const fries = n('fries') ? '<g><rect x="326" y="190" width="46" height="62" rx="5" fill="#d6452d"/><g stroke="#ffd451" stroke-width="7" stroke-linecap="round"><path d="M336 190V160M348 190V152M360 190V162"/></g></g>' : '';
+  const drink = n('drink') ? '<g><path d="M26 160H70L64 252H32Z" fill="#fff" stroke="#9aa3b5" stroke-width="2"/><rect x="24" y="152" width="48" height="10" rx="3" fill="#d6452d"/><rect x="46" y="130" width="5" height="26" fill="#d6452d"/></g>' : '';
+  const nl = layers.length;
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
+  <rect width="400" height="300" fill="#fbeed2"/><ellipse cx="200" cy="250" rx="150" ry="22" fill="#fff" stroke="#cfd3dc" stroke-width="3"/><ellipse cx="200" cy="244" rx="${Math.max(60, 105 * sc)}" ry="8" fill="#00000022"/>
+  ${fries}${drink}
+  <g transform="translate(${200 - 200 * sc} 244) scale(${sc})">${parts.join('')}</g>
+  <g><rect x="12" y="12" width="${nl >= 10 ? 96 : 84}" height="34" rx="17" fill="#fff" stroke="#e0a458" stroke-width="3"/><text x="${nl >= 10 ? 60 : 54}" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a5692a" font-family="sans-serif">${nl}だん！</text></g>
+  </svg>`;
+}
+
+
+/* アイスクリーム: いれもの（コーン・カップ）に、えらんだ味のアイスを1だまずつ積む。トッピングものせる */
+const SCOOPS = ['vanilla', 'choco', 'strawberry', 'matcha', 'mint'];
+function svgIcecream(q) {
+  partsBegin();
+  const n = id => q[id] || 0;
+  const holders = [];
+  ['cone', 'waffle', 'cup'].forEach(h => { for (let i = 0; i < n(h); i++) holders.push(h); });
+  if (!holders.length) holders.push('cone');
+  const H = holders.length;
+  const scoops = []; SCOOPS.forEach(f => { for (let i = 0; i < n(f); i++) scoops.push(f); });
+  if (!scoops.length) scoops.push('vanilla');
+  const cols = holders.map(h => ({h, sc: [], top: {}}));
+  scoops.forEach((f, i) => cols[i % H].sc.push(f));
+  ['cherry', 'whip', 'wafer', 'sauce', 'sprinkle'].forEach(t => { for (let i = 0; i < n(t); i++) cols[i % H].top[t] = true; });
+  const SW = 100, step = 52;   // アイス1こ分の幅と、積むときの進み
+  const rand = rng(7);
+  // 1列ぶんを、下を(0,0)・上がマイナスの座標でつくる
+  const build = c => {
+    let out = '', y = 0;
+    const hw = c.h === 'cup' ? 118 : 54, hh = hw * PART_AR['ice-' + c.h];
+    const rimOverlap = c.h === 'cup' ? hh * .55 : 22;
+    out += partUse('ice-' + c.h, -hw / 2, -hh, hw, hh);
+    y = -hh + rimOverlap;                                  // 最初のアイスの下はし
+    let topY = y;
+    c.sc.forEach((f, i) => {
+      const h = SW * PART_AR['scoop-' + f];
+      out += partUse('scoop-' + f, -SW / 2, y - h, SW, h);
+      topY = y - h; y -= step;
+    });
+    const lastTop = topY, lastH = SW * PART_AR['scoop-' + c.sc[c.sc.length - 1]];
+    const cx = 0, capY = lastTop + 2;
+    if (c.top.wafer) out = partUse('ice-wafer', cx + 8, capY - 38, 88, 74, 'xMidYMid', 28) + out;   // うしろにさす
+    if (c.top.sauce) {
+      const w = SW * .86, x0 = -w / 2, yb = capY + lastH * .36;
+      out += `<path d="M${x0} ${yb} q${w * .08} -${lastH * .38} ${w * .5} -${lastH * .4} q${w * .42} 0 ${w * .5} ${lastH * .4} l-${w * .1} 8 q-8 22 -${w * .16} 6 q-${w * .05} -14 -${w * .14} 4 q-6 20 -${w * .15} 4 q-${w * .06} -12 -${w * .14} 2 q-8 16 -${w * .15} -2 q-${w * .05} -10 -${w * .16} 2z" fill="#4a2512" opacity=".93"/>`;
+    }
+    if (c.top.sprinkle) {
+      const cols2 = ['#ff5a7a', '#ffd23f', '#3fa7ff', '#6ddc7a', '#ffffff', '#b66bff'];
+      for (let k = 0; k < 20; k++) {
+        const a = rand() * Math.PI, r = (.12 + rand() * .36) * SW, px = Math.cos(a) * r * 1.1 * (rand() < .5 ? -1 : 1) * .9, py = capY + lastH * .5 - Math.sin(a) * lastH * .42;
+        out += `<rect x="${(px - 3.5).toFixed(1)}" y="${(py - 1.2).toFixed(1)}" width="7" height="2.6" rx="1.3" fill="${cols2[k % 6]}" transform="rotate(${Math.round(rand() * 180)} ${px.toFixed(1)} ${py.toFixed(1)})"/>`;
+      }
+    }
+    let ty = capY + 6;
+    if (c.top.whip) { out += partUse('ice-whip', -26, ty - 50, 52, 54); ty -= 38; }
+    if (c.top.cherry) out += partUse('ice-cherry', -11, ty - 52, 22, 52);
+    const total = -(Math.min(ty - 40, capY - 40));
+    return {svg: out, height: Math.max(total, 60), width: c.h === 'cup' ? hw : SW};
+  };
+  const built = cols.map(build);
+  const gap = 14, maxH = 215, areaW = 360;
+  const natW = built.reduce((a, b) => a + b.width, 0) + gap * (H - 1), natH = Math.max(...built.map(b => b.height));
+  const sc = Math.min(1.25, maxH / natH, areaW / natW);
+  let x = 200 - natW * sc / 2, g = '';
+  built.forEach(b => { g += `<g transform="translate(${(x + b.width * sc / 2).toFixed(1)} 262) scale(${sc.toFixed(3)})">${b.svg}</g>`; x += (b.width + gap) * sc; });
+  const N = scoops.length;
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
+  <rect width="400" height="300" fill="#e8f6fb"/><rect x="0" y="262" width="400" height="38" fill="#f5d9e6"/><ellipse cx="200" cy="264" rx="${Math.min(185, natW * sc / 2 + 30)}" ry="8" fill="#00000018"/>
+  ${g}
+  <g><rect x="12" y="12" width="${N >= 10 ? 96 : 84}" height="34" rx="17" fill="#fff" stroke="#e58fb0" stroke-width="3"/><text x="${N >= 10 ? 60 : 54}" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#b84a77" font-family="sans-serif">${N}だま！</text></g>
+  </svg>`;
+}
+
+/* 牛丼: サイズごとにどんぶりを1ぱいずつ。トッピングはどんぶりの上に、セットはおぼんの手前に */
+function svgGyudon(q) {
+  partsBegin();
+  const n = id => q[id] || 0;
+  const bowls = [];
+  ['regular', 'large', 'xl'].forEach(s => { for (let i = 0; i < n(s); i++) bowls.push(s); });
+  if (!bowls.length) bowls.push('regular');
+  const B = bowls.length, sides = ['miso', 'salad', 'shinko', 'tea'].filter(id => n(id) > 0);
+  const hasSides = sides.length > 0;
+  const topY0 = 40, areaH = hasSides ? 170 : 215, areaW = 372;
+  // 列数を決めて、どんぶりを並べる
+  let best = {w: 0};
+  for (let cols = 1; cols <= B; cols++) {
+    const rows = Math.ceil(B / cols), w = Math.min(190, areaW / cols - 4, areaH / rows / .82);
+    if (w > best.w) best = {w, cols, rows};
+  }
+  const {w: bw, cols, rows} = best;
+  const tops = ['egg', 'cheese', 'negi', 'shoga', 'kimchi'];
+  const per = bowls.map(() => ({}));
+  tops.forEach(t => { for (let i = 0; i < n(t); i++) { const b = per[i % B]; b[t] = (b[t] || 0) + 1; } });
+  const POS = {cheese: [.34, .34, .26, -12], kimchi: [.67, .34, .30, 0], shoga: [.40, .22, .26, 0], negi: [.60, .22, .26, 0], egg: [.50, .30, .26, 0]};
+  let bowlSvg = '';
+  bowls.forEach((sz, i) => {
+    const r = Math.floor(i / cols), inRow = Math.min(cols, B - r * cols), c = i % cols;
+    const bx = 200 - inRow * bw / 2 + c * bw, bh = bw * PART_AR['gy-bowl-' + sz];
+    const rowH = areaH / rows, by = topY0 + r * rowH + (rowH - bh) / 2 + 6;
+    bowlSvg += `<ellipse cx="${(bx + bw / 2).toFixed(1)}" cy="${(by + bh - 1).toFixed(1)}" rx="${(bw * .34).toFixed(1)}" ry="${(bw * .05).toFixed(1)}" fill="#00000022"/>`;
+    bowlSvg += partUse('gy-bowl-' + sz, bx + 2, by, bw - 4, bh);
+    ['kimchi', 'cheese', 'shoga', 'negi', 'egg'].forEach(t => {
+      const k = per[i][t] || 0; if (!k) return;
+      const [fx, fy, fw, rot] = POS[t];
+      for (let j = 0; j < Math.min(k, 3); j++) {
+        const tw = bw * fw, ox = (j - (Math.min(k, 3) - 1) / 2) * tw * .45;
+        bowlSvg += partUse('gy-' + t, bx + bw * fx - tw / 2 + ox, by + bh * fy - tw / 2 + j * 2, tw, tw, 'xMidYMid', rot);
+      }
+    });
+  });
+  const SZ = {miso: 56, salad: 62, shinko: 52, tea: 40};
+  const gap = 16, totW = sides.reduce((a, id) => a + SZ[id], 0) + gap * (sides.length - 1);
+  let sx = 200 - totW / 2, sideSvg = '';
+  sides.forEach(id => { sideSvg += partUse('gy-' + id, sx, 270 - SZ[id] * 1.7, SZ[id], SZ[id] * 1.7, 'xMidYMax'); sx += SZ[id] + gap; });
+  const tray = hasSides ? '<rect x="20" y="214" width="360" height="62" rx="12" fill="#c9a06a" opacity=".55"/>' : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
+  <rect width="400" height="300" fill="#f3e3c3"/><rect x="0" y="278" width="400" height="22" fill="#d9b982"/>
+  ${tray}${bowlSvg}${sideSvg}
+  <g><rect x="12" y="12" width="84" height="34" rx="17" fill="#fff" stroke="#d98a4a" stroke-width="3"/><text x="54" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a35a1d" font-family="sans-serif">${B}はい！</text></g>
+  </svg>`;
+}
+const LIVE_DRAW = {burger: svgBurger, pizza: svgPizza, sushi: svgSushi, plarail: svgPlarail, icecream: svgIcecream, gyudon: svgGyudon};
+
+/* =========================================================
+   Screenshot (画面を記録する) & gallery
+   ========================================================= */
+function toast(t) {
+  const d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d);
+  setTimeout(() => d.remove(), 2400);
+}
+function stamp() {
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  return {file: `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`,
+          label: `${d.getMonth() + 1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`};
+}
+function loadLog() { try { return JSON.parse(localStorage.getItem('keisan-log') || '[]'); } catch (e) { return []; } }
+function saveLog(a) { try { localStorage.setItem('keisan-log', JSON.stringify(a)); return true; } catch (e) { return false; } }
+let lastShot = null;
+const canvasBlob = (c, type, q) => new Promise(res => c.toBlob(res, type, q));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+/* 絵（SVG）を、中の部品画像がそろってから確実にPNG画像にする。
+   撮影ライブラリにSVGを直接わたすと、部品の読み込みが間に合わず絵が抜けることがあるため。 */
+async function svgToPng(svg) {
+  const vb = svg.viewBox.baseVal, W = vb.width, H = vb.height;
+  const outW = Math.round(Math.min(1600, Math.max(800, svg.getBoundingClientRect().width * 2))), outH = Math.round(outW * H / W);
+  // 部品画像を先に読み込んで展開しておく（SVGの中で使うときに間に合うように）
+  const hrefs = [...new Set([...svg.querySelectorAll('image')].map(im => im.getAttribute('href')).filter(Boolean))];
+  await Promise.all(hrefs.map(h => { const im = new Image(); im.src = h; return im.decode().catch(() => {}); }));
+  const xml = new XMLSerializer().serializeToString(svg);
+  const url = URL.createObjectURL(new Blob([xml], {type: 'image/svg+xml;charset=utf-8'}));
+  try {
+    const img = new Image();
+    await new Promise((ok, ng) => { img.onload = ok; img.onerror = () => ng(new Error('svg')); img.src = url; });
+    try { await img.decode(); } catch (e) {}
+    const c = document.createElement('canvas'); c.width = outW; c.height = outH;
+    const ctx = c.getContext('2d'), probe = document.createElement('canvas'); probe.width = 48; probe.height = 36;
+    const pctx = probe.getContext('2d');
+    // 描いて、少し待って、もう一度描く。絵が変わらなくなるまでくり返す
+    let prev = null, sig = 0;
+    for (let i = 0; i < 8; i++) {
+      ctx.clearRect(0, 0, outW, outH); ctx.drawImage(img, 0, 0, outW, outH);
+      pctx.clearRect(0, 0, 48, 36); pctx.drawImage(c, 0, 0, 48, 36);
+      const d = pctx.getImageData(0, 0, 48, 36).data; sig = 0;
+      for (let k = 0; k < d.length; k += 4) sig = (sig * 31 + d[k] + d[k + 1] * 3 + d[k + 2] * 7 + d[k + 3] * 13) % 1000000007;
+      if (sig === prev) break;
+      prev = sig; await sleep(i === 0 ? 80 : 160);
+    }
+    return c.toDataURL('image/png');
+  } finally { URL.revokeObjectURL(url); }
+}
+/* 撮影の間だけ、画面の絵を画像に置きかえる。もどす関数を返す */
+async function freezeIllustrations(root) {
+  const swaps = [];
+  for (const svg of root.querySelectorAll('.illust svg, .livepv svg')) {
+    try {
+      const r = svg.getBoundingClientRect();
+      const img = new Image(); img.src = await svgToPng(svg);
+      img.style.cssText = `display:block;width:${r.width}px;height:${r.height}px`;
+      await img.decode();
+      svg.replaceWith(img); swaps.push([svg, img]);
+    } catch (e) { /* 失敗したらそのまま撮る */ }
+  }
+  // 写真の絵（<img>）も読み込みを待つ
+  await Promise.all([...root.querySelectorAll('.illust img')].map(i => i.decode ? i.decode().catch(() => {}) : 0));
+  return () => swaps.forEach(([svg, img]) => { if (img.isConnected) img.replaceWith(svg); });
+}
+async function recordScreen() {
+  if (typeof html2canvas === 'undefined') { toast('画面記録のしくみを読み込めませんでした'); return; }
+  toast('撮影しています…');
+  const target = $('#root');
+  let canvas, restore = () => {};
+  try {
+    restore = await freezeIllustrations(target);
+    // iPad のSafariはキャンバスの大きさに上限があるので、大きすぎるときは倍率を下げる
+    const scale = Math.min(1.5, Math.sqrt(12e6 / Math.max(1, target.scrollWidth * target.scrollHeight)));
+    canvas = await html2canvas(target, {backgroundColor: '#f1f2f6', scale, useCORS: true});
+  } catch (e) { restore(); toast('記録に失敗しました'); return; }
+  restore();
+  const st = stamp(), file = `keisan-${st.file}.png`;
+  const blob = await canvasBlob(canvas, 'image/png');
+  if (!blob) { toast('記録に失敗しました'); return; }
+  if (lastShot) URL.revokeObjectURL(lastShot.url);
+  lastShot = {blob, file, url: URL.createObjectURL(blob)};
+  // small copy for the in-app log
+  const sm = document.createElement('canvas'); const r = 480 / canvas.width;
+  sm.width = 480; sm.height = Math.round(canvas.height * r);
+  sm.getContext('2d').drawImage(canvas, 0, 0, sm.width, sm.height);
+  const log = loadLog();
+  const title = app === 'pocket' ? (shop && shop.theme ? THEMES[shop.theme].title : 'お小遣いアプリ') : '計算方法を選ぶアプリ';
+  const summary = `出題${stats.asked}・正解${stats.correct}・正解率${stats.asked ? Math.round(stats.correct / stats.asked * 100) : 0}%・ランク${rankOf()}`;
+  log.unshift({t: st.label, title, summary, img: sm.toDataURL('image/jpeg', .6), file});
+  while (log.length > 12) log.pop();
+  if (!saveLog(log)) { log.length = Math.min(log.length, 4); saveLog(log); }
+  document.querySelectorAll('.toast').forEach(t => t.remove());
+  showShot();
+}
+/* 撮影後にプレビューを出し、保存は「ボタンを押した瞬間」に行う（iPad対応） */
+function showShot() {
+  $('#overlay').innerHTML = `<div class="modal" data-a="closeModal"><div class="box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b>画面を記録しました</b><button data-a="closeModal" style="border:0;background:none;font-size:22px">×</button></div>
+    <img src="${lastShot.url}" alt="記録した画面" style="display:block;width:100%;max-height:50vh;object-fit:contain;background:#f1f2f6;border-radius:10px">
+    <div class="rbtn" style="margin-top:14px"><button data-a="shareShot">保存・共有する</button><button class="sub" data-a="dlShot">ダウンロード</button></div>
+    <p style="color:var(--mute);font-size:13px;margin:10px 0 0">iPadでは「保存・共有する」から「画像を保存」をえらべます。うまくいかないときは、上の画像を長押しして「“写真”に追加」をえらんでください。</p>
+  </div></div>`;
+}
+async function shareShot() {
+  if (!lastShot) return;
+  const f = new File([lastShot.blob], lastShot.file, {type: 'image/png'});
+  try {
+    if (navigator.canShare && navigator.canShare({files: [f]})) { await navigator.share({files: [f], title: 'けいさんアプリの記録'}); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  dlShot();
+}
+function dlShot() {
+  if (!lastShot) return;
+  const a = document.createElement('a'); a.href = lastShot.url; a.download = lastShot.file;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('ダウンロードします。表示されないときは画像を長押ししてください');
+}
+function showGallery() {
+  const log = loadLog();
+  $('#overlay').innerHTML = `<div class="modal" data-a="closeModal"><div class="box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b>きろく（${log.length}）</b><button data-a="closeModal" style="border:0;background:none;font-size:22px">×</button></div>
+    ${log.length ? `<div class="gal">${log.map((l, i) => `<figure><img src="${l.img}" alt=""><figcaption><b>${l.title}</b><br>${l.t}<br>${l.summary}<br><button data-a="dl" data-i="${i}">画像を保存</button></figcaption></figure>`).join('')}</div>` : '<p style="color:var(--mute)">まだ記録がありません。「画面を記録する」を押すと、ここに残ります。</p>'}
+  </div></div>`;
+}
+
+/* ---------- events ---------- */
+const H = {
+  start1: startApp1, start2: startApp2, home: showMenu,
+  rec: recordScreen, shareShot, dlShot, gallery: showGallery, closeModal: () => { $('#overlay').innerHTML = ''; },
+  op: d => quizOp(d.op),
+  num: d => quizInput(() => { if (quiz.input.length < 9) quiz.input = (quiz.input === '0' ? '' : quiz.input) + d.d; }),
+  clr: () => quizInput(() => { quiz.input = ''; }),
+  bs: () => quizInput(() => { quiz.input = quiz.input.slice(0, -1); }),
+  submit: quizSubmit,
+  ckey: d => calcKey(d.k),
+  budget: d => { shop.budget = Number(d.b); renderTheme(); },
+  theme: d => { shop.theme = d.t; shop.qty = {}; shop.step = 'shop'; calcReset(); renderShop(''); window.scrollTo({top: 0}); },
+  inc: d => shopChange(d.id, 1), dec: d => shopChange(d.id, -1),
+  checkout,
+  dl: d => { const l = loadLog()[Number(d.i)]; if (!l) return; const a = document.createElement('a'); a.href = l.img; a.download = l.file.replace('.png', '-small.jpg'); a.click(); }
+};
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-a]');
+  if (!b || !H[b.dataset.a]) return;
+  if (b.dataset.a === 'closeModal' && e.target !== b) return;
+  H[b.dataset.a](b.dataset);
+});
+document.addEventListener('keydown', e => {
+  if (!quiz || quiz.phase !== 'ans') return;
+  if (/^[0-9]$/.test(e.key)) H.num({d: e.key});
+  else if (e.key === 'Backspace') H.bs();
+  else if (e.key === 'Enter') quizSubmit();
+});
+
+showMenu();
+</script>
+</body>
+</html>
