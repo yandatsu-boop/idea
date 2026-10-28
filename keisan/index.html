@@ -572,7 +572,7 @@ const THEMES = {
         {id: 'miso', name: 'みそラーメン', price: 400, e: '🍜'}, {id: 'tonkotsu', name: 'とんこつラーメン', price: 400, e: '🍜'}]},
       {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
         {id: 'chashu', name: 'チャーシュー', price: 150, e: '🥩'}, {id: 'ajitama', name: 'あじたま', price: 80, e: '🥚'}, {id: 'negi', name: 'ねぎ', price: 40, e: '🌱'},
-        {id: 'nori', name: 'のり', price: 40, e: '⬛'}, {id: 'menma', name: 'メンマ', price: 60, e: '🎋'}, {id: 'corn', name: 'コーン', price: 50, e: '🌽'}]},
+        {id: 'nori', name: 'のり', price: 40, e: '⬛'}, {id: 'menma', name: 'メンマ', price: 60, e: '🎋'}, {id: 'corn', name: 'コーン', price: 50, e: '🌽'}, {id: 'kimchi', name: 'キムチ', price: 100, e: '🌶️'}]},
       {id: 'set', name: 'セット', min: 0, hint: 'おこのみで', items: [
         {id: 'gyoza', name: 'ぎょうざ', price: 200, e: '🥟'}, {id: 'chahan', name: 'チャーハン', price: 250, e: '🍚'}, {id: 'water', name: 'おみず', price: 30, e: '🥛'}]}
     ]
@@ -725,7 +725,7 @@ function finishApp2(results) {
     dish = sz + (tp ? tp + 'のせ' : '') + '牛丼' + (nm(['miso', 'salad', 'shinko', 'tea']).length ? 'セット' : '');
   }
   if (shop.theme === 'ramen') {
-    const kinds = nm(['shoyu', 'shio', 'miso', 'tonkotsu']), tp = nm(['chashu', 'ajitama', 'negi', 'nori', 'menma', 'corn'])[0];
+    const kinds = nm(['shoyu', 'shio', 'miso', 'tonkotsu']), tp = nm(['chashu', 'ajitama', 'negi', 'nori', 'menma', 'corn', 'kimchi'])[0];
     dish = (kinds.length >= 2 ? 'いろいろ' : kinds[0] || 'しょうゆラーメン').replace('ラーメン', '') + (tp ? tp + 'のせ' : '') + 'ラーメン' + (nm(['gyoza', 'chahan', 'water']).length ? 'セット' : '');
   }
   const draw = {ramen: svgRamen, icecream: svgIcecream, gyudon: svgGyudon, curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot, pizza: svgPizza, sushi: svgSushi, burger: svgBurger}[shop.theme](q);
@@ -1322,10 +1322,10 @@ function svgRamen(q) {
     if (w > best.w) best = {w, cols, rows};
   }
   const {w: bw, cols, rows} = best;
-  const tops = ['chashu', 'ajitama', 'negi', 'nori', 'menma', 'corn'];
+  const tops = ['chashu', 'ajitama', 'negi', 'nori', 'menma', 'corn', 'kimchi'];
   const per = bowls.map(() => ({}));
   tops.forEach(t => { for (let i = 0; i < n(t); i++) { const b = per[i % B]; b[t] = (b[t] || 0) + 1; } });
-  const POS = {menma: [.30, .38, .24, 0], chashu: [.38, .44, .38, -6], corn: [.60, .50, .22, 0], ajitama: [.66, .40, .34, 0], negi: [.50, .36, .22, 0], nori: [.80, .26, .22, 8]};
+  const POS = {menma: [.30, .38, .24, 0], chashu: [.38, .44, .38, -6], corn: [.60, .50, .22, 0], ajitama: [.66, .40, .34, 0], negi: [.50, .36, .22, 0], nori: [.80, .26, .22, 8], kimchi: [.72, .52, .26, 0]};
   let bowlSvg = '';
   bowls.forEach((sz, i) => {
     const r = Math.floor(i / cols), inRow = Math.min(cols, B - r * cols), c = i % cols;
@@ -1333,12 +1333,12 @@ function svgRamen(q) {
     const rowH = areaH / rows, by = topY0 + r * rowH + (rowH - bh) / 2 + 6;
     bowlSvg += `<ellipse cx="${(bx + bw / 2).toFixed(1)}" cy="${(by + bh - 1).toFixed(1)}" rx="${(bw * .34).toFixed(1)}" ry="${(bw * .05).toFixed(1)}" fill="#00000022"/>`;
     bowlSvg += partUse('rm-bowl-' + sz, bx + 2, by, bw - 4, bh);
-    ['menma', 'chashu', 'corn', 'negi', 'ajitama', 'nori'].forEach(t => {
+    ['menma', 'chashu', 'corn', 'kimchi', 'negi', 'ajitama', 'nori'].forEach(t => {
       const k = per[i][t] || 0; if (!k) return;
       const [fx, fy, fw, rot] = POS[t];
       for (let j = 0; j < Math.min(k, 3); j++) {
         const tw = bw * fw, ox = (j - (Math.min(k, 3) - 1) / 2) * tw * .45;
-        bowlSvg += partUse('rm-' + t, bx + bw * fx - tw / 2 + ox, by + bh * fy - tw / 2 + j * 2, tw, tw, 'xMidYMid', rot);
+        bowlSvg += partUse((t === 'kimchi' ? 'gy-kimchi' : 'rm-' + t), bx + bw * fx - tw / 2 + ox, by + bh * fy - tw / 2 + j * 2, tw, tw, 'xMidYMid', rot);
       }
     });
   });
