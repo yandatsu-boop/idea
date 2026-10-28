@@ -564,6 +564,19 @@ const THEMES = {
         {id: 'miso', name: 'みそしる', price: 100, e: '🥣'}, {id: 'salad', name: 'サラダ', price: 150, e: '🥗'}, {id: 'shinko', name: 'おしんこ', price: 80, e: '🥒'}, {id: 'tea', name: 'おちゃ', price: 60, e: '🍵'}]}
     ]
   },
+  ramen: {
+    name: 'ラーメン', title: 'ラーメンを作ろう', emoji: '🍜', desc: 'ラーメンのしゅるいと、トッピング・セットをえらぼう',
+    cats: [
+      {id: 'bowl', name: 'ラーメン', min: 1, hint: '1こ以上', items: [
+        {id: 'shoyu', name: 'しょうゆラーメン', price: 350, e: '🍜'}, {id: 'shio', name: 'しおラーメン', price: 350, e: '🍜'},
+        {id: 'miso', name: 'みそラーメン', price: 400, e: '🍜'}, {id: 'tonkotsu', name: 'とんこつラーメン', price: 400, e: '🍜'}]},
+      {id: 'top', name: 'トッピング', min: 0, hint: 'おこのみで', items: [
+        {id: 'chashu', name: 'チャーシュー', price: 150, e: '🥩'}, {id: 'ajitama', name: 'あじたま', price: 80, e: '🥚'}, {id: 'negi', name: 'ねぎ', price: 40, e: '🌱'},
+        {id: 'nori', name: 'のり', price: 40, e: '⬛'}, {id: 'menma', name: 'メンマ', price: 60, e: '🎋'}, {id: 'corn', name: 'コーン', price: 50, e: '🌽'}]},
+      {id: 'set', name: 'セット', min: 0, hint: 'おこのみで', items: [
+        {id: 'gyoza', name: 'ぎょうざ', price: 200, e: '🥟'}, {id: 'chahan', name: 'チャーハン', price: 250, e: '🍚'}, {id: 'water', name: 'おみず', price: 30, e: '🥛'}]}
+    ]
+  },
   burger: {
     name: 'ハンバーガー', title: 'ハンバーガーを作ろう', emoji: '🍔', desc: 'バンズにパティとやさいをはさもう',
     cats: [
@@ -644,6 +657,7 @@ function renderShop(warn) {
     </div><div style="margin-top:14px">${calcHTML()}</div></div></div>`;
   setFoot('材料をえらんで、お小遣いをこえないように自分でけいさんしよう。電卓を使ってもOK。');
   window.scrollTo({top: y});
+  rasterizeIllust();
 }
 function shopChange(id, d) {
   const T = THEMES[shop.theme];
@@ -710,8 +724,12 @@ function finishApp2(results) {
     const sz = {regular: 'なみもり', large: 'おおもり', xl: 'とくもり'}[['xl', 'large', 'regular'].find(has)] || 'なみもり', tp = nm(['egg', 'cheese', 'negi', 'shoga', 'kimchi'])[0];
     dish = sz + (tp ? tp + 'のせ' : '') + '牛丼' + (nm(['miso', 'salad', 'shinko', 'tea']).length ? 'セット' : '');
   }
-  const draw = {icecream: svgIcecream, gyudon: svgGyudon, curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot, pizza: svgPizza, sushi: svgSushi, burger: svgBurger}[shop.theme](q);
-  const svg = ['burger', 'pizza', 'sushi', 'plarail', 'icecream', 'gyudon'].includes(shop.theme) ? draw : pencilize(draw);
+  if (shop.theme === 'ramen') {
+    const kinds = nm(['shoyu', 'shio', 'miso', 'tonkotsu']), tp = nm(['chashu', 'ajitama', 'negi', 'nori', 'menma', 'corn'])[0];
+    dish = (kinds.length >= 2 ? 'いろいろ' : kinds[0] || 'しょうゆラーメン').replace('ラーメン', '') + (tp ? tp + 'のせ' : '') + 'ラーメン' + (nm(['gyoza', 'chahan', 'water']).length ? 'セット' : '');
+  }
+  const draw = {ramen: svgRamen, icecream: svgIcecream, gyudon: svgGyudon, curry: svgCurry, parfait: svgParfait, plarail: svgPlarail, car: svgCar, pancake: svgPancake, robot: svgRobot, pizza: svgPizza, sushi: svgSushi, burger: svgBurger}[shop.theme](q);
+  const svg = ['burger', 'pizza', 'sushi', 'plarail', 'icecream', 'gyudon', 'ramen'].includes(shop.theme) ? draw : pencilize(draw);
   const imgKeys = illustKeys(shop.theme, q);
   shop.last = {dish, pts, rk, total, change};
   setTimeout(() => tryImage(imgKeys), 0);
@@ -724,6 +742,7 @@ function finishApp2(results) {
       <div class="bl"><span>おつり</span><span>${fmt(change)}円</span></div></div>
     <div class="rbtn"><button data-a="rec">画面を記録する</button><button class="sub" data-a="start2">もういちど作る</button><button class="sub" data-a="home">はじめの画面へ</button></div></div>`;
   setFoot('');
+  rasterizeIllust();
 }
 
 /* =========================================================
@@ -743,9 +762,9 @@ function illustKeys(theme, q) {
   const has = id => (q[id] || 0) > 0, pick = ids => ids.find(has);
   const main = {curry: ['chicken', 'beef', 'pork'], parfait: ['vanilla', 'choco', 'berry', 'matcha'],
     plarail: ['shinkansen', 'train', 'sl', 'keihan', 'kintetsu'], car: ['sports', 'kei', 'truck'],
-    pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly'], pizza: [], sushi: [], burger: [], icecream: [], gyudon: []}[theme];
+    pancake: ['plain', 'souffle', 'mini'], robot: ['biped', 'wheel', 'fly'], pizza: [], sushi: [], burger: [], icecream: [], gyudon: [], ramen: []}[theme];
   if (theme === 'pizza' || theme === 'sushi' || theme === 'plarail') return [];   // 選んだものをそのまま並べて描く（部品画像）
-  if (theme === 'burger' || theme === 'icecream' || theme === 'gyudon') return [];   // 選んだ材料をそのまま積み上げて描く（部品画像）
+  if (theme === 'burger' || theme === 'icecream' || theme === 'gyudon' || theme === 'ramen') return [];   // 選んだ材料をそのまま積み上げて描く（部品画像）
   const m = pick(main) || main[0], base = `${theme}-${m}`;
   if (theme === 'curry') return pick(['sweet', 'hot']) === 'hot' ? [`${base}-hot`, base] : [base];
   if (theme === 'parfait') return has('jumbo') ? [`${base}-jumbo`, base] : [base];
@@ -1019,7 +1038,7 @@ function svgRobot(q) {
 }
 
 /* 部品画像の縦横比（縦/横）。images/part-*.png から作った固定値 */
-const PART_AR = {"ice-cone": 2.558, "ice-waffle": 2.515, "ice-cup": 0.881, "scoop-choco": 0.8975, "scoop-vanilla": 0.8375, "scoop-strawberry": 0.9175, "scoop-matcha": 0.8675, "scoop-mint": 0.77, "ice-cherry": 2.305, "ice-whip": 1.03, "ice-wafer": 0.844, "gy-bowl-regular": 0.875, "gy-bowl-large": 0.766, "gy-bowl-xl": 0.809, "gy-egg": 0.9, "gy-cheese": 1.008, "gy-negi": 1.017, "gy-shoga": 1.0, "gy-kimchi": 1.008, "gy-miso": 0.87, "gy-salad": 0.627, "gy-shinko": 0.713, "gy-tea": 1.617, "bacon": 0.3275, "bunB": 0.285, "bunT": 0.3425, "bunTplain": 0.4375, "cheese": 0.15, "egg": 0.2425, "lettuce": 0.2975, "maki-eel": 1.0727, "maki-egg": 1.0636, "maki-ikura": 1.1727, "maki-salmon": 1.0818, "maki-shrimp": 1.0818, "maki-squid": 1.0, "maki-tuna": 1.0364, "nigiri-eel": 0.6, "nigiri-egg": 0.68, "nigiri-ikura": 0.9267, "nigiri-salmon": 0.6333, "nigiri-shrimp": 0.6867, "nigiri-squid": 0.64, "nigiri-tuna": 0.6, "onion": 0.11, "patty-beef": 0.2525, "patty-chicken": 0.2125, "patty-fish": 0.2575, "patty-veggie": 0.2875, "pickle": 0.1925, "pizzabase-cheesecrust-tomato": 0.975, "pizzabase-cheesecrust-white": 0.9833, "pizzabase-thick-tomato": 1.0, "pizzabase-thick-white": 0.9611, "pizzabase-thin-tomato": 1.0, "pizzabase-thin-white": 0.9944, "pl-bridge": 0.2767, "pl-car-keihan": 0.4538, "pl-car-kintetsu": 0.3077, "pl-car-shinkansen": 0.2808, "pl-car-sl": 0.5038, "pl-car-train": 0.4423, "pl-crossing": 0.7812, "pl-platform": 0.2737, "pl-signal": 2.7, "pl-station": 0.8333, "pl-tree": 1.3167, "pl-tunnel": 0.6455, "side-ginger": 0.7364, "side-miso": 0.8917, "side-soy": 0.7417, "side-tea": 1.28, "side-wasabi": 0.95, "sushi-board": 0.4365, "tomato": 0.19, "topping-corn": 1.0, "topping-mushroom": 1.01, "topping-pepper": 0.99, "topping-pineapple": 0.94, "topping-salami": 1.0273, "topping-shrimp": 1.0273};
+const PART_AR = {"rm-bowl-shoyu": 0.815, "rm-bowl-shio": 0.775, "rm-bowl-miso": 0.796, "rm-bowl-tonkotsu": 0.798, "rm-chashu": 0.827, "rm-ajitama": 0.669, "rm-negi": 1.046, "rm-nori": 0.842, "rm-menma": 1.021, "rm-corn": 0.983, "rm-gyoza": 0.703, "rm-chahan": 0.61, "rm-water": 1.891, "ice-cone": 2.558, "ice-waffle": 2.515, "ice-cup": 0.881, "scoop-choco": 0.8975, "scoop-vanilla": 0.8375, "scoop-strawberry": 0.9175, "scoop-matcha": 0.8675, "scoop-mint": 0.77, "ice-cherry": 2.305, "ice-whip": 1.03, "ice-wafer": 0.844, "gy-bowl-regular": 0.875, "gy-bowl-large": 0.766, "gy-bowl-xl": 0.809, "gy-egg": 0.9, "gy-cheese": 1.008, "gy-negi": 1.017, "gy-shoga": 1.0, "gy-kimchi": 1.008, "gy-miso": 0.87, "gy-salad": 0.627, "gy-shinko": 0.713, "gy-tea": 1.617, "bacon": 0.3275, "bunB": 0.285, "bunT": 0.3425, "bunTplain": 0.4375, "cheese": 0.15, "egg": 0.2425, "lettuce": 0.2975, "maki-eel": 1.0727, "maki-egg": 1.0636, "maki-ikura": 1.1727, "maki-salmon": 1.0818, "maki-shrimp": 1.0818, "maki-squid": 1.0, "maki-tuna": 1.0364, "nigiri-eel": 0.6, "nigiri-egg": 0.68, "nigiri-ikura": 0.9267, "nigiri-salmon": 0.6333, "nigiri-shrimp": 0.6867, "nigiri-squid": 0.64, "nigiri-tuna": 0.6, "onion": 0.11, "patty-beef": 0.2525, "patty-chicken": 0.2125, "patty-fish": 0.2575, "patty-veggie": 0.2875, "pickle": 0.1925, "pizzabase-cheesecrust-tomato": 0.975, "pizzabase-cheesecrust-white": 0.9833, "pizzabase-thick-tomato": 1.0, "pizzabase-thick-white": 0.9611, "pizzabase-thin-tomato": 1.0, "pizzabase-thin-white": 0.9944, "pl-bridge": 0.2767, "pl-car-keihan": 0.4538, "pl-car-kintetsu": 0.3077, "pl-car-shinkansen": 0.2808, "pl-car-sl": 0.5038, "pl-car-train": 0.4423, "pl-crossing": 0.7812, "pl-platform": 0.2737, "pl-signal": 2.7, "pl-station": 0.8333, "pl-tree": 1.3167, "pl-tunnel": 0.6455, "side-ginger": 0.7364, "side-miso": 0.8917, "side-soy": 0.7417, "side-tea": 1.28, "side-wasabi": 0.95, "sushi-board": 0.4365, "tomato": 0.19, "topping-corn": 1.0, "topping-mushroom": 1.01, "topping-pepper": 0.99, "topping-pineapple": 0.94, "topping-salami": 1.0273, "topping-shrimp": 1.0273};
 /* 部品画像は <defs> に1度だけ入れて <use> で使い回す（同じ画像データを何度も埋め込まない）。
    <symbol> は画面記録（html2canvas）で大きさが効かないので、単位正方形の <image> を拡大縮小して使う */
 let _pu = null, _puSeq = 0;
@@ -1285,7 +1304,74 @@ function svgGyudon(q) {
   <g><rect x="12" y="12" width="84" height="34" rx="17" fill="#fff" stroke="#d98a4a" stroke-width="3"/><text x="54" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a35a1d" font-family="sans-serif">${B}はい！</text></g>
   </svg>`;
 }
-const LIVE_DRAW = {burger: svgBurger, pizza: svgPizza, sushi: svgSushi, plarail: svgPlarail, icecream: svgIcecream, gyudon: svgGyudon};
+
+/* ラーメン: どんぶりを1ぱいずつ。トッピングはどんぶりの上に、セットはお盆の手前に */
+function svgRamen(q) {
+  partsBegin();
+  const n = id => q[id] || 0;
+  const bowls = [];
+  ['shoyu', 'shio', 'miso', 'tonkotsu'].forEach(s => { for (let i = 0; i < n(s); i++) bowls.push(s); });
+  if (!bowls.length) bowls.push('shoyu');
+  const B = bowls.length, sides = ['gyoza', 'chahan', 'water'].filter(id => n(id) > 0);
+  const hasSides = sides.length > 0;
+  const topY0 = 40, areaH = hasSides ? 170 : 215, areaW = 372;
+  // 列数を決めて、どんぶりを並べる
+  let best = {w: 0};
+  for (let cols = 1; cols <= B; cols++) {
+    const rows = Math.ceil(B / cols), w = Math.min(190, areaW / cols - 4, areaH / rows / .82);
+    if (w > best.w) best = {w, cols, rows};
+  }
+  const {w: bw, cols, rows} = best;
+  const tops = ['chashu', 'ajitama', 'negi', 'nori', 'menma', 'corn'];
+  const per = bowls.map(() => ({}));
+  tops.forEach(t => { for (let i = 0; i < n(t); i++) { const b = per[i % B]; b[t] = (b[t] || 0) + 1; } });
+  const POS = {menma: [.30, .38, .24, 0], chashu: [.38, .44, .38, -6], corn: [.60, .50, .22, 0], ajitama: [.66, .40, .34, 0], negi: [.50, .36, .22, 0], nori: [.80, .26, .22, 8]};
+  let bowlSvg = '';
+  bowls.forEach((sz, i) => {
+    const r = Math.floor(i / cols), inRow = Math.min(cols, B - r * cols), c = i % cols;
+    const bx = 200 - inRow * bw / 2 + c * bw, bh = bw * PART_AR['rm-bowl-' + sz];
+    const rowH = areaH / rows, by = topY0 + r * rowH + (rowH - bh) / 2 + 6;
+    bowlSvg += `<ellipse cx="${(bx + bw / 2).toFixed(1)}" cy="${(by + bh - 1).toFixed(1)}" rx="${(bw * .34).toFixed(1)}" ry="${(bw * .05).toFixed(1)}" fill="#00000022"/>`;
+    bowlSvg += partUse('rm-bowl-' + sz, bx + 2, by, bw - 4, bh);
+    ['menma', 'chashu', 'corn', 'negi', 'ajitama', 'nori'].forEach(t => {
+      const k = per[i][t] || 0; if (!k) return;
+      const [fx, fy, fw, rot] = POS[t];
+      for (let j = 0; j < Math.min(k, 3); j++) {
+        const tw = bw * fw, ox = (j - (Math.min(k, 3) - 1) / 2) * tw * .45;
+        bowlSvg += partUse('rm-' + t, bx + bw * fx - tw / 2 + ox, by + bh * fy - tw / 2 + j * 2, tw, tw, 'xMidYMid', rot);
+      }
+    });
+  });
+  const SZ = {gyoza: 78, chahan: 78, water: 34};
+  const gap = 16, totW = sides.reduce((a, id) => a + SZ[id], 0) + gap * (sides.length - 1);
+  let sx = 200 - totW / 2, sideSvg = '';
+  sides.forEach(id => { sideSvg += partUse('rm-' + id, sx, 270 - SZ[id] * 1.7, SZ[id], SZ[id] * 1.7, 'xMidYMax'); sx += SZ[id] + gap; });
+  const tray = hasSides ? '<rect x="20" y="214" width="360" height="62" rx="12" fill="#c9a06a" opacity=".55"/>' : '';
+  return `<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">${partsDefs()}
+  <rect width="400" height="300" fill="#f6e6c8"/><rect x="0" y="278" width="400" height="22" fill="#d9b982"/>
+  ${tray}${bowlSvg}${sideSvg}
+  <g><rect x="12" y="12" width="84" height="34" rx="17" fill="#fff" stroke="#d98a4a" stroke-width="3"/><text x="54" y="36" font-size="18" font-weight="800" text-anchor="middle" fill="#a35a1d" font-family="sans-serif">${B}はい！</text></g>
+  </svg>`;
+}
+const LIVE_DRAW = {burger: svgBurger, pizza: svgPizza, sushi: svgSushi, plarail: svgPlarail, icecream: svgIcecream, gyudon: svgGyudon, ramen: svgRamen};
+
+
+/* 部品画像でできた絵（SVG）は、表示のあとで1まいの画像(PNG)に置きかえる。
+   iPadのSafariなどで、SVGの中の部品画像が表示されないことがあるため（ピザなど）。失敗したらSVGのまま */
+let _rzToken = 0;
+async function rasterizeIllust() {
+  const tk = ++_rzToken;
+  for (const svg of [...document.querySelectorAll('.illust svg, .livepv svg')]) {
+    if (tk !== _rzToken || !svg.querySelector('image')) continue;
+    try {
+      const png = await svgToPng(svg);
+      if (tk !== _rzToken || !svg.isConnected) continue;
+      const img = new Image(); img.alt = ''; img.src = png; img.style.cssText = 'display:block;width:100%;height:auto';
+      await img.decode();
+      if (tk === _rzToken && svg.isConnected) svg.replaceWith(img);
+    } catch (e) { /* そのままSVGで表示 */ }
+  }
+}
 
 /* =========================================================
    Screenshot (画面を記録する) & gallery

@@ -13,7 +13,7 @@ BUDGET = 5000
 fmt = lambda n: f'{n:,}'
 
 # 見本のかいもの（おうちの人用のこたえれい）。アプリで えらべる ざいりょうだけ。
-ORDER = ['curry', 'parfait', 'plarail', 'car', 'pancake', 'robot', 'pizza', 'sushi', 'burger', 'icecream', 'gyudon']
+ORDER = ['curry', 'parfait', 'plarail', 'car', 'pancake', 'robot', 'pizza', 'sushi', 'burger', 'icecream', 'gyudon', 'ramen']
 SAMPLE = {
  'curry':   {'chicken':1,'beef':1,'carrot':2,'potato':2,'onion':1,'sweet':1,'rice':2,'egg':1,'cheese':1},
  'parfait': {'jumbo':1,'granola':1,'vanilla':2,'strawberry':2,'banana':1,'whip':1,'sauce':1,'wafer':1},
@@ -25,10 +25,11 @@ SAMPLE = {
  'sushi':   {'nigiri':2,'maki':1,'tuna':2,'salmon':2,'egg':1,'shrimp':1,'squid':1,'ikura':1,'eel':1,'wasabi':1,'shoyu':1,'gari':1,'tea':2,'miso':1},
  'burger':  {'sesame':1,'beef':2,'chicken':1,'lettuce':2,'tomato':1,'cheese':2,'bacon':1,'ketchup':1,'bbq':1,'fries':1,'drink':1},
  'icecream':{'cone':1,'waffle':1,'cup':1,'vanilla':2,'choco':1,'strawberry':1,'matcha':1,'mint':1,'cherry':2,'whip':1,'sprinkle':1,'wafer':1,'sauce':1},
+ 'ramen':   {'shoyu':1,'miso':1,'tonkotsu':1,'chashu':2,'ajitama':2,'negi':1,'nori':1,'menma':1,'corn':1,'gyoza':1,'chahan':1,'water':2},
  'gyudon':  {'regular':1,'large':1,'xl':1,'egg':2,'cheese':1,'negi':1,'kimchi':1,'miso':1,'salad':1,'shinko':1,'tea':2},
 }
 TITLE = {'curry':'カレー','parfait':'パフェ','plarail':'プラレールの えき','car':'カスタムカー','pancake':'パンケーキ','robot':'ロボット',
-         'pizza':'ピザ','sushi':'おすし','burger':'ハンバーガー','icecream':'アイスクリーム','gyudon':'ぎゅうどん'}
+         'pizza':'ピザ','sushi':'おすし','burger':'ハンバーガー','icecream':'アイスクリーム','gyudon':'ぎゅうどん','ramen':'ラーメン'}
 UNIT = 'こ'
 
 CSS3 = r"""
@@ -160,12 +161,12 @@ def main():
         cards.append(f'<div class="dayrow"><h2>{i+1}　{TITLE[t]}　（ごうけい <b>{fmt(c["total"])}えん</b>／おつり <b>{fmt(c["change"])}えん</b>／つかいきり {pts}てん）</h2>'
                      f'<table class="ans-t">{rows}</table><p><b>1：</b>{q1}</p></div>')
     guide = ('<div class="dayrow" style="background:#f2f2f2"><h2>つかいかた・ポイント</h2>'
-             '<p>・11の バージョン（カレー・パフェ・プラレール・カスタムカー・パンケーキ・ロボット・ピザ・おすし・ハンバーガー・アイスクリーム・ぎゅうどん）それぞれ 1まい（おもて/うら）。おこづかいは ぜんぶ 5,000えんです。</p>'
+             '<p>・12の バージョン（カレー・パフェ・プラレール・カスタムカー・パンケーキ・ロボット・ピザ・おすし・ハンバーガー・アイスクリーム・ぎゅうどん・ラーメン）それぞれ 1まい（おもて/うら）。おこづかいは ぜんぶ 5,000えんです。</p>'
              '<p>・おもての ねだんひょうの「いくつ かう？」に すきな かずを かき、「きんがく」＝ねだん×こ を かきます。「かならず」の しゅるいは アプリと おなじ ルールです。</p>'
              '<p>・うらは アプリの おかいけいと おなじ ながれ（かけざん→ごうけい→おつり→つかいきり）。じぶんが きめた かずで けいさんするので、こたえは ひとりひとり ちがいます。下は「こたえれい」で、ごうけいが 5,000えん いかなら せいかいです。</p>'
              '<p>・「ごうけい」が 5,000えんを こえたら、ざいりょうを へらして もういちど。ここが いちばんの がくしゅうポイントです。</p></div>')
-    chunks = [cards[0:2], cards[2:4], cards[4:6], cards[6:8], cards[8:11]]
-    ans_pages = [f'<section class="ans-page"><h1>せんせいよう　こたえれい（{i+1}/5）</h1>{guide if i == 0 else ""}{"".join(ch)}</section>' for i, ch in enumerate(chunks)]
+    chunks = [cards[0:2], cards[2:4], cards[4:6], cards[6:8], cards[8:10], cards[10:12]]
+    ans_pages = [f'<section class="ans-page"><h1>せんせいよう　こたえれい（{i+1}/6）</h1>{guide if i == 0 else ""}{"".join(ch)}</section>' for i, ch in enumerate(chunks)]
     open(os.path.join(HERE, 'versions_answers.html'), 'w', encoding='utf-8').write(
         f'<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>こたえれい</title><style>{CSS}{CSS2}{CSS3}</style></head><body>{"".join(ans_pages)}</body></html>')
     for t in ORDER:

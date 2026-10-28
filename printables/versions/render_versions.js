@@ -2,7 +2,7 @@
 const path = require('path'), fs = require('fs'), {execSync} = require('child_process');
 let pw; try { pw = require('playwright'); } catch (e) { pw = require(path.join(execSync('npm root -g').toString().trim(), 'playwright')); }
 const here = __dirname, ORDER = JSON.parse(fs.readFileSync(path.join(here, 'baskets.json'), 'utf8')).map(p => p.parts[0].theme);
-const NAME = {curry:'カレー',parfait:'パフェ',plarail:'プラレール',car:'カスタムカー',pancake:'パンケーキ',robot:'ロボット',pizza:'ピザ',sushi:'おすし',burger:'ハンバーガー',icecream:'アイスクリーム',gyudon:'ぎゅうどん'};
+const NAME = {curry:'カレー',parfait:'パフェ',plarail:'プラレール',car:'カスタムカー',pancake:'パンケーキ',robot:'ロボット',pizza:'ピザ',sushi:'おすし',burger:'ハンバーガー',icecream:'アイスクリーム',gyudon:'ぎゅうどん',ramen:'ラーメン'};
 (async () => {
   const b = await pw.chromium.launch({executablePath: '/opt/pw-browsers/chromium'});
   const pg = await b.newPage();
