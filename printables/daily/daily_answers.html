@@ -1,0 +1,133 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><title>こたえ</title><style>
+@page { size: A4; margin: 0 }
+* { box-sizing: border-box }
+body { margin: 0; font-family: 'IPAGothic','IPAPGothic',sans-serif; color: #111; background: #fff }
+.page { width: 210mm; height: 297mm; padding: 9mm 12mm 7mm; display: flex; flex-direction: column; gap: 2.4mm; page-break-after: always; overflow: hidden; position: relative }
+.head { display: flex; align-items: center; gap: 4mm; border-bottom: 1.4mm solid #111; padding-bottom: 1.8mm }
+.no { width: 13mm; height: 13mm; border-radius: 50%; background: #111; color: #fff; font-size: 8.5mm; font-weight: bold; display: flex; align-items: center; justify-content: center }
+.title { font-size: 8mm; font-weight: bold; letter-spacing: .3mm }
+.side { margin-left: auto; font-size: 4.2mm; border: .6mm solid #111; border-radius: 4mm; padding: .8mm 3.5mm }
+.who { display: flex; gap: 10mm; font-size: 4.6mm; align-items: flex-end }
+.who span { display: inline-block; border-bottom: .5mm solid #111; min-width: 55mm; height: 7mm }
+.who .d { min-width: 0; width: 38mm }
+.q { border: .7mm solid #111; border-radius: 3.5mm; padding: 2.6mm 3.8mm 2.8mm; display: flex; flex-direction: column; flex: 1 1 auto }
+.q > :not(.qh) { flex: 1 1 auto }
+.q > .cols { align-items: center }
+.q > .match, .q > .seq, .q > .checks { align-content: center; align-items: center }
+.qh { font-size: 5.8mm; font-weight: bold; display: flex; align-items: center; gap: 2.2mm; margin-bottom: 1.6mm }
+.qn { width: 7.6mm; height: 7.6mm; border-radius: 50%; background: #111; color: #fff; font-size: 5mm; display: flex; align-items: center; justify-content: center; flex: none }
+.qs { font-size: 3.8mm; font-weight: normal; color: #333 }
+.rows { display: flex; flex-direction: column; gap: 1.2mm; justify-content: space-evenly }
+.row { display: flex; align-items: center; gap: 4mm; min-height: 15mm }
+.row.line { border-bottom: .3mm dashed #999; padding-bottom: 1.2mm }
+.row.line:last-child { border-bottom: 0; padding-bottom: 0 }
+.grp { display: flex; flex-wrap: wrap; gap: .8mm; align-items: center; align-content: center }
+.grp img { height: 12.5mm; width: auto; display: block }
+.grp.sm img { height: 8.5mm }
+.grp.lg img { height: 14mm }
+.grp.tiny img { height: 6.5mm }
+.cell { flex: 1 1 0; min-width: 0 }
+.trace { font-size: 17mm; line-height: 1; font-weight: bold; color: transparent; -webkit-text-stroke: .38mm #666; width: 17mm; text-align: center }
+.trace.w { width: auto; letter-spacing: 2mm }
+.box { display: inline-flex; width: 15mm; height: 15mm; border: .7mm solid #111; border-radius: 2.2mm; align-items: center; justify-content: center; font-size: 8mm; vertical-align: middle; flex: none }
+.box.s { width: 11mm; height: 11mm; font-size: 6mm; border-radius: 1.8mm }
+.box.w { width: 21mm }
+.t { font-size: 7mm; font-weight: bold }
+.t.s { font-size: 5.6mm }
+.t.k { font-size: 4.8mm; font-weight: normal }
+.dot { display: inline-block; width: 8mm; height: 8mm; border: .6mm solid #111; border-radius: 50%; margin: 0 .6mm; vertical-align: middle }
+.dot.sm { width: 6.5mm; height: 6.5mm }
+.cols { display: flex; gap: 3mm }
+.cols > * { flex: 1 1 0; min-width: 0 }
+.pt { width: 3.4mm; height: 3.4mm; border-radius: 50%; border: .6mm solid #111; flex: none }
+.match { display: flex; justify-content: space-between; gap: 40mm; padding: 0 6mm }
+.match .col { display: flex; flex-direction: column; gap: 3mm; align-items: stretch }
+.match .it { display: flex; align-items: center; gap: 3mm; min-height: 15mm }
+.match .t { white-space: nowrap }
+.match .it.r { justify-content: flex-end }
+.x { position: relative; display: inline-block }
+.x::before, .x::after { content: ''; position: absolute; left: -6%; right: -6%; top: 50%; height: 0; border-top: .9mm solid #111 }
+.x::before { transform: rotate(32deg) } .x::after { transform: rotate(-32deg) }
+.xs img { opacity: .5 }
+.frame { display: inline-grid; grid-template-columns: repeat(5, 8.2mm); grid-auto-rows: 8.2mm; border: .6mm solid #111; background: #fff }
+.frame i { border: .3mm solid #666; display: flex; align-items: center; justify-content: center }
+.frame i b { width: 5.4mm; height: 5.4mm; border-radius: 50%; background: #111; display: block }
+.frame i b.o { background: transparent; border: .5mm solid #111 }
+.frame i b.xx { background: #fff; border: .5mm solid #111; position: relative }
+.frame i b.xx::after { content: '×'; position: absolute; inset: 0; font-size: 6mm; line-height: 5mm; text-align: center; font-weight: bold }
+.eq { display: flex; align-items: center; gap: 2.4mm; flex-wrap: wrap }
+.op { font-size: 9mm; font-weight: bold; width: 8mm; text-align: center }
+.seq { display: flex; gap: 1.4mm; align-items: center; flex-wrap: wrap }
+.seq .n { width: 12.6mm; height: 12.6mm; font-size: 7mm; border: .6mm solid #111; border-radius: 2mm; display: flex; align-items: center; justify-content: center }
+.seq .n.b { border-style: solid; background: #fff }
+.seq .n.g { border: .4mm dashed #888 }
+.hint { font-size: 3.6mm; color: #333 }
+.foot { margin-top: auto; display: flex; align-items: center; gap: 4mm; border-top: .5mm dashed #666; padding-top: 2mm; font-size: 4.4mm }
+.stars { font-size: 8mm; letter-spacing: 1.6mm }
+.stamp { width: 14mm; height: 14mm; border: .6mm dashed #666; border-radius: 50%; display: inline-block }
+.tag { display: inline-flex; align-items: center; gap: 1.2mm; border: .6mm solid #111; border-radius: 2mm; padding: .5mm 2mm; font-size: 5.6mm; font-weight: bold; background: #fff }
+.item { display: flex; flex-direction: column; align-items: center; gap: 1mm; text-align: center }
+.item img { height: 14mm; width: auto; max-width: 30mm; object-fit: contain }
+.item.lg img { height: 24mm; max-width: 30mm }
+.nm { font-size: 3.8mm }
+.coin { display: inline-block }
+.coins { display: flex; flex-wrap: wrap; gap: 1.2mm; align-items: center }
+.plate img { height: 10mm; width: auto; display: block }
+.plate { border: .6mm solid #111; border-radius: 50% / 45%; height: 21mm; flex: 1 1 0; display: flex; align-items: center; justify-content: center; gap: 1mm; flex-wrap: wrap; padding: 1mm 4mm }
+.order { border: .6mm solid #111; border-radius: 2mm; padding: 1.2mm 3mm; display: flex; align-items: center; gap: 2.4mm; background: #fff; white-space: nowrap }
+.order img { height: 9mm; width: auto }
+.coin { filter: none }
+.stack { display: flex; flex-direction: column-reverse; align-items: center; justify-content: flex-start }
+.stack img { display: block; width: 32mm; height: auto; margin-top: -3.6mm }
+.stack img:first-child { margin-top: 0 }
+.note { font-size: 3.7mm; color: #333 }
+.big { font-size: 9mm; font-weight: bold }
+.blank { border-bottom: .5mm solid #111; display: inline-block; min-width: 18mm; height: 8mm; vertical-align: bottom }
+.checks { display: flex; flex-wrap: wrap; gap: 2mm 6mm; font-size: 4.6mm }
+.checks span::before { content: '□ '; font-size: 5.6mm }
+.clock { display: inline-block }
+
+.chips { display: flex; flex-wrap: wrap; gap: 1.2mm 1.6mm }
+.cat { display: flex; gap: 2.4mm; align-items: flex-start; padding: .9mm 0; border-bottom: .3mm dashed #999 }
+.cat:last-child { border-bottom: 0 }
+.cn { width: 25mm; font-size: 4mm; font-weight: bold; flex: none; padding-top: .8mm }
+.cn small { font-weight: normal; font-size: 3mm; display: block; color: #444 }
+.chip { border: .4mm solid #555; border-radius: 1.6mm; padding: .5mm 1.8mm; font-size: 3.6mm; display: flex; gap: 1.6mm; align-items: baseline; background: #fff }
+.chip b { font-size: 3.4mm; font-weight: bold }
+.title { font-size: 6.4mm !important }
+.chip.on { background: #e2e2e2; border: .8mm solid #111 }
+.q > table.tbl { flex: none; margin-bottom: 1mm }
+.tbl { width: 100%; border-collapse: collapse; font-size: 4.6mm }
+.tbl th { font-size: 3.6mm; font-weight: normal; border-bottom: .5mm solid #111; padding: 0 1mm 1mm; text-align: left }
+.tbl td { padding: .3mm 1mm; border-bottom: .3mm dashed #999; height: 8.6mm }
+.many .tbl td { height: 7.6mm; font-size: 4.2mm }
+.many ~ .q .art img { max-height: 40mm }
+.many .fill { height: 6.4mm; line-height: 5.6mm }
+.tbl td.n { font-weight: bold }
+.fill { display: inline-block; min-width: 20mm; height: 7.4mm; border: .6mm solid #111; border-radius: 1.6mm; vertical-align: middle; text-align: center; line-height: 6.6mm; font-size: 5mm }
+.fill.s { min-width: 12mm }
+.two { display: flex; gap: 4mm; flex: 1 1 auto; align-items: stretch }
+.two > .q { flex: 1 1 0 }
+.art { display: flex; align-items: center; justify-content: center; flex: 1 1 auto; padding: 1mm }
+.art img { max-width: 100%; max-height: 62mm; object-fit: contain }
+.ops { display: flex; gap: 3mm; align-items: center }
+.opc { width: 9mm; height: 9mm; border: .6mm solid #111; border-radius: 50%; font-size: 6.4mm; font-weight: bold; display: flex; align-items: center; justify-content: center }
+.qtext { font-size: 4.4mm; line-height: 1.4; margin-bottom: 1.2mm }
+.shiki { display: flex; align-items: center; gap: 2mm; font-size: 6.4mm }
+.shiki .fill { height: 10mm; min-width: 24mm; font-size: 6.4mm; line-height: 9mm }
+.shiki .fill.w { min-width: 34mm }
+.lab { font-size: 4mm; margin-right: 2mm }
+.recpt { border: .5mm dashed #555; border-radius: 2mm; padding: .8mm 3mm; font-size: 3.8mm; margin-bottom: 1.2mm; column-count: 2; column-gap: 8mm }
+.recpt div { display: flex; justify-content: space-between; border-bottom: .25mm dotted #aaa; padding: .2mm 0; break-inside: avoid }
+.recpt div:last-child { border-bottom: 0 }
+.sc { display: flex; gap: 3mm; font-size: 4.4mm; align-items: center; flex-wrap: wrap }
+.sc span::before { content: '□ '; font-size: 5.4mm }
+.ans-page { width: 210mm; height: 297mm; padding: 10mm 13mm 8mm; page-break-after: always; overflow: hidden; display: flex; flex-direction: column; gap: 2.4mm }
+.ans-page h1 { font-size: 7.2mm; margin: 0 0 1mm; border-bottom: 1.2mm solid #111; padding-bottom: 1.5mm }
+.dayrow { border: .5mm solid #111; border-radius: 2.6mm; padding: 1.6mm 3.4mm; font-size: 3.9mm; line-height: 1.5 }
+.dayrow h2 { margin: 0 0 .6mm; font-size: 4.7mm }
+.dayrow .pt { display: inline }
+.dayrow p { margin: .2mm 0 }
+.dayrow b { font-weight: bold }
+.cap { font-size: 3.6mm; color: #333; margin-top: 1mm }
+</style></head><body><section class="ans-page"><h1>せんせいよう　こたえと ポイント（1/3）</h1><div class="dayrow" style="background:#f2f2f2"><h2>つかいかた・ポイント</h2><p>・1にち1まい（おもて・うら）。10にちで アプリの 9つの おみせ（ハンバーガー・カレー・パフェ・ピザ・プラレール・パンケーキ・カスタムカー・おすし・ロボット）を ひとまわり、10にちめは ジャイアントバーガー（2000えん）です。</p><p>・おもての ねだんは アプリと おなじです。まず 1この ねだんを ねだんひょうから さがして かきます（ぬりつぶした ところが きょうの かいもの）。</p><p>・うらは アプリの おかいけいと おなじ ながれ：①かけざん（または たしざん）→ ②ごうけい → ③おつり。「どの けいさん？」で ＋－×÷から えらぶ れんしゅうも アプリと おなじです。</p><p>・かけざんが にがてな ときは、おなじ ねだんを 2かい ならべて たす（250＋250）ことから。でんたく・おかねの おもちゃを つかっても よいです。</p><p>・おもての 3の えは、アプリで おなじ ざいりょうを えらぶと できる えと おなじです。いっしょに アプリでも ためしてみましょう。</p></div><div class="dayrow"><h2>1にちめ　ハンバーガー：はじめての ハンバーガー　（おこづかい 1,000えん）</h2><p><b>おもて 2：</b>ふつうのバンズ 80×1=80、ぎゅうにく 250×1=250、レタス 50×1=50、トマト 60×1=60、ケチャップ 20×1=20</p><p><b>うら 4：</b>＋　250 ＋ 80 ＝ <b>330えん</b>　<b>5：</b>＋　ごうけい <b>460えん</b>　<b>6：</b>－　1,000 － 460 ＝ <b>540えん</b></p><p><b>7：</b>おつり 540えんで かえるもの（れい）：ごまバンズ, チキン, フィッシュ, やさいパティ, たまねぎ, ピクルス, チーズ, ベーコン, めだまやき, マスタ</p></div><div class="dayrow"><h2>2にちめ　カレー：とりにくカレー　（おこづかい 1,000えん）</h2><p><b>おもて 2：</b>とりにく 250×1=250、にんじん 80×2=160、あまくちルウ 200×1=200、ごはん 150×1=150</p><p><b>うら 4：</b>×　80 × 2 ＝ <b>160えん</b>　<b>5：</b>＋　ごうけい <b>760えん</b>　<b>6：</b>－　1,000 － 760 ＝ <b>240えん</b></p><p><b>7：</b>おつり 240えんで かえるもの（れい）：じゃがいも, たまねぎ, ピーマン, なす, かぼちゃ, からくちルウ, ゆでたまご, チーズ, ふくじんづけ</p></div><div class="dayrow"><h2>3にちめ　パフェ：いちごのパフェ　（おこづかい 1,000えん）</h2><p><b>おもて 2：</b>グラス 150×1=150、コーンフレーク 100×1=100、バニラ 130×1=130、いちご 200×1=200、ホイップ 120×1=120</p><p><b>うら 4：</b>＋　200 ＋ 150 ＝ <b>350えん</b>　<b>5：</b>＋　ごうけい <b>700えん</b>　<b>6：</b>－　1,000 － 700 ＝ <b>300えん</b></p><p><b>7：</b>おつり 300えんで かえるもの（れい）：ジャンボグラス, グラノーラ, プリン, チョコ, いちごアイス, まっちゃ, バナナ, みかん, さくらんぼ, キウイ</p></div></section><section class="ans-page"><h1>せんせいよう　こたえと ポイント（2/3）</h1><div class="dayrow"><h2>4にちめ　ピザ：サラミのピザ　（おこづかい 1,000えん）</h2><p><b>おもて 2：</b>うすやき 200×1=200、トマトソース 80×1=80、モッツァレラ 150×1=150、サラミ 120×2=240、コーン 60×1=60</p><p><b>うら 4：</b>×　120 × 2 ＝ <b>240えん</b>　<b>5：</b>＋　ごうけい <b>730えん</b>　<b>6：</b>－　1,000 － 730 ＝ <b>270えん</b></p><p><b>7：</b>おつり 270えんで かえるもの（れい）：あつやき, ホワイトソース, チェダー, えび, マッシュルーム, パイナップル, ピーマン</p></div><div class="dayrow"><h2>5にちめ　プラレールの駅：京阪電車の えき　（おこづかい 1,000えん）</h2><p><b>おもて 2：</b>まっすぐレール 80×2=160、カーブレール 100×1=100、えきしゃ 300×1=300、京阪電車 350×1=350</p><p><b>うら 4：</b>×　80 × 2 ＝ <b>160えん</b>　<b>5：</b>＋　ごうけい <b>910えん</b>　<b>6：</b>－　1,000 － 910 ＝ <b>90えん</b></p><p><b>7：</b>おつり 90えんで かえるもの（れい）：木, しんごう</p></div><div class="dayrow"><h2>6にちめ　パンケーキ：バナナのパンケーキ　（おこづかい 1,000えん）</h2><p><b>おもて 2：</b>ふつうのパンケーキ 200×1=200、メープル 80×1=80、いちご 200×1=200、バナナ 100×2=200、バター 50×1=50</p><p><b>うら 4：</b>×　100 × 2 ＝ <b>200えん</b>　<b>5：</b>＋　ごうけい <b>730えん</b>　<b>6：</b>－　1,000 － 730 ＝ <b>270えん</b></p><p><b>7：</b>おつり 270えんで かえるもの（れい）：ミニパンケーキ, はちみつ, チョコソース, ブルーベリー, みかん, ホイップ, アイス, こなざとう</p></div><div class="dayrow"><h2>7にちめ　カスタムカー：あかいスポーツカー　（おこづかい 1,000えん）</h2><p><b>おもて 2：</b>スポーツカー 350×1=350、あかいペンキ 50×1=50、ふつうのタイヤ 80×1=80、ウイング 120×1=120、ライト 80×2=160</p><p><b>うら 4：</b>×　80 × 2 ＝ <b>160えん</b>　<b>5：</b>＋　ごうけい <b>760えん</b>　<b>6：</b>－　1,000 － 760 ＝ <b>240えん</b></p><p><b>7：</b>おつり 240えんで かえるもの（れい）：あおいペンキ, きいろのペンキ, くろいペンキ, ピカピカホイール, ステッカー, マフラー, ネオン</p></div></section><section class="ans-page"><h1>せんせいよう　こたえと ポイント（3/3）</h1><div class="dayrow"><h2>8にちめ　お寿司：まぐろの おすし　（おこづかい 1,000えん）</h2><p><b>おもて 2：</b>にぎりずし 100×1=100、まぐろ 200×2=400、サーモン 150×1=150、たまご 80×1=80、わさび 30×1=30、おちゃ 60×1=60</p><p><b>うら 4：</b>×　200 × 2 ＝ <b>400えん</b>　<b>5：</b>＋　ごうけい <b>820えん</b>　<b>6：</b>－　1,000 － 820 ＝ <b>180えん</b></p><p><b>7：</b>おつり 180えんで かえるもの（れい）：まきずし, えび, いか, おしょうゆ, ガリ, みそしる</p></div><div class="dayrow"><h2>9にちめ　ロボット：あおい あるくロボ　（おこづかい 1,000えん）</h2><p><b>おもて 2：</b>あるくロボ 350×1=350、あおいペンキ 50×1=50、でんち 100×1=100、ビームアイ 90×1=90、アンテナ 40×1=40</p><p><b>うら 4：</b>＋　350 ＋ 100 ＝ <b>450えん</b>　<b>5：</b>＋　ごうけい <b>630えん</b>　<b>6：</b>－　1,000 － 630 ＝ <b>370えん</b></p><p><b>7：</b>おつり 370えんで かえるもの（れい）：はしるロボ, あかいペンキ, きいろのペンキ, ぎんいろのペンキ, ソーラーパネル, ロケットパンチ, ジェット, シー</p></div><div class="dayrow"><h2>10にちめ　ハンバーガー：ジャイアントバーガーセット　（おこづかい 2,000えん）</h2><p><b>おもて 2：</b>ごまバンズ 100×1=100、ぎゅうにく 250×3=750、レタス 50×1=50、トマト 60×1=60、チーズ 70×1=70、ベーコン 100×1=100、ケチャップ 20×1=20、ポテト 120×1=120、ドリンク 100×1=100</p><p><b>うら 4：</b>×　250 × 3 ＝ <b>750えん</b>　<b>5：</b>＋　ごうけい <b>1,370えん</b>　<b>6：</b>－　2,000 － 1,370 ＝ <b>630えん</b></p><p><b>7：</b>おつり 630えんで かえるもの（れい）：ふつうのバンズ, チキン, フィッシュ, やさいパティ, たまねぎ, ピクルス, めだまやき, マスタード, バーベキュ</p></div></section></body></html>

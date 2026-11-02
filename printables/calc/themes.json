@@ -1,0 +1,1540 @@
+{
+ "curry": {
+  "name": "カレー",
+  "title": "カレーを作ろう",
+  "emoji": "🍛",
+  "desc": "お肉・野菜・ルウ・ごはんをそろえよう",
+  "cats": [
+   {
+    "id": "meat",
+    "name": "おにく",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "chicken",
+      "name": "とりにく",
+      "price": 250,
+      "e": "🍗"
+     },
+     {
+      "id": "beef",
+      "name": "ぎゅうにく",
+      "price": 400,
+      "e": "🥩"
+     },
+     {
+      "id": "pork",
+      "name": "ぶたにく",
+      "price": 300,
+      "e": "🥓"
+     }
+    ]
+   },
+   {
+    "id": "veg",
+    "name": "やさい",
+    "min": 2,
+    "hint": "あわせて2こ以上",
+    "items": [
+     {
+      "id": "carrot",
+      "name": "にんじん",
+      "price": 80,
+      "e": "🥕"
+     },
+     {
+      "id": "potato",
+      "name": "じゃがいも",
+      "price": 100,
+      "e": "🥔"
+     },
+     {
+      "id": "onion",
+      "name": "たまねぎ",
+      "price": 90,
+      "e": "🧅"
+     },
+     {
+      "id": "pepper",
+      "name": "ピーマン",
+      "price": 70,
+      "e": "🫑"
+     },
+     {
+      "id": "eggplant",
+      "name": "なす",
+      "price": 120,
+      "e": "🍆"
+     },
+     {
+      "id": "pumpkin",
+      "name": "かぼちゃ",
+      "price": 150,
+      "e": "🎃"
+     }
+    ]
+   },
+   {
+    "id": "roux",
+    "name": "ルウ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "sweet",
+      "name": "あまくちルウ",
+      "price": 200,
+      "e": "🍲"
+     },
+     {
+      "id": "hot",
+      "name": "からくちルウ",
+      "price": 220,
+      "e": "🌶️"
+     }
+    ]
+   },
+   {
+    "id": "rice",
+    "name": "ごはん",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "rice",
+      "name": "ごはん",
+      "price": 150,
+      "e": "🍚"
+     }
+    ]
+   },
+   {
+    "id": "top",
+    "name": "トッピング",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "egg",
+      "name": "ゆでたまご",
+      "price": 60,
+      "e": "🥚"
+     },
+     {
+      "id": "cheese",
+      "name": "チーズ",
+      "price": 120,
+      "e": "🧀"
+     },
+     {
+      "id": "fuku",
+      "name": "ふくじんづけ",
+      "price": 90,
+      "e": "🥬"
+     }
+    ]
+   }
+  ]
+ },
+ "parfait": {
+  "name": "パフェ",
+  "title": "パフェを作ろう",
+  "emoji": "🍨",
+  "desc": "グラスにアイスとフルーツをもりつけよう",
+  "cats": [
+   {
+    "id": "glass",
+    "name": "うつわ",
+    "min": 1,
+    "hint": "1こ",
+    "items": [
+     {
+      "id": "glass",
+      "name": "グラス",
+      "price": 150,
+      "e": "🥃"
+     },
+     {
+      "id": "jumbo",
+      "name": "ジャンボグラス",
+      "price": 250,
+      "e": "🏺"
+     }
+    ]
+   },
+   {
+    "id": "base",
+    "name": "した（ベース）",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "corn",
+      "name": "コーンフレーク",
+      "price": 100,
+      "e": "🌽"
+     },
+     {
+      "id": "granola",
+      "name": "グラノーラ",
+      "price": 120,
+      "e": "🥣"
+     },
+     {
+      "id": "pudding",
+      "name": "プリン",
+      "price": 150,
+      "e": "🍮"
+     }
+    ]
+   },
+   {
+    "id": "ice",
+    "name": "アイス",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "vanilla",
+      "name": "バニラ",
+      "price": 130,
+      "e": "🍦"
+     },
+     {
+      "id": "choco",
+      "name": "チョコ",
+      "price": 130,
+      "e": "🍫"
+     },
+     {
+      "id": "berry",
+      "name": "いちごアイス",
+      "price": 140,
+      "e": "🍧"
+     },
+     {
+      "id": "matcha",
+      "name": "まっちゃ",
+      "price": 150,
+      "e": "🍵"
+     }
+    ]
+   },
+   {
+    "id": "fruit",
+    "name": "フルーツ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "strawberry",
+      "name": "いちご",
+      "price": 200,
+      "e": "🍓"
+     },
+     {
+      "id": "banana",
+      "name": "バナナ",
+      "price": 100,
+      "e": "🍌"
+     },
+     {
+      "id": "mikan",
+      "name": "みかん",
+      "price": 90,
+      "e": "🍊"
+     },
+     {
+      "id": "cherry",
+      "name": "さくらんぼ",
+      "price": 150,
+      "e": "🍒"
+     },
+     {
+      "id": "kiwi",
+      "name": "キウイ",
+      "price": 130,
+      "e": "🥝"
+     }
+    ]
+   },
+   {
+    "id": "cream",
+    "name": "クリーム",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "whip",
+      "name": "ホイップ",
+      "price": 120,
+      "e": "☁️"
+     },
+     {
+      "id": "custard",
+      "name": "カスタード",
+      "price": 100,
+      "e": "🍯"
+     }
+    ]
+   },
+   {
+    "id": "top",
+    "name": "トッピング",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "sauce",
+      "name": "チョコソース",
+      "price": 60,
+      "e": "🟤"
+     },
+     {
+      "id": "wafer",
+      "name": "ウエハース",
+      "price": 80,
+      "e": "🧇"
+     },
+     {
+      "id": "stick",
+      "name": "スティックチョコ",
+      "price": 90,
+      "e": "🥢"
+     },
+     {
+      "id": "sprinkle",
+      "name": "スプリンクル",
+      "price": 50,
+      "e": "✨"
+     }
+    ]
+   }
+  ]
+ },
+ "plarail": {
+  "name": "プラレールの駅",
+  "title": "プラレールで駅を作ろう",
+  "emoji": "🚉",
+  "desc": "レールと駅と電車をそろえてジオラマに",
+  "cats": [
+   {
+    "id": "rail",
+    "name": "レール",
+    "min": 2,
+    "hint": "あわせて2こ以上",
+    "items": [
+     {
+      "id": "straight",
+      "name": "まっすぐレール",
+      "price": 80,
+      "e": "➖"
+     },
+     {
+      "id": "curve",
+      "name": "カーブレール",
+      "price": 100,
+      "e": "⤴️"
+     }
+    ]
+   },
+   {
+    "id": "station",
+    "name": "えき",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "building",
+      "name": "えきしゃ",
+      "price": 300,
+      "e": "🚉"
+     },
+     {
+      "id": "platform",
+      "name": "ホーム",
+      "price": 200,
+      "e": "🚏"
+     }
+    ]
+   },
+   {
+    "id": "train",
+    "name": "でんしゃ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "shinkansen",
+      "name": "しんかんせん",
+      "price": 400,
+      "e": "🚄"
+     },
+     {
+      "id": "train",
+      "name": "でんしゃ",
+      "price": 300,
+      "e": "🚃"
+     },
+     {
+      "id": "sl",
+      "name": "きかんしゃ",
+      "price": 350,
+      "e": "🚂"
+     },
+     {
+      "id": "keihan",
+      "name": "京阪電車",
+      "price": 350,
+      "e": "🚆"
+     },
+     {
+      "id": "kintetsu",
+      "name": "近鉄電車",
+      "price": 350,
+      "e": "🚆"
+     }
+    ]
+   },
+   {
+    "id": "extra",
+    "name": "そえもの",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "crossing",
+      "name": "ふみきり",
+      "price": 150,
+      "e": "🚧"
+     },
+     {
+      "id": "tunnel",
+      "name": "トンネル",
+      "price": 250,
+      "e": "⛰️"
+     },
+     {
+      "id": "tree",
+      "name": "木",
+      "price": 40,
+      "e": "🌳"
+     },
+     {
+      "id": "signal",
+      "name": "しんごう",
+      "price": 80,
+      "e": "🚦"
+     },
+     {
+      "id": "bridge",
+      "name": "はし",
+      "price": 200,
+      "e": "🌉"
+     }
+    ]
+   }
+  ]
+ },
+ "car": {
+  "name": "カスタムカー",
+  "title": "カスタムカーを作ろう",
+  "emoji": "🏎️",
+  "desc": "ボディ・色・タイヤ・パーツで自分だけの車に",
+  "cats": [
+   {
+    "id": "body",
+    "name": "ボディ",
+    "min": 1,
+    "hint": "1こ",
+    "items": [
+     {
+      "id": "sports",
+      "name": "スポーツカー",
+      "price": 350,
+      "e": "🏎️"
+     },
+     {
+      "id": "kei",
+      "name": "けいカー",
+      "price": 250,
+      "e": "🚗"
+     },
+     {
+      "id": "truck",
+      "name": "トラック",
+      "price": 300,
+      "e": "🛻"
+     }
+    ]
+   },
+   {
+    "id": "paint",
+    "name": "いろ（ペンキ）",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "red",
+      "name": "あかいペンキ",
+      "price": 50,
+      "e": "🟥"
+     },
+     {
+      "id": "blue",
+      "name": "あおいペンキ",
+      "price": 50,
+      "e": "🟦"
+     },
+     {
+      "id": "yellow",
+      "name": "きいろのペンキ",
+      "price": 50,
+      "e": "🟨"
+     },
+     {
+      "id": "black",
+      "name": "くろいペンキ",
+      "price": 60,
+      "e": "⬛"
+     }
+    ]
+   },
+   {
+    "id": "wheel",
+    "name": "タイヤ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "tire",
+      "name": "ふつうのタイヤ",
+      "price": 80,
+      "e": "⚫"
+     },
+     {
+      "id": "alloy",
+      "name": "ピカピカホイール",
+      "price": 150,
+      "e": "⚙️"
+     }
+    ]
+   },
+   {
+    "id": "parts",
+    "name": "カスタムパーツ",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "wing",
+      "name": "ウイング",
+      "price": 120,
+      "e": "🪽"
+     },
+     {
+      "id": "light",
+      "name": "ライト",
+      "price": 80,
+      "e": "💡"
+     },
+     {
+      "id": "sticker",
+      "name": "ステッカー",
+      "price": 40,
+      "e": "⭐"
+     },
+     {
+      "id": "muffler",
+      "name": "マフラー",
+      "price": 100,
+      "e": "💨"
+     },
+     {
+      "id": "neon",
+      "name": "ネオン",
+      "price": 130,
+      "e": "✨"
+     }
+    ]
+   }
+  ]
+ },
+ "pancake": {
+  "name": "パンケーキ",
+  "title": "パンケーキを作ろう",
+  "emoji": "🥞",
+  "desc": "ふわふわのパンケーキにソースとフルーツをのせよう",
+  "cats": [
+   {
+    "id": "cake",
+    "name": "パンケーキ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "plain",
+      "name": "ふつうのパンケーキ",
+      "price": 200,
+      "e": "🥞"
+     },
+     {
+      "id": "souffle",
+      "name": "スフレパンケーキ",
+      "price": 300,
+      "e": "🍮"
+     },
+     {
+      "id": "mini",
+      "name": "ミニパンケーキ",
+      "price": 150,
+      "e": "🧁"
+     }
+    ]
+   },
+   {
+    "id": "sauce",
+    "name": "ソース",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "maple",
+      "name": "メープル",
+      "price": 80,
+      "e": "🍁"
+     },
+     {
+      "id": "honey",
+      "name": "はちみつ",
+      "price": 90,
+      "e": "🍯"
+     },
+     {
+      "id": "chocosauce",
+      "name": "チョコソース",
+      "price": 60,
+      "e": "🍫"
+     }
+    ]
+   },
+   {
+    "id": "fruit",
+    "name": "フルーツ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "strawberry",
+      "name": "いちご",
+      "price": 200,
+      "e": "🍓"
+     },
+     {
+      "id": "banana",
+      "name": "バナナ",
+      "price": 100,
+      "e": "🍌"
+     },
+     {
+      "id": "blueberry",
+      "name": "ブルーベリー",
+      "price": 180,
+      "e": "🫐"
+     },
+     {
+      "id": "mikan",
+      "name": "みかん",
+      "price": 90,
+      "e": "🍊"
+     }
+    ]
+   },
+   {
+    "id": "top",
+    "name": "トッピング",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "butter",
+      "name": "バター",
+      "price": 50,
+      "e": "🧈"
+     },
+     {
+      "id": "whip",
+      "name": "ホイップ",
+      "price": 120,
+      "e": "☁️"
+     },
+     {
+      "id": "icecream",
+      "name": "アイス",
+      "price": 130,
+      "e": "🍦"
+     },
+     {
+      "id": "sugar",
+      "name": "こなざとう",
+      "price": 30,
+      "e": "❄️"
+     }
+    ]
+   }
+  ]
+ },
+ "robot": {
+  "name": "ロボット",
+  "title": "ロボットを作ろう",
+  "emoji": "🤖",
+  "desc": "ボディ・色・でんげん・パーツで自分だけのロボに",
+  "cats": [
+   {
+    "id": "body",
+    "name": "ボディ",
+    "min": 1,
+    "hint": "1こ",
+    "items": [
+     {
+      "id": "biped",
+      "name": "あるくロボ",
+      "price": 350,
+      "e": "🚶"
+     },
+     {
+      "id": "wheel",
+      "name": "はしるロボ",
+      "price": 250,
+      "e": "🛞"
+     },
+     {
+      "id": "fly",
+      "name": "とぶロボ",
+      "price": 400,
+      "e": "🚀"
+     }
+    ]
+   },
+   {
+    "id": "paint",
+    "name": "いろ（ペンキ）",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "red",
+      "name": "あかいペンキ",
+      "price": 50,
+      "e": "🟥"
+     },
+     {
+      "id": "blue",
+      "name": "あおいペンキ",
+      "price": 50,
+      "e": "🟦"
+     },
+     {
+      "id": "yellow",
+      "name": "きいろのペンキ",
+      "price": 50,
+      "e": "🟨"
+     },
+     {
+      "id": "silver",
+      "name": "ぎんいろのペンキ",
+      "price": 70,
+      "e": "⬜"
+     }
+    ]
+   },
+   {
+    "id": "power",
+    "name": "でんげん",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "battery",
+      "name": "でんち",
+      "price": 100,
+      "e": "🔋"
+     },
+     {
+      "id": "solar",
+      "name": "ソーラーパネル",
+      "price": 180,
+      "e": "☀️"
+     }
+    ]
+   },
+   {
+    "id": "parts",
+    "name": "ロボットパーツ",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "arm",
+      "name": "ロケットパンチ",
+      "price": 150,
+      "e": "👊"
+     },
+     {
+      "id": "eye",
+      "name": "ビームアイ",
+      "price": 90,
+      "e": "👁️"
+     },
+     {
+      "id": "antenna",
+      "name": "アンテナ",
+      "price": 40,
+      "e": "📡"
+     },
+     {
+      "id": "jet",
+      "name": "ジェット",
+      "price": 130,
+      "e": "🔥"
+     },
+     {
+      "id": "shield",
+      "name": "シールド",
+      "price": 120,
+      "e": "🛡️"
+     }
+    ]
+   }
+  ]
+ },
+ "pizza": {
+  "name": "ピザ",
+  "title": "ピザを作ろう",
+  "emoji": "🍕",
+  "desc": "きじ・ソース・チーズ・ぐをのせて焼こう",
+  "cats": [
+   {
+    "id": "crust",
+    "name": "きじ",
+    "min": 1,
+    "hint": "1こ",
+    "items": [
+     {
+      "id": "thin",
+      "name": "うすやき",
+      "price": 200,
+      "e": "🫓"
+     },
+     {
+      "id": "thick",
+      "name": "あつやき",
+      "price": 250,
+      "e": "🍞"
+     },
+     {
+      "id": "cheesecrust",
+      "name": "チーズのふち",
+      "price": 350,
+      "e": "🧀"
+     }
+    ]
+   },
+   {
+    "id": "sauce",
+    "name": "ソース",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "tomato",
+      "name": "トマトソース",
+      "price": 80,
+      "e": "🍅"
+     },
+     {
+      "id": "white",
+      "name": "ホワイトソース",
+      "price": 100,
+      "e": "🥛"
+     }
+    ]
+   },
+   {
+    "id": "cheese",
+    "name": "チーズ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "mozza",
+      "name": "モッツァレラ",
+      "price": 150,
+      "e": "🧀"
+     },
+     {
+      "id": "cheddar",
+      "name": "チェダー",
+      "price": 120,
+      "e": "🟨"
+     }
+    ]
+   },
+   {
+    "id": "top",
+    "name": "ぐ（トッピング）",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "salami",
+      "name": "サラミ",
+      "price": 120,
+      "e": "🍖"
+     },
+     {
+      "id": "shrimp",
+      "name": "えび",
+      "price": 180,
+      "e": "🦐"
+     },
+     {
+      "id": "corn",
+      "name": "コーン",
+      "price": 60,
+      "e": "🌽"
+     },
+     {
+      "id": "mushroom",
+      "name": "マッシュルーム",
+      "price": 80,
+      "e": "🍄"
+     },
+     {
+      "id": "pineapple",
+      "name": "パイナップル",
+      "price": 90,
+      "e": "🍍"
+     },
+     {
+      "id": "pepper",
+      "name": "ピーマン",
+      "price": 50,
+      "e": "🫑"
+     }
+    ]
+   }
+  ]
+ },
+ "sushi": {
+  "name": "お寿司",
+  "title": "お寿司を作ろう",
+  "emoji": "🍣",
+  "desc": "シャリにネタをのせて、おすしやさんごっこ",
+  "cats": [
+   {
+    "id": "style",
+    "name": "かたち",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "nigiri",
+      "name": "にぎりずし",
+      "price": 100,
+      "e": "🍙"
+     },
+     {
+      "id": "maki",
+      "name": "まきずし",
+      "price": 150,
+      "e": "🍥"
+     }
+    ]
+   },
+   {
+    "id": "neta",
+    "name": "ネタ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "tuna",
+      "name": "まぐろ",
+      "price": 200,
+      "e": "🐟"
+     },
+     {
+      "id": "salmon",
+      "name": "サーモン",
+      "price": 150,
+      "e": "🍣"
+     },
+     {
+      "id": "egg",
+      "name": "たまご",
+      "price": 80,
+      "e": "🥚"
+     },
+     {
+      "id": "shrimp",
+      "name": "えび",
+      "price": 120,
+      "e": "🦐"
+     },
+     {
+      "id": "squid",
+      "name": "いか",
+      "price": 100,
+      "e": "🦑"
+     },
+     {
+      "id": "ikura",
+      "name": "いくら",
+      "price": 250,
+      "e": "🔴"
+     },
+     {
+      "id": "eel",
+      "name": "うなぎ",
+      "price": 300,
+      "e": "🐍"
+     }
+    ]
+   },
+   {
+    "id": "side",
+    "name": "おとも",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "wasabi",
+      "name": "わさび",
+      "price": 30,
+      "e": "🟩"
+     },
+     {
+      "id": "shoyu",
+      "name": "おしょうゆ",
+      "price": 20,
+      "e": "🫙"
+     },
+     {
+      "id": "gari",
+      "name": "ガリ",
+      "price": 40,
+      "e": "🌸"
+     },
+     {
+      "id": "tea",
+      "name": "おちゃ",
+      "price": 60,
+      "e": "🍵"
+     },
+     {
+      "id": "miso",
+      "name": "みそしる",
+      "price": 100,
+      "e": "🥣"
+     }
+    ]
+   }
+  ]
+ },
+ "icecream": {
+  "name": "アイスクリーム",
+  "title": "アイスクリームを作ろう",
+  "emoji": "🍦",
+  "desc": "コーンやカップにアイスをのせて、トッピングでかざろう",
+  "cats": [
+   {
+    "id": "holder",
+    "name": "いれもの",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "cone",
+      "name": "コーン",
+      "price": 150,
+      "e": "🍦"
+     },
+     {
+      "id": "waffle",
+      "name": "ワッフルコーン",
+      "price": 200,
+      "e": "🧇"
+     },
+     {
+      "id": "cup",
+      "name": "カップ",
+      "price": 120,
+      "e": "🥣"
+     }
+    ]
+   },
+   {
+    "id": "flavor",
+    "name": "アイス",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "vanilla",
+      "name": "バニラ",
+      "price": 130,
+      "e": "🍦"
+     },
+     {
+      "id": "choco",
+      "name": "チョコ",
+      "price": 130,
+      "e": "🍫"
+     },
+     {
+      "id": "strawberry",
+      "name": "いちご",
+      "price": 140,
+      "e": "🍓"
+     },
+     {
+      "id": "matcha",
+      "name": "まっちゃ",
+      "price": 150,
+      "e": "🍵"
+     },
+     {
+      "id": "mint",
+      "name": "ミント",
+      "price": 140,
+      "e": "🌿"
+     }
+    ]
+   },
+   {
+    "id": "top",
+    "name": "トッピング",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "sauce",
+      "name": "チョコソース",
+      "price": 60,
+      "e": "🟤"
+     },
+     {
+      "id": "sprinkle",
+      "name": "スプリンクル",
+      "price": 50,
+      "e": "✨"
+     },
+     {
+      "id": "cherry",
+      "name": "さくらんぼ",
+      "price": 150,
+      "e": "🍒"
+     },
+     {
+      "id": "wafer",
+      "name": "ウエハース",
+      "price": 80,
+      "e": "🧇"
+     },
+     {
+      "id": "whip",
+      "name": "ホイップ",
+      "price": 120,
+      "e": "☁️"
+     }
+    ]
+   }
+  ]
+ },
+ "gyudon": {
+  "name": "牛丼",
+  "title": "牛丼を作ろう",
+  "emoji": "🍲",
+  "desc": "ごはんにお肉をのせて、トッピングとセットをえらぼう",
+  "cats": [
+   {
+    "id": "size",
+    "name": "サイズ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "regular",
+      "name": "なみもり",
+      "price": 400,
+      "e": "🍚"
+     },
+     {
+      "id": "large",
+      "name": "おおもり",
+      "price": 500,
+      "e": "🍚"
+     },
+     {
+      "id": "xl",
+      "name": "とくもり",
+      "price": 600,
+      "e": "🍚"
+     }
+    ]
+   },
+   {
+    "id": "top",
+    "name": "トッピング",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "egg",
+      "name": "たまご",
+      "price": 70,
+      "e": "🥚"
+     },
+     {
+      "id": "cheese",
+      "name": "チーズ",
+      "price": 120,
+      "e": "🧀"
+     },
+     {
+      "id": "negi",
+      "name": "ねぎ",
+      "price": 60,
+      "e": "🌱"
+     },
+     {
+      "id": "shoga",
+      "name": "べにしょうが",
+      "price": 40,
+      "e": "🔴"
+     },
+     {
+      "id": "kimchi",
+      "name": "キムチ",
+      "price": 100,
+      "e": "🌶️"
+     }
+    ]
+   },
+   {
+    "id": "set",
+    "name": "セット",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "miso",
+      "name": "みそしる",
+      "price": 100,
+      "e": "🥣"
+     },
+     {
+      "id": "salad",
+      "name": "サラダ",
+      "price": 150,
+      "e": "🥗"
+     },
+     {
+      "id": "shinko",
+      "name": "おしんこ",
+      "price": 80,
+      "e": "🥒"
+     },
+     {
+      "id": "tea",
+      "name": "おちゃ",
+      "price": 60,
+      "e": "🍵"
+     }
+    ]
+   }
+  ]
+ },
+ "ramen": {
+  "name": "ラーメン",
+  "title": "ラーメンを作ろう",
+  "emoji": "🍜",
+  "desc": "ラーメンのしゅるいと、トッピング・セットをえらぼう",
+  "cats": [
+   {
+    "id": "bowl",
+    "name": "ラーメン",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "shoyu",
+      "name": "しょうゆラーメン",
+      "price": 350,
+      "e": "🍜"
+     },
+     {
+      "id": "shio",
+      "name": "しおラーメン",
+      "price": 350,
+      "e": "🍜"
+     },
+     {
+      "id": "miso",
+      "name": "みそラーメン",
+      "price": 400,
+      "e": "🍜"
+     },
+     {
+      "id": "tonkotsu",
+      "name": "とんこつラーメン",
+      "price": 400,
+      "e": "🍜"
+     }
+    ]
+   },
+   {
+    "id": "top",
+    "name": "トッピング",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "chashu",
+      "name": "チャーシュー",
+      "price": 150,
+      "e": "🥩"
+     },
+     {
+      "id": "ajitama",
+      "name": "あじたま",
+      "price": 80,
+      "e": "🥚"
+     },
+     {
+      "id": "negi",
+      "name": "ねぎ",
+      "price": 40,
+      "e": "🌱"
+     },
+     {
+      "id": "nori",
+      "name": "のり",
+      "price": 40,
+      "e": "⬛"
+     },
+     {
+      "id": "menma",
+      "name": "メンマ",
+      "price": 60,
+      "e": "🎋"
+     },
+     {
+      "id": "corn",
+      "name": "コーン",
+      "price": 50,
+      "e": "🌽"
+     },
+     {
+      "id": "kimchi",
+      "name": "キムチ",
+      "price": 100,
+      "e": "🌶️"
+     }
+    ]
+   },
+   {
+    "id": "set",
+    "name": "セット",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "gyoza",
+      "name": "ぎょうざ",
+      "price": 200,
+      "e": "🥟"
+     },
+     {
+      "id": "chahan",
+      "name": "チャーハン",
+      "price": 250,
+      "e": "🍚"
+     },
+     {
+      "id": "water",
+      "name": "おみず",
+      "price": 30,
+      "e": "🥛"
+     }
+    ]
+   }
+  ]
+ },
+ "burger": {
+  "name": "ハンバーガー",
+  "title": "ハンバーガーを作ろう",
+  "emoji": "🍔",
+  "desc": "バンズにパティとやさいをはさもう",
+  "cats": [
+   {
+    "id": "bun",
+    "name": "バンズ",
+    "min": 1,
+    "hint": "1こ",
+    "items": [
+     {
+      "id": "plain",
+      "name": "ふつうのバンズ",
+      "price": 80,
+      "e": "🍞"
+     },
+     {
+      "id": "sesame",
+      "name": "ごまバンズ",
+      "price": 100,
+      "e": "🥯"
+     }
+    ]
+   },
+   {
+    "id": "patty",
+    "name": "パティ",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "beef",
+      "name": "ぎゅうにく",
+      "price": 250,
+      "e": "🥩"
+     },
+     {
+      "id": "chicken",
+      "name": "チキン",
+      "price": 200,
+      "e": "🍗"
+     },
+     {
+      "id": "fish",
+      "name": "フィッシュ",
+      "price": 180,
+      "e": "🐟"
+     },
+     {
+      "id": "veggie",
+      "name": "やさいパティ",
+      "price": 150,
+      "e": "🥕"
+     }
+    ]
+   },
+   {
+    "id": "veg",
+    "name": "やさい",
+    "min": 1,
+    "hint": "あわせて1こ以上",
+    "items": [
+     {
+      "id": "lettuce",
+      "name": "レタス",
+      "price": 50,
+      "e": "🥬"
+     },
+     {
+      "id": "tomato",
+      "name": "トマト",
+      "price": 60,
+      "e": "🍅"
+     },
+     {
+      "id": "onion",
+      "name": "たまねぎ",
+      "price": 40,
+      "e": "🧅"
+     },
+     {
+      "id": "pickle",
+      "name": "ピクルス",
+      "price": 40,
+      "e": "🥒"
+     }
+    ]
+   },
+   {
+    "id": "extra",
+    "name": "プラス",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "cheese",
+      "name": "チーズ",
+      "price": 70,
+      "e": "🧀"
+     },
+     {
+      "id": "bacon",
+      "name": "ベーコン",
+      "price": 100,
+      "e": "🥓"
+     },
+     {
+      "id": "egg",
+      "name": "めだまやき",
+      "price": 70,
+      "e": "🍳"
+     }
+    ]
+   },
+   {
+    "id": "sauce",
+    "name": "ソース",
+    "min": 1,
+    "hint": "1こ以上",
+    "items": [
+     {
+      "id": "ketchup",
+      "name": "ケチャップ",
+      "price": 20,
+      "e": "🍅"
+     },
+     {
+      "id": "mustard",
+      "name": "マスタード",
+      "price": 20,
+      "e": "🟡"
+     },
+     {
+      "id": "bbq",
+      "name": "バーベキュー",
+      "price": 30,
+      "e": "🔥"
+     }
+    ]
+   },
+   {
+    "id": "set",
+    "name": "セット",
+    "min": 0,
+    "hint": "おこのみで",
+    "items": [
+     {
+      "id": "fries",
+      "name": "ポテト",
+      "price": 120,
+      "e": "🍟"
+     },
+     {
+      "id": "drink",
+      "name": "ドリンク",
+      "price": 100,
+      "e": "🥤"
+     }
+    ]
+   }
+  ]
+ }
+}
