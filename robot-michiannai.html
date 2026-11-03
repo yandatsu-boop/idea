@@ -273,7 +273,7 @@ td,th{border:1px solid var(--line);padding:3px 10px;text-align:center}
   document.addEventListener("pointerdown",clearConfetti,true);
 
   // ---------- 地図描画 ----------
-  const NS="http://www.w3.org/2000/svg", svg=$("map");
+  const svg=$("map"), NS=svg.namespaceURI;
   function mk(tag,attrs,parent,text){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); (parent||svg).appendChild(e); if(text!=null) e.textContent=text; return e; }
   function drawMap(robot, previewTrace, hop){
     const p=S.prob, N=p.N, u=300/N; svg.innerHTML="";
