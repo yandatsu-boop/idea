@@ -526,8 +526,8 @@ const IMG = {};
 })();
 const usePic = p => !!(p.img && S.cardStyle === 'picture' && IMG[p.img] && IMG[p.img].ok);
 // 絵カード：しろい わくに えを いれる。「うごかす てあし」の リング／⭐は つかわない（ヒントは わくが ひかる）
-function drawPicture(g, p, stage, bob) {
-  const x = 100, y = 205 + bob, s = 600;
+function drawPicture(g, p, stage) {
+  const x = 100, y = 205, s = 600;
   g.save();
   g.shadowColor = 'rgba(120,80,160,.25)'; g.shadowBlur = 24; g.shadowOffsetY = 8;
   g.fillStyle = '#fff'; roundRect(g, x, y, s, s, 44); g.fill();
@@ -606,7 +606,7 @@ function drawScene(g, index, colorIdx, o) {
   const pul = stage >= 2 ? (o.still ? 1.12 : 1 + .14 * Math.sin(t * 2 * Math.PI * 1.2)) : 1; // 1.2Hz（2Hz いか）
 
   if (usePic(p)) {
-    drawPicture(g, p, stage, bob);
+    drawPicture(g, p, stage);
   } else {
     g.save();
     g.translate(W / 2, 410 + bob);
@@ -1021,7 +1021,7 @@ function buildPoseList() {
         const b = document.createElement('button'); b.className = 'prow'; b.type = 'button'; b.dataset.name = p.name;
         const c = document.createElement('canvas'); c.width = 128; c.height = 150;
         thumbs.set(p.name, [c, i]); drawThumb(c, i);
-        const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = p.name + (p.anim ? '（うごく）' : '');
+        const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = p.name + (p.anim ? '（うごく）' : '') + (p.img ? '　🖼️' : '');
         const sw = document.createElement('span'); sw.className = 'sw';
         b.append(c, nm, sw);
         b.addEventListener('click', () => togglePose(p.name));
