@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>まねっこ ポーズ DX</title>
+<style>
+  :root {
+    --ink: #4a3566;
+    --pink: #ff6fa5;
+    --orange: #ff9f2e;
+    --blue: #4aa8ff;
+    --green: #3ecf7e;
+    --purple: #9a6bff;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    color: var(--ink);
+    font-family: "Hiragino Maru Gothic ProN", "Yu Gothic UI", "Meiryo", sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 14px 28px;
+    gap: 10px;
+    user-select: none;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(255,255,255,.75) 0 26px, transparent 27px),
+      radial-gradient(circle at 86% 10%, rgba(255,255,255,.65) 0 20px, transparent 21px),
+      radial-gradient(circle at 92% 34%, rgba(255,255,255,.55) 0 15px, transparent 16px),
+      radial-gradient(circle at 6% 46%, rgba(255,255,255,.5) 0 16px, transparent 17px),
+      linear-gradient(160deg, #ffe3f1 0%, #fff3c9 38%, #d9f7e3 72%, #d6ecff 100%);
+    background-attachment: fixed;
+  }
+  h1 {
+    margin: 6px 0 0; font-size: 30px; letter-spacing: .04em; text-align: center;
+    text-shadow: 0 3px 0 rgba(255,255,255,.9);
+  }
+  h1 .r { color: #ff5d8f; } h1 .o { color: #ff9f2e; } h1 .g { color: #2fbf71; }
+  h1 .b { color: #3d9bff; } h1 .p { color: #9a6bff; }
+  h1 .mascot { display: inline-block; animation: bounce 1.6s ease-in-out infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-7px) rotate(5deg); } }
+  .sub { font-size: 14px; font-weight: bold; opacity: .75; margin-top: -6px; }
+
+  .stage { position: relative; width: 100%; max-width: 430px; }
+  .tape {
+    position: absolute; width: 92px; height: 26px; z-index: 3;
+    background: repeating-linear-gradient(45deg, rgba(255,182,213,.85) 0 8px, rgba(255,205,228,.85) 8px 16px);
+    border-radius: 3px; box-shadow: 0 2px 4px rgba(0,0,0,.12); opacity: .95;
+  }
+  .tape.tl { top: -10px; left: -8px; transform: rotate(-24deg); }
+  .tape.tr { top: -10px; right: -8px; transform: rotate(24deg); background: repeating-linear-gradient(45deg, rgba(169,222,255,.9) 0 8px, rgba(199,235,255,.9) 8px 16px); }
+  canvas {
+    display: block; width: 100%; height: auto;
+    border-radius: 30px;
+    border: 5px solid #fff;
+    box-shadow: 0 10px 0 rgba(190,130,200,.25), 0 16px 28px rgba(120,80,160,.18);
+    background: #fff;
+  }
+  canvas.pop { animation: pop .38s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes pop { from { transform: scale(.82) rotate(-4deg); opacity: .25; } to { transform: none; opacity: 1; } }
+  #praise {
+    position: absolute; inset: 0; display: none; z-index: 4;
+    align-items: center; justify-content: center; pointer-events: none;
+  }
+  #praise .word {
+    font-size: 54px; font-weight: bold; color: #ff5d8f;
+    text-shadow: 0 4px 0 #fff, 0 8px 18px rgba(255,93,143,.35);
+    animation: praisePop .3s cubic-bezier(.3,1.8,.5,1);
+  }
+  @keyframes praisePop { from { transform: scale(.3) rotate(-8deg); opacity: 0; } to { transform: scale(1) rotate(-3deg); opacity: 1; } }
+  #countLabel {
+    position: absolute; top: 10px; right: 12px; z-index: 4;
+    background: rgba(255,255,255,.92); border-radius: 999px; padding: 5px 14px;
+    font-weight: bold; font-size: 16px; box-shadow: 0 3px 0 rgba(0,0,0,.08);
+    display: none;
+  }
+
+  .bar { width: 100%; max-width: 430px; height: 18px; background: #fff; border-radius: 9px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,.15); }
+  .bar > div { height: 100%; width: 0; background: linear-gradient(90deg, #3ecf7e, #ffd23e, #ff9f2e); border-radius: 9px; transition: width .1s linear; }
+
+  .row { display: flex; gap: 10px; width: 100%; max-width: 430px; align-items: stretch; justify-content: center; flex-wrap: wrap; }
+  button {
+    font: inherit; font-weight: bold; border: 0; border-radius: 24px;
+    padding: 14px 18px; color: #fff; cursor: pointer;
+    box-shadow: 0 6px 0 rgba(0,0,0,.18);
+    transition: transform .05s, box-shadow .05s, filter .15s;
+  }
+  button:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+  button:disabled { filter: grayscale(.55) opacity(.55); cursor: default; }
+  button:disabled:active { transform: none; box-shadow: 0 6px 0 rgba(0,0,0,.18); }
+  #start { background: linear-gradient(180deg, #57dd96, #2fbf71); font-size: 27px; flex: 1 1 150px; }
+  #start.running { background: linear-gradient(180deg, #ff8a8a, #ff5d5d); }
+  #done { background: linear-gradient(180deg, #ffb84d, #ff8a1e); font-size: 23px; flex: 1 1 150px; }
+  #next { background: linear-gradient(180deg, #6db9ff, #3d9bff); font-size: 21px; flex: 1 1 120px; display: none; }
+  .small { background: linear-gradient(180deg, #6db9ff, #3d9bff); font-size: 15px; padding: 10px 16px; border-radius: 20px; }
+  .small.off { background: #b9b9c9; box-shadow: 0 6px 0 rgba(0,0,0,.12); }
+  .small.purple { background: linear-gradient(180deg, #b18cff, #8f5fff); }
+
+  .panel {
+    width: 100%; max-width: 430px; background: rgba(255,255,255,.94); border-radius: 24px;
+    padding: 10px 16px 14px; box-shadow: 0 5px 0 rgba(190,130,200,.22);
+  }
+  .panel .title { text-align: center; font-weight: bold; margin-bottom: 6px; font-size: 16px; }
+  .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .chip {
+    border: 3px solid #eadcff; background: #fff; color: var(--ink);
+    border-radius: 999px; padding: 8px 16px; font-size: 17px; box-shadow: none;
+  }
+  .chip:active { transform: none; box-shadow: none; }
+  .chip.sel { background: linear-gradient(180deg, #ffd7ea, #ffc2dd); border-color: var(--pink); color: #a1134e; }
+  .chip.sel.blue { background: linear-gradient(180deg, #d3ebff, #b5dcff); border-color: var(--blue); color: #14548f; }
+  .speed .line { display: flex; align-items: center; gap: 10px; }
+  .speed .emoji { font-size: 32px; }
+  input[type=range] { flex: 1; height: 44px; accent-color: var(--pink); }
+  .speed .sec { text-align: center; font-size: 14px; opacity: .8; }
+  #stars { font-size: 22px; min-height: 30px; text-align: center; max-width: 430px; word-break: break-all; }
+
+  #result {
+    position: fixed; inset: 0; z-index: 10; display: none;
+    background: rgba(90,60,140,.45); align-items: center; justify-content: center; padding: 18px;
+  }
+  #result .card {
+    background: #fff; border-radius: 30px; max-width: 400px; width: 100%;
+    padding: 24px 20px 20px; text-align: center;
+    box-shadow: 0 14px 0 rgba(0,0,0,.15);
+    animation: praisePop .35s cubic-bezier(.3,1.7,.5,1);
+  }
+  #result .rank { font-size: 30px; font-weight: bold; color: #ff5d8f; margin: 4px 0; }
+  #result .bigstars { font-size: 30px; margin: 6px 0; word-break: break-all; }
+  #result .stats { font-size: 19px; font-weight: bold; line-height: 1.7; }
+  #result .row { margin-top: 14px; }
+  #again { background: linear-gradient(180deg, #57dd96, #2fbf71); font-size: 21px; flex: 1; }
+  #quit { background: linear-gradient(180deg, #b18cff, #8f5fff); font-size: 21px; flex: 1; }
+  .confetti { position: fixed; top: -4vh; z-index: 11; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(112vh) rotate(560deg); } }
+</style>
+</head>
+<body>
+  <h1><span class="mascot">🐰</span> <span class="r">ま</span><span class="o">ね</span><span class="g">っ</span><span class="b">こ</span> <span class="p">ポーズ</span> <span class="mascot">🎵</span></h1>
+  <div class="sub">カードの ポーズを まねしてね</div>
+
+  <div class="stage">
+    <div class="tape tl"></div><div class="tape tr"></div>
+    <canvas id="c" width="800" height="940"></canvas>
+    <div id="countLabel"></div>
+    <div id="praise"><div class="word" id="praiseWord">すごい！</div></div>
+  </div>
+  <div class="bar"><div id="prog"></div></div>
+
+  <div class="row">
+    <button id="start">▶ スタート</button>
+    <button id="done" disabled>できた！ ⭐</button>
+    <button id="next">つぎへ ▶</button>
+  </div>
+
+  <div class="panel" id="modePanel">
+    <div class="title">🎲 あそびかた</div>
+    <div class="chips">
+      <button class="chip sel" data-mode="flash">⚡ フラッシュ</button>
+      <button class="chip" data-mode="free">🐢 じゆうに すすむ</button>
+    </div>
+  </div>
+
+  <div class="panel" id="countPanel">
+    <div class="title">🃏 カードの かず</div>
+    <div class="chips">
+      <button class="chip blue" data-count="5">5 まい</button>
+      <button class="chip blue sel" data-count="10">10 まい</button>
+      <button class="chip blue" data-count="20">20 まい</button>
+      <button class="chip blue" data-count="0">ずっと</button>
+    </div>
+  </div>
+
+  <div class="panel speed">
+    <div class="title">⏱️ カードの はやさ（フラッシュ）</div>
+    <div class="line">
+      <span class="emoji">🐢</span>
+      <input id="speed" type="range" min="1" max="10" step="1" value="4" aria-label="カードのはやさ">
+      <span class="emoji">🐇</span>
+    </div>
+    <div class="sec" id="secLabel"></div>
+  </div>
+
+  <div class="row">
+    <button class="small" id="musicBtn">🎵 おんがく</button>
+    <button class="small" id="voiceBtn">🗣️ こえ</button>
+  </div>
+  <div id="stars"></div>
+
+  <div id="result">
+    <div class="card">
+      <div style="font-size:44px">🎉 おつかれさま！ 🎉</div>
+      <div class="rank" id="rankText"></div>
+      <div class="bigstars" id="resultStars"></div>
+      <div class="stats" id="resultStats"></div>
+      <div class="row">
+        <button id="again">🔁 もういちど</button>
+        <button id="quit">🏠 おわる</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------- ポーズ定義 ----------
+   各うでは [かた→ひじ, ひじ→て] の角度。0=まっすぐ下、90=横、180=真上、
+   プラスは外側、マイナス(または180超)は内側。画面は「鏡」のように描く。
+   hot: 動かすところ（オレンジで目立たせる） */
+const REST_ARM = [12, 8];
+const REST_LEG = [8, 6];
+const POSES = [
+  { name: 'みぎてを あげよう',   emoji: '🙋', arms: { R: [150, 172] },                      hot: ['R'] },
+  { name: 'ひだりてを あげよう', emoji: '🙋', arms: { L: [150, 172] },                      hot: ['L'] },
+  { name: 'りょうてを あげよう', emoji: '🙌', arms: { R: [155, 175], L: [155, 175] },       hot: ['R','L'] },
+  { name: 'てを よこに ひろげよう', emoji: '🦅', arms: { R: [90, 90], L: [90, 90] },         hot: ['R','L'] },
+  { name: 'てを あたまに のせよう', emoji: '🧢', arms: { R: [105, 225], L: [105, 225] },     hot: ['R','L'] },
+  { name: 'てを こしに あてよう', emoji: '💪', arms: { R: [65, 335], L: [65, 335] },         hot: ['R','L'] },
+  { name: 'はくしゅ ぱちぱち',   emoji: '👏', arms: { R: [50, 278], L: [50, 278] },         hot: ['R','L'] },
+  { name: 'みぎあしを まげよう', emoji: '🦩', legs: { R: [78, 0] },                         hot: ['legR'] },
+  { name: 'ひだりあしを まげよう', emoji: '🦩', legs: { L: [78, 0] },                       hot: ['legL'] },
+  { name: 'あしを ひらこう',     emoji: '⭐', legs: { R: [32, 32], L: [32, 32] },            hot: ['legR','legL'] },
+  { name: 'てと あしを ひらこう', emoji: '🌟', arms: { R: [135, 135], L: [135, 135] }, legs: { R: [30, 30], L: [30, 30] }, hot: ['R','L','legR','legL'] },
+  { name: 'ばんざい！',         emoji: '🎉', arms: { R: [170, 178], L: [170, 178] },        hot: ['R','L'] },
+  { name: 'みぎてを よこに のばそう',   emoji: '👉', arms: { R: [90, 90] },                 hot: ['R'] },
+  { name: 'ひだりてを よこに のばそう', emoji: '👈', arms: { L: [90, 90] },                 hot: ['L'] },
+  { name: 'Y（わい）の ポーズ',         emoji: '✌️', arms: { R: [135, 135], L: [135, 135] },  hot: ['R','L'] },
+  { name: 'みぎてを ななめに あげよう', emoji: '☝️', arms: { R: [135, 135] },                hot: ['R'] },
+  { name: 'ひだりてを ななめに あげよう', emoji: '☝️', arms: { L: [135, 135] },              hot: ['L'] },
+  { name: 'あたまの うえで ぱちっ',     emoji: '🙏', arms: { R: [160, 215], L: [160, 215] }, hot: ['R','L'] },
+  { name: 'ちからこぶ！',               emoji: '💪', arms: { R: [90, 180], L: [90, 180] },   hot: ['R','L'] },
+  { name: 'みぎてで あたまを さわろう', emoji: '😊', arms: { R: [105, 225] },                hot: ['R'] },
+  { name: 'ひだりてで あたまを さわろう', emoji: '😊', arms: { L: [105, 225] },              hot: ['L'] },
+  { name: 'みぎあしを よこに あげよう', emoji: '🦵', legs: { R: [50, 50] },                  hot: ['legR'] },
+  { name: 'ひだりあしを よこに あげよう', emoji: '🦵', legs: { L: [50, 50] },                hot: ['legL'] },
+  { name: 'りょうあしを まげよう',     emoji: '🐸', legs: { R: [60, 0], L: [60, 0] },        hot: ['legR','legL'] },
+  { name: 'みぎてと みぎあしを あげよう', emoji: '🤸', arms: { R: [150, 172] }, legs: { R: [50, 50] }, hot: ['R','legR'] },
+  { name: 'ひだりてと ひだりあしを あげよう', emoji: '🤸', arms: { L: [150, 172] }, legs: { L: [50, 50] }, hot: ['L','legL'] },
+  { name: 'みぎてを あげて ひだりあしを まげよう', emoji: '🦩', arms: { R: [150, 172] }, legs: { L: [78, 0] }, hot: ['R','legL'] },
+  { name: 'ひだりてを あげて みぎあしを まげよう', emoji: '🦩', arms: { L: [150, 172] }, legs: { R: [78, 0] }, hot: ['L','legR'] },
+  { name: 'てを たたいて あしを ひらこう', emoji: '🎶', arms: { R: [50, 278], L: [50, 278] }, legs: { R: [32, 32], L: [32, 32] }, hot: ['R','L','legR','legL'] },
+  /* --- DXで ふえた ポーズ --- */
+  { name: 'りょうてを したに ひろげよう', emoji: '🐧', arms: { R: [35, 35], L: [35, 35] },   hot: ['R','L'] },
+  { name: 'てを むねで クロス',           emoji: '🙅', arms: { R: [55, 295], L: [55, 295] }, hot: ['R','L'] },
+  { name: 'ねこの ポーズ',               emoji: '🐱', arms: { R: [120, 198], L: [120, 198] }, hot: ['R','L'] },
+  { name: 'ロボットの ポーズ',           emoji: '🤖', arms: { R: [90, 350], L: [90, 350] }, hot: ['R','L'] },
+  { name: 'ジャンプ！',                  emoji: '🐸', arms: { R: [168, 176], L: [168, 176] }, legs: { R: [36, 36], L: [36, 36] }, hot: ['R','L','legR','legL'] },
+  { name: 'かぜの ポーズ',               emoji: '🍃', arms: { R: [122, 122], L: [38, 38] }, hot: ['R','L'] },
+  { name: 'みぎてで ほっぺを さわろう',   emoji: '☺️', arms: { R: [85, 245] },                hot: ['R'] },
+  { name: 'ひだりてで ほっぺを さわろう', emoji: '☺️', arms: { L: [85, 245] },                hot: ['L'] },
+  { name: 'スキップの ポーズ',           emoji: '🎈', arms: { R: [150, 172], L: [90, 90] }, legs: { R: [78, 0] }, hot: ['R','L','legR'] },
+  { name: 'ハートを つくろう',           emoji: '🫶', arms: { R: [148, 238], L: [148, 238] }, hot: ['R','L'] },
+  { name: 'ふうしゃの ポーズ',           emoji: '🎡', arms: { R: [135, 135], L: [45, 45] }, hot: ['R','L'] },
+  { name: 'みぎてを したに のばそう',     emoji: '👇', arms: { R: [24, 24] },                 hot: ['R'] },
+  { name: 'ひだりてを したに のばそう',   emoji: '👇', arms: { L: [24, 24] },                 hot: ['L'] },
+  { name: 'てを まわして あしを ひらこう', emoji: '🌀', arms: { R: [135, 135], L: [45, 45] }, legs: { R: [32, 32], L: [32, 32] }, hot: ['R','L','legR','legL'] },
+];
+
+/* ---------- 絵をキャンバスにかく ---------- */
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const OUTFITS = [
+  { body: '#4aa8ff', sub: '#2f7fd6', hair: '#6b4226' },
+  { body: '#ff6fa5', sub: '#e04d86', hair: '#3a2a20' },
+  { body: '#4cd08a', sub: '#2ea866', hair: '#8a5a2b' },
+  { body: '#b07cff', sub: '#8f5fff', hair: '#5b3a8a' },
+  { body: '#ffb02e', sub: '#e08a00', hair: '#a33b3b' },
+  { body: '#ff7a6b', sub: '#e05244', hair: '#26436b' },
+];
+const SKIN = '#ffd9b3';
+const HOT = '#ff7a1a';
+const BGS = [
+  ['#fff3b8', '#ffe9ec'], ['#d8f3ff', '#eafbe7'], ['#ffe0ee', '#fff6d9'],
+  ['#dcf8d8', '#d8f3ff'], ['#ece0ff', '#ffe9f4'], ['#ffedd1', '#ffe0ee'],
+];
+const DECO = ['⭐', '💗', '🌈', '🎈', '🌸', '🍀'];
+
+function pt(x, y, len, deg, side) {
+  const r = deg * Math.PI / 180;
+  return [x + side * Math.sin(r) * len, y + Math.cos(r) * len];
+}
+function thick(a, b, w, color) {
+  ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+}
+function circle(x, y, r, color) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function cloud(x, y, s) {
+  ctx.fillStyle = 'rgba(255,255,255,.85)';
+  ctx.beginPath();
+  ctx.arc(x, y, 26 * s, 0, 7); ctx.arc(x + 30 * s, y + 4 * s, 20 * s, 0, 7); ctx.arc(x - 30 * s, y + 5 * s, 18 * s, 0, 7);
+  ctx.fill();
+}
+
+function drawPose(index, colorIdx = index) {
+  const p = POSES[index];
+  const W = cv.width, H = cv.height;
+  const outfit = OUTFITS[colorIdx % OUTFITS.length];
+  ctx.clearRect(0, 0, W, H);
+
+  // はいけい（グラデーション＋くも＋かざり）
+  const bg = BGS[colorIdx % BGS.length];
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, bg[0]); grad.addColorStop(1, bg[1]);
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
+  cloud(120, 210, 1); cloud(680, 260, .8); cloud(400, 185, .6);
+  ctx.font = '34px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const deco = DECO[colorIdx % DECO.length];
+  ctx.globalAlpha = .8;
+  ctx.fillText(deco, 70, 330); ctx.fillText(deco, 730, 380); ctx.fillText('✨', 90, 560); ctx.fillText('✨', 712, 600);
+  ctx.globalAlpha = 1;
+  // じめん（みどりの おか）
+  ctx.fillStyle = '#b9ecc4';
+  ctx.beginPath(); ctx.ellipse(W/2, 800, 330, 95, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.07)';
+  ctx.beginPath(); ctx.ellipse(W/2, 762, 185, 26, 0, 0, 7); ctx.fill();
+
+  ctx.save();
+  ctx.translate(W/2, 400);   // かたの まんなか
+  ctx.scale(1.25, 1.25);
+
+  const hot = new Set(p.hot);
+  const armLen = 72, legLen = 82, hipY = 105;
+
+  // あし
+  for (const [k, side] of [['R', 1], ['L', -1]]) {
+    const ang = (p.legs && p.legs[k]) || REST_LEG;
+    const isHot = hot.has('leg' + k);
+    const c = isHot ? HOT : '#46469e';
+    const h = [side * 20, hipY];
+    const knee = pt(h[0], h[1], legLen, ang[0], side);
+    const foot = pt(knee[0], knee[1], legLen, ang[1], side);
+    thick(h, knee, 26, c); thick(knee, foot, 26, c);
+    // くつ（まるく かわいく）
+    ctx.fillStyle = isHot ? '#ff4d4d' : '#e8505b';
+    ctx.beginPath(); ctx.ellipse(foot[0] + side * 8, foot[1] + 6, 23, 14, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.75)';
+    ctx.beginPath(); ctx.ellipse(foot[0] + side * 8, foot[1] + 11, 23, 6, 0, 0, 7); ctx.fill();
+  }
+
+  // どうたい（ふく：2いろの しまもよう風）
+  thick([0, 2], [0, hipY - 5], 78, outfit.body);
+  thick([0, 34], [0, 52], 79, outfit.sub);
+  thick([0, 76], [0, 90], 79, outfit.sub);
+  // リボン
+  ctx.fillStyle = '#ffd23e';
+  ctx.beginPath(); ctx.moveTo(-2, 8); ctx.lineTo(-24, -6); ctx.lineTo(-24, 20); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(2, 8); ctx.lineTo(24, -6); ctx.lineTo(24, 20); ctx.closePath(); ctx.fill();
+  circle(0, 8, 8, '#ff9f2e');
+
+  // うで
+  for (const [k, side] of [['R', 1], ['L', -1]]) {
+    const ang = (p.arms && p.arms[k]) || REST_ARM;
+    const isHot = hot.has(k);
+    const c = isHot ? HOT : outfit.body;
+    const s = [side * 32, 4];
+    const elbow = pt(s[0], s[1], armLen, ang[0], side);
+    const hand = pt(elbow[0], elbow[1], armLen, ang[1], side);
+    thick(s, elbow, 24, c); thick(elbow, hand, 24, c);
+    circle(hand[0], hand[1], 17, SKIN);
+    circle(hand[0] - 4, hand[1] - 5, 5, 'rgba(255,255,255,.65)');
+    if (isHot) { // きらきらリング
+      ctx.strokeStyle = '#ffd400'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(hand[0], hand[1], 29, 0, 7); ctx.stroke();
+      ctx.font = '22px sans-serif'; ctx.fillText('⭐', hand[0], hand[1] - 42);
+    }
+  }
+
+  // あたま
+  const hy = -64;
+  // かみ（うしろ）
+  circle(0, hy - 2, 55, outfit.hair);
+  // ツインテール（カードごとに かわる）
+  if (colorIdx % 3 === 1) {
+    circle(-52, hy + 16, 17, outfit.hair); circle(52, hy + 16, 17, outfit.hair);
+    circle(-52, hy + 2, 7, '#ff6fa5'); circle(52, hy + 2, 7, '#ff6fa5');
+  }
+  // かお
+  circle(0, hy, 50, SKIN);
+  // かみ（まえ）
+  ctx.fillStyle = outfit.hair;
+  ctx.beginPath(); ctx.arc(0, hy, 50, Math.PI * 1.08, Math.PI * 1.92); ctx.quadraticCurveTo(0, hy - 26, -50 * Math.cos(.08 * Math.PI), hy - 4); ctx.fill();
+  if (colorIdx % 3 === 2) { // おだんご
+    circle(0, hy - 52, 16, outfit.hair); circle(0, hy - 52, 7, '#ffd23e');
+  }
+  // まゆ
+  ctx.strokeStyle = outfit.hair; ctx.lineWidth = 4; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(-19, hy - 2, 9, Math.PI * 1.15, Math.PI * 1.7); ctx.stroke();
+  ctx.beginPath(); ctx.arc(19, hy - 2, 9, Math.PI * 1.3, Math.PI * 1.85); ctx.stroke();
+  // め（おおきく きらきら）
+  circle(-19, hy + 8, 9, '#33222e'); circle(19, hy + 8, 9, '#33222e');
+  circle(-16, hy + 4, 3.4, '#fff'); circle(22, hy + 4, 3.4, '#fff');
+  circle(-22, hy + 12, 1.8, '#fff'); circle(16, hy + 12, 1.8, '#fff');
+  // ほっぺ
+  ctx.globalAlpha = .65; circle(-34, hy + 22, 11, '#ff9aa8'); circle(34, hy + 22, 11, '#ff9aa8'); ctx.globalAlpha = 1;
+  // くち（にっこり）
+  ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.arc(0, hy + 16, 15, .1 * Math.PI, .9 * Math.PI); ctx.stroke();
+  ctx.fillStyle = '#ff8fa3';
+  ctx.beginPath(); ctx.arc(0, hy + 24, 6, 0, Math.PI); ctx.fill();
+
+  ctx.restore();
+
+  // なまえ（ふきだし風）
+  ctx.fillStyle = 'rgba(255,255,255,.95)';
+  roundRect(36, 18, W - 72, 122, 42); ctx.fill();
+  ctx.strokeStyle = '#ffd7ea'; ctx.lineWidth = 5; roundRect(36, 18, W - 72, 122, 42); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W/2 - 16, 138); ctx.lineTo(W/2 + 16, 138); ctx.lineTo(W/2, 162); ctx.closePath();
+  ctx.fillStyle = 'rgba(255,255,255,.95)'; ctx.fill();
+  ctx.fillStyle = '#4a3566'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let fs = 55;
+  ctx.font = `bold ${fs}px "Hiragino Maru Gothic ProN","Yu Gothic UI",sans-serif`;
+  const label = p.emoji + ' ' + p.name;
+  while (ctx.measureText(label).width > W - 140 && fs > 28) { fs -= 2; ctx.font = `bold ${fs}px "Hiragino Maru Gothic ProN","Yu Gothic UI",sans-serif`; }
+  ctx.fillText(label, W / 2, 80);
+}
+
+/* ---------- おと ---------- */
+let ac = null, master = null;
+let musicOn = true, voiceOn = true;
+function initAudio() {
+  if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
+  ac = new (window.AudioContext || window.webkitAudioContext)();
+  master = ac.createGain(); master.gain.value = .5; master.connect(ac.destination);
+}
+function tone(freq, t, dur, type = 'sine', vol = .2, dest = master) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t);
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + .015);
+  g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g); g.connect(dest); o.start(t); o.stop(t + dur + .05);
+}
+function sfxPop() {
+  if (!ac) return; const t = ac.currentTime;
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(300, t); o.frequency.exponentialRampToValueAtTime(900, t + .12);
+  g.gain.setValueAtTime(.35, t); g.gain.exponentialRampToValueAtTime(.001, t + .2);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + .25);
+}
+function sfxGood() {
+  if (!ac) return; const t = ac.currentTime;
+  [784, 988, 1175, 1568].forEach((f, i) => tone(f, t + i * .08, .35, 'triangle', .22));
+}
+function sfxFanfare() {
+  if (!ac) return; const t = ac.currentTime;
+  [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone(f, t + i * .13, .4, 'triangle', .22));
+}
+function sfxNext() {
+  if (!ac) return; const t = ac.currentTime;
+  tone(660, t, .15, 'square', .08); tone(880, t + .1, .2, 'square', .08);
+}
+const PENTA = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25];
+const MELODY = [0,2,4,2, 4,5,4,2, 3,4,5,4, 2,0,2,-1,  0,2,4,5, 7,5,4,2, 3,2,0,2, 4,2,0,-1];
+const BASS = [0,0,3,3, 4,4,3,3];
+let musicTimer = null, nextNoteTime = 0, step = 0;
+function beatSec() { return 0.42 - (+speedEl.value - 1) * 0.026; }
+function scheduler() {
+  while (nextNoteTime < ac.currentTime + .25) {
+    const n = MELODY[step % MELODY.length];
+    if (n >= 0 && musicOn) tone(PENTA[n], nextNoteTime, beatSec() * .9, 'triangle', .13);
+    if (step % 4 === 0 && musicOn) tone(PENTA[BASS[(step / 4) % BASS.length]] / 2, nextNoteTime, beatSec() * 3.5, 'sine', .16);
+    if (step % 2 === 1 && musicOn) tone(1800, nextNoteTime, .04, 'square', .02);
+    nextNoteTime += beatSec(); step++;
+  }
+}
+function startMusic() { if (musicTimer) return; nextNoteTime = ac.currentTime + .1; step = 0; musicTimer = setInterval(scheduler, 80); }
+function stopMusic() { clearInterval(musicTimer); musicTimer = null; }
+
+function speak(text) {
+  if (!voiceOn || !('speechSynthesis' in window)) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ja-JP'; u.rate = .9; u.pitch = 1.3; speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* ---------- ゲームの うごき ---------- */
+const startBtn = document.getElementById('start');
+const doneBtn = document.getElementById('done');
+const nextBtn = document.getElementById('next');
+const speedEl = document.getElementById('speed');
+const secLabel = document.getElementById('secLabel');
+const prog = document.getElementById('prog');
+const starsEl = document.getElementById('stars');
+const praiseEl = document.getElementById('praise');
+const praiseWord = document.getElementById('praiseWord');
+const countLabel = document.getElementById('countLabel');
+const resultEl = document.getElementById('result');
+const PRAISES = ['すごい！', 'じょうず！', 'かんぺき！', 'やったね！', 'すてき！', 'バッチリ！'];
+let running = false, cur = -1, cardStart = 0, raf = 0, stars = 0, colorN = 0;
+let mode = 'flash';           // 'flash' | 'free'
+let target = 10;              // 0 = ずっと
+let shown = 0;                // みせた カードの かず
+
+function cardSeconds() { const v = +speedEl.value; return 0.5 * Math.pow(24, (10 - v) / 9); }
+function updateLabel() { secLabel.textContent = `${cardSeconds().toFixed(cardSeconds() < 2 ? 2 : 1)} びょうで つぎの カード`; }
+speedEl.addEventListener('input', updateLabel);
+updateLabel();
+
+document.querySelectorAll('#modePanel .chip').forEach(ch => ch.addEventListener('click', () => {
+  document.querySelectorAll('#modePanel .chip').forEach(c => c.classList.remove('sel'));
+  ch.classList.add('sel'); mode = ch.dataset.mode;
+}));
+document.querySelectorAll('#countPanel .chip').forEach(ch => ch.addEventListener('click', () => {
+  document.querySelectorAll('#countPanel .chip').forEach(c => c.classList.remove('sel'));
+  ch.classList.add('sel'); target = +ch.dataset.count;
+}));
+
+function updateCount() {
+  if (!running) { countLabel.style.display = 'none'; return; }
+  countLabel.style.display = 'block';
+  countLabel.textContent = target > 0 ? `🃏 ${Math.min(shown, target)} / ${target} まい` : `🃏 ${shown} まいめ`;
+  if (mode === 'free') prog.style.width = target > 0 ? Math.min(100, shown / target * 100) + '%' : '100%';
+}
+function renderStars() {
+  starsEl.textContent = '⭐'.repeat(Math.min(stars, 30)) + (stars > 30 ? ` ×${stars}` : '');
+}
+function showPraise() {
+  praiseWord.textContent = PRAISES[Math.floor(Math.random() * PRAISES.length)];
+  praiseWord.style.animation = 'none'; void praiseWord.offsetWidth; praiseWord.style.animation = '';
+  praiseEl.style.display = 'flex';
+  setTimeout(() => { praiseEl.style.display = 'none'; }, 750);
+}
+function confetti() {
+  const colors = ['#ff6fa5', '#ffd23e', '#4aa8ff', '#4cd08a', '#b07cff'];
+  for (let i = 0; i < 42; i++) {
+    const s = document.createElement('span');
+    s.className = 'confetti';
+    s.textContent = ['🎊', '⭐', '💗', '🎉'][i % 4];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.fontSize = 16 + Math.random() * 20 + 'px';
+    s.style.animationDuration = 1.6 + Math.random() * 1.6 + 's';
+    s.style.animationDelay = Math.random() * .5 + 's';
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 4200);
+  }
+}
+
+function showCard() {
+  let n; do { n = Math.floor(Math.random() * POSES.length); } while (n === cur && POSES.length > 1);
+  cur = n; colorN++; shown++;
+  drawPose(cur, colorN);
+  cv.classList.remove('pop'); void cv.offsetWidth; cv.classList.add('pop');
+  sfxPop(); speak(POSES[cur].name);
+  cardStart = performance.now();
+  updateCount();
+}
+function advance(manual) {
+  if (target > 0 && shown >= target) { finish(); return; }
+  if (manual) sfxNext();
+  showCard();
+}
+function tick(now) {
+  if (!running) return;
+  const dur = cardSeconds() * 1000;
+  const f = (now - cardStart) / dur;
+  prog.style.width = Math.min(100, f * 100) + '%';
+  if (f >= 1) advance(false);
+  raf = requestAnimationFrame(tick);
+}
+function setControls() {
+  document.querySelectorAll('#modePanel .chip, #countPanel .chip').forEach(c => c.disabled = running);
+  nextBtn.style.display = (running && mode === 'free') ? 'block' : 'none';
+  speedEl.disabled = running;
+}
+function start() {
+  initAudio(); running = true; stars = 0; shown = 0; renderStars();
+  startMusic();
+  startBtn.textContent = '■ やすむ'; startBtn.classList.add('running'); doneBtn.disabled = false;
+  setControls();
+  showCard();
+  if (mode === 'flash') raf = requestAnimationFrame(tick);
+}
+function stopToIdle() {
+  running = false; cancelAnimationFrame(raf); stopMusic();
+  try { speechSynthesis.cancel(); } catch (e) {}
+  startBtn.textContent = '▶ スタート'; startBtn.classList.remove('running'); doneBtn.disabled = true;
+  prog.style.width = '0'; countLabel.style.display = 'none';
+  setControls();
+}
+function finish() {
+  const total = shown, got = stars;
+  stopToIdle();
+  const ratio = total > 0 ? got / total : 0;
+  let rank, msg;
+  if (ratio >= .9) { rank = '🏆 ポーズマスター'; msg = 'ほとんど できたね！'; }
+  else if (ratio >= .7) { rank = '🎖️ ポーズはかせ'; msg = 'たくさん できたね！'; }
+  else if (ratio >= .4) { rank = '🌟 がんばりやさん'; msg = 'よく がんばったね！'; }
+  else { rank = '💮 たのしかったね'; msg = 'ポーズ あそび たのしかったね！'; }
+  document.getElementById('rankText').textContent = rank;
+  document.getElementById('resultStars').textContent = '⭐'.repeat(Math.min(got, 20)) + (got > 20 ? ` ×${got}` : '');
+  document.getElementById('resultStats').innerHTML =
+    `カード ${total} まい<br>できた ⭐ ${got} こ<br>${msg}`;
+  resultEl.style.display = 'flex';
+  sfxFanfare(); confetti();
+  speak('おつかれさま！ ' + msg);
+}
+startBtn.addEventListener('click', () => running ? stopToIdle() : start());
+doneBtn.addEventListener('click', () => {
+  if (!running) return;
+  stars++; renderStars();
+  sfxGood(); showPraise();
+  setTimeout(() => advance(false), 350);
+});
+nextBtn.addEventListener('click', () => { if (running && mode === 'free') advance(true); });
+document.getElementById('again').addEventListener('click', () => { resultEl.style.display = 'none'; start(); });
+document.getElementById('quit').addEventListener('click', () => { resultEl.style.display = 'none'; });
+document.getElementById('musicBtn').addEventListener('click', e => {
+  musicOn = !musicOn; e.currentTarget.classList.toggle('off', !musicOn);
+});
+document.getElementById('voiceBtn').addEventListener('click', e => {
+  voiceOn = !voiceOn; e.currentTarget.classList.toggle('off', !voiceOn);
+  if (!voiceOn) try { speechSynthesis.cancel(); } catch (err) {}
+});
+
+drawPose(0, 0);  // さいしょの ようす
+</script>
+</body>
+</html>
