@@ -1,6 +1,6 @@
 /* まねっこ ポーズ DX：オフライン用 service worker（キャッシュ優先）
    index.html などを書き換えたら CACHE の番号を上げてください。 */
-const CACHE = 'mane-pose-dx-v4';
+const CACHE = 'mane-pose-dx-v5';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
